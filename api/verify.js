@@ -14,7 +14,7 @@ export default async function handler(req, res) {
         .single();
 
     if (error || !student) return res.status(404).json({ error: "Invalid Credentials!" });
-    if (student.check_count >= 3) return res.status(403).json({ error: "Trial exhausted!" });
+    if (student.check_count >= 3) return res.status(403).json({ error: "Trial exhausted! Contact School Admin" });
 
     // Update check count
     await supabase.from('students').update({ check_count: student.check_count + 1 }).eq('id', student.id);
