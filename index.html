@@ -3,56 +3,68 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Go-Tegs Student Portal</title>
-    <!-- Add this script for PDF generation -->
+    <!-- ADDITION: PDF Library -->
     <script src="https://cloudflare.com"></script>
+    
     <style>
         body { font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; background: #f4f7f6; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
         .card { background: white; padding: 40px 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); width: 100%; max-width: 400px; box-sizing: border-box; }
         input, select { width: 100%; padding: 16px; margin: 12px 0; border: 2px solid #eee; border-radius: 8px; font-size: 18px; box-sizing: border-box; }
         button { width: 100%; padding: 18px; background: #004a99; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 20px; margin-top: 15px; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 18px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 18px; display: none; }
         th, td { border-bottom: 1px solid #eee; padding: 12px; text-align: left; }
-        th { background: #004a99; color: white; }
+        th { background: #004a99; color: white; border-radius: 5px 5px 0 0; }
+        .grade-bold { font-weight: bold; color: #004a99; text-align: center; }
         
-        .download-btn { background: #16a34a; margin-top: 10px; font-size: 16px; }
-        .back-btn { background: #666; margin-top: 10px; font-size: 16px; }
-        #msg { margin-top: 20px; font-size: 16px; }
+        #msg { margin-top: 20px; font-size: 16px; font-weight: 500; }
+        .back-btn { background: #666; margin-top: 10px; font-size: 16px; padding: 10px; }
+        /* ADDITION: Download Button Style */
+        .download-btn { background: #16a34a; margin-top: 20px; font-size: 18px; }
     </style>
 </head>
 <body>
-    <!-- We wrap the result in a div with id="downloadArea" so only this part gets saved as PDF -->
-    <div class="card" id="mainCard">
-        <div id="downloadArea">
-            <img src="https://wordpress.com" style="max-width: 50%; height: auto;">
+    <div class="card">
+        <!-- ADDITION: id="pdfArea" ensures the logo and result are included in the PDF -->
+        <div id="pdfArea">
+            <img src="https://gotegs2.wordpress.com/wp-content/uploads/2024/11/cropped-news-gotegs-full.png?w=648" style="max-width: 50%; height: auto;">
             
             <div id="loginSection">
                 <h3>Result Checker</h3>
-                <input type="text" id="sid" placeholder="Student ID">
+                <input type="text" id="sid" placeholder="Student ID (e.g. GT/101)">
                 <select id="yearSelect">
+                    <option value="">Select Year</option>
                     <option value="2023/2024">2023/2024</option>
+                    <option value="2022/2023">2022/2023</option>
                 </select>
                 <select id="classSelect">
+                    <option value="">Select Class</option>
                     <option value="JSS 1">JSS 1</option>
+                    <option value="JSS 2">JSS 2</option>
+                    <option value="JSS 3">JSS 3</option>
+                    <option value="SSS 1">SSS 1</option>
+                    <option value="SSS 2">SSS 2</option>
                     <option value="SSS 3">SSS 3</option>
                 </select>
-                <input type="password" id="pin" placeholder="Enter PIN">
+                <input type="password" id="pin" placeholder="Enter Result PIN">
                 <button onclick="check()">Check Result</button>
             </div>
 
             <div id="resultSection" style="display:none;">
                 <h3 id="studentName"></h3>
                 <table id="resTable">
-                    <thead><tr><th>Subject</th><th>Grade</th></tr></thead>
+                    <thead>
+                        <tr><th>Subject</th><th style="text-align:center;">Grade</th></tr>
+                    </thead>
                     <tbody id="resBody"></tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Buttons outside downloadArea so they don't appear in the PDF -->
+        <!-- ADDITION: Action Buttons Section -->
         <div id="actionButtons" style="display:none;">
-            <button class="download-btn" onclick="downloadPDF()">📥 Download PDF</button>
-            <button class="back-btn" onclick="location.reload()">Back</button>
+            <button class="download-btn" onclick="downloadResult()">📥 Download PDF</button>
+            <button class="back-btn" onclick="location.reload()">Check Another Result</button>
         </div>
 
         <p id="msg"></p>
@@ -60,9 +72,12 @@
 
     <script>
         function getGrade(score) {
-            if (score >= 75) return "A1"; if (score >= 70) return "B2";
-            if (score >= 65) return "B3"; if (score >= 60) return "C4";
-            if (score >= 55) return "C5"; if (score >= 50) return "C6";
+            if (score >= 75) return "A1";
+            if (score >= 70) return "B2";
+            if (score >= 65) return "B3";
+            if (score >= 60) return "C4";
+            if (score >= 55) return "C5";
+            if (score >= 50) return "C6";
             return "F9";
         }
 
@@ -73,39 +88,52 @@
             const pin = document.getElementById('pin').value;
             const msg = document.getElementById('msg');
 
-            msg.innerText = "⏳ Processing...";
+            if(!sid || !yr || !cls || !pin) { 
+                msg.style.color = "#d97706";
+                msg.innerText = "⚠️ Fill all fields"; 
+                return; 
+            }
+            
+            msg.style.color = "#4b5563";
+            msg.innerText = "⏳ Verifying...";
+
             const res = await fetch(`/api/verify?student_id=${sid}&year=${yr}&student_class=${cls}&pin=${pin}`);
             const data = await res.json();
 
             if (res.status !== 200) {
-                msg.style.color = "red";
+                msg.style.color = "#dc2626";
                 msg.innerText = "❌ " + data.error;
             } else {
                 document.getElementById('loginSection').style.display = 'none';
                 document.getElementById('resultSection').style.display = 'block';
-                document.getElementById('actionButtons').style.display = 'block';
-                document.getElementById('studentName').innerText = "Student: " + data.name;
+                document.getElementById('actionButtons').style.display = 'block'; // Show buttons
+                document.getElementById('resTable').style.display = 'table';
+                document.getElementById('studentName').innerText = data.name;
 
                 let rows = "";
                 data.scores.forEach(s => {
-                    rows += `<tr><td>${s.subject}</td><td style="font-weight:bold; color:#004a99;">${getGrade(s.score)}</td></tr>`;
+                    rows += `<tr>
+                                <td>${s.subject}</td>
+                                <td class="grade-bold">${getGrade(s.score)}</td>
+                             </tr>`;
                 });
                 document.getElementById('resBody').innerHTML = rows;
                 msg.innerText = "";
             }
         }
 
-        function downloadPDF() {
-            const element = document.getElementById('downloadArea');
-            const studentName = document.getElementById('studentName').innerText;
-            const opt = {
-                margin:       10,
-                filename:     studentName + '_Result.pdf',
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2 },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        // ADDITION: PDF Download Function
+        function downloadResult() {
+            const element = document.getElementById('pdfArea');
+            const name = document.getElementById('studentName').innerText;
+            const options = {
+                margin: 10,
+                filename: name + '_Result.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
-            html2pdf().set(opt).from(element).save();
+            html2pdf().set(options).from(element).save();
         }
     </script>
 </body>
