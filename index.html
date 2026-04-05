@@ -119,26 +119,41 @@
             }
         }
 
-            async function downloadResult() {
-                const { jsPDF } = window.jspdf;
-                const element = document.getElementById('pdfArea');
-                const msg = document.getElementById('msg');
+            function downloadResult() {
+    const element = document.getElementById('pdfArea');
+    const msg = document.getElementById('msg');
     
-                msg.innerText = "⏳ Preparing your PDF...";
+    msg.innerText = "⏳ Generating Result View...";
 
-                html2canvas(element, { useCORS: true, scale: 2 }).then(canvas => {
-                const imgData = canvas.toDataURL('image/png');
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const imgProps = pdf.getImageProperties(imgData);
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    // This takes a 'snapshot' of the result area
+    html2canvas(element, { 
+        useCORS: true, 
+        scale: 3, // High quality for printing
+        backgroundColor: "#ffffff" 
+    }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
         
-                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-                pdf.save('GoTegs_Result.pdf');
-                msg.innerText = "✅ Downloaded!";
-        }).catch(err => {
-                msg.innerText = "❌ PDF Error. Please take a screenshot instead.";
-                console.error(err);
+        // Open the image in a new tab
+        const newTab = window.open();
+        newTab.document.write(`
+            <html>
+                <head><title>Go-Tegs Result</title></head>
+                <body style="margin:0; display:flex; flex-direction:column; align-items:center; font-family:sans-serif;">
+                    <p style="padding:10px; background:#004a99; color:white; width:100%; text-align:center;">
+                        Long-press the image below to "Save" or "Download"
+                    </p>
+                    <img src="${imgData}" style="max-width:100%; height:auto; box-shadow:0 0 10px rgba(0,0,0,0.2);">
+                    <button onclick="window.print()" style="margin-top:20px; padding:15px; background:#16a34a; color:white; border:none; border-radius:5px; font-size:18px;">
+                        🖨️ Save as PDF / Print
+                    </button>
+                </body>
+            </html>
+        `);
+        
+        msg.innerText = "✅ Result opened in new tab!";
+    }).catch(err => {
+        msg.innerText = "❌ Error. Please take a screenshot of your screen.";
+        console.error(err);
     });
 }
 
