@@ -1,42 +1,60 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Go-Tegs Portal | Result Checker</title>
+    <title>Go-Tegs Student Portal</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f4; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .login-card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 350px; text-align: center; }
-        h2 { color: #004a99; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background-color: #004a99; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
-        button:hover { background-color: #003366; }
-        .footer { font-size: 12px; color: #777; margin-top: 20px; }
+        body { font-family: sans-serif; text-align: center; padding: 40px; background: #f4f7f6; }
+        .card { background: white; padding: 30px; border-radius: 12px; display: inline-block; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 320px; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #004a99; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        #msg { margin-top: 15px; font-size: 14px; }
     </style>
 </head>
 <body>
-
-<div class="login-card">
-    <img src="https://wordpress.com" alt="School Logo" width="80">
-    <h2>Student Portal</h2>
-    <form id="resultForm">
-        <input type="text" placeholder="Student School ID (e.g. GSTC/24/001)" required>
-        <input type="text" placeholder="Full Name" required>
-        <select required>
-            <option value="">Select Class</option>
-            <option value="JSS1">JSS 1</option>
-            <option value="SSS1">SSS 1</option>
-            <!-- Add more classes here -->
-        </select>
-        <select required>
+    <div class="card">
+        <img src="https://wordpress.com" width="70">
+        <h3>Result Checker</h3>
+        <input type="text" id="sid" placeholder="Student ID (e.g. GT/101)">
+        
+        <select id="yearSelect">
             <option value="">Select Year</option>
-            <option value="2023">2023/2024</option>
-            <option value="2024">2024/2025</option>
+            <option value="2023/2024">2023/2024</option>
+            <option value="2022/2023">2022/2023</option>
         </select>
-        <button type="submit">Check Result</button>
-    </form>
-    <p class="footer">Max 3 trials per session.</p>
-</div>
 
+        <select id="classSelect">
+            <option value="">Select Class</option>
+            <option value="Primary 1">Primary 1</option>
+            <option value="SSS 3">SSS 3</option>
+            <!-- Add more classes as needed -->
+        </select>
+
+        <button onclick="check()">Check Result</button>
+        <p id="msg"></p>
+    </div>
+
+    <script>
+        async function check() {
+            const sid = document.getElementById('sid').value;
+            const yr = document.getElementById('yearSelect').value;
+            const cls = document.getElementById('classSelect').value;
+            const msg = document.getElementById('msg');
+
+            if(!sid || !yr || !cls) { msg.innerText = "Please fill all fields"; return; }
+            msg.innerText = "Processing...";
+
+            const res = await fetch(`/api/verify?student_id=${sid}&year=${yr}&student_class=${cls}`);
+            const data = await res.json();
+
+            if (res.status !== 200) {
+                msg.style.color = "red";
+                msg.innerText = data.error;
+            } else {
+                msg.style.color = "green";
+                msg.innerText = "Redirecting...";
+                window.location.href = data.result_url;
+            }
+        }
+    </script>
 </body>
 </html>
