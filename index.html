@@ -122,19 +122,26 @@
             }
         }
 
-        // ADDITION: PDF Download Function
-        function downloadResult() {
-            const element = document.getElementById('pdfArea');
-            const name = document.getElementById('studentName').innerText;
-            const options = {
-                margin: 10,
-                filename: name + '_Result.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-            html2pdf().set(options).from(element).save();
-        }
+function downloadResult() {
+    const element = document.getElementById('pdfArea');
+    const name = document.getElementById('studentName').innerText;
+    
+    const options = {
+        margin: 10,
+        filename: name + '_Result.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true, // THIS IS THE FIX: It allows the logo to be included
+            logging: true 
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    // This version is "stronger" for mobile phones
+    html2pdf().set(options).from(element).toPdf().get('pdf').save();
+}
+
     </script>
 </body>
 </html>
