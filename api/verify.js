@@ -12,7 +12,9 @@ export default async function handler(req, res) {
         .eq('student_id', student_id)
         .eq('year', year)
         .eq('class', student_class)
+        .eq('pin', pin)
         .single();
+
 
     if (error || !student) {
         return res.status(404).json({ error: "Result not found for this Year/Class!" });
