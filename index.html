@@ -1,18 +1,87 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <!-- 1. This tag is CRUCIAL for making it look right on mobile phones -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Go-Tegs Student Portal</title>
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 40px; background: #f4f7f6; }
-        .card { background: white; padding: 30px; border-radius: 12px; display: inline-block; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 320px; }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #004a99; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        #msg { margin-top: 15px; font-size: 14px; }
+        /* 2. Increased base font size and better padding for fingers */
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            text-align: center; 
+            padding: 20px; 
+            background: #f4f7f6; 
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .card { 
+            background: white; 
+            padding: 40px 25px; 
+            border-radius: 15px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
+            width: 100%; 
+            max-width: 400px; /* Bigger max width for tablets/desktop */
+            box-sizing: border-box;
+        }
+
+        h3 { 
+            font-size: 24px; 
+            color: #333; 
+            margin-bottom: 25px; 
+        }
+
+        /* 3. Larger inputs and selects for easier tapping */
+        input, select { 
+            width: 100%; 
+            padding: 16px; 
+            margin: 12px 0; 
+            border: 2px solid #eee; 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            font-size: 18px; /* Bigger text inside boxes */
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            border-color: #004a99;
+        }
+
+        /* 4. Massive button for easy clicking */
+        button { 
+            width: 100%; 
+            padding: 18px; 
+            background: #004a99; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 20px; 
+            margin-top: 15px;
+            box-shadow: 0 4px 6px rgba(0,74,153,0.2);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        #msg { 
+            margin-top: 20px; 
+            font-size: 16px; 
+            font-weight: 500;
+        }
+
+        img { margin-bottom: 15px; }
     </style>
 </head>
 <body>
     <div class="card">
-        <img src="https://wordpress.com" width="70">
+        <img src="https://wordpress.com" width="90">
         <h3>Result Checker</h3>
         
         <input type="text" id="sid" placeholder="Student ID (e.g. GT/101)">
@@ -33,8 +102,7 @@
             <option value="SSS 3">SSS 3</option>
         </select>
 
-        <!-- The PIN box you added -->
-        <input type="password" id="pin" placeholder="Enter Result PIN (from Admin)">
+        <input type="password" id="pin" placeholder="Enter Result PIN">
 
         <button onclick="check()">Check Result</button>
         <p id="msg"></p>
@@ -45,29 +113,27 @@
             const sid = document.getElementById('sid').value;
             const yr = document.getElementById('yearSelect').value;
             const cls = document.getElementById('classSelect').value;
-            const userPin = document.getElementById('pin').value; // 1. Grab the PIN
+            const userPin = document.getElementById('pin').value;
             const msg = document.getElementById('msg');
 
-            // 2. Make sure PIN is not empty
             if(!sid || !yr || !cls || !userPin) { 
-                msg.style.color = "orange";
-                msg.innerText = "Please fill all fields, including your PIN"; 
+                msg.style.color = "#d97706";
+                msg.innerText = "⚠️ Please fill all fields"; 
                 return; 
             }
             
-            msg.style.color = "black";
-            msg.innerText = "Processing...";
+            msg.style.color = "#4b5563";
+            msg.innerText = "⏳ Processing...";
 
-            // 3. Added &pin=${userPin} to the end of the fetch link
             const res = await fetch(`/api/verify?student_id=${sid}&year=${yr}&student_class=${cls}&pin=${userPin}`);
             const data = await res.json();
 
             if (res.status !== 200) {
-                msg.style.color = "red";
-                msg.innerText = data.error;
+                msg.style.color = "#dc2626";
+                msg.innerText = "❌ " + data.error;
             } else {
-                msg.style.color = "green";
-                msg.innerText = "Success! Redirecting...";
+                msg.style.color = "#16a34a";
+                msg.innerText = "✅ Success! Redirecting...";
                 window.location.href = data.result_url; 
             }
         }
