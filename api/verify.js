@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY)
 
 export default async function handler(req, res) {
-    const { student_id, year, student_class } = req.query;
+    const { student_id, year, student_class, pin } = req.query;
 
     // Search database for ID + Year + Class
     const { data: student, error } = await supabase
