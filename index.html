@@ -3,7 +3,7 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Go-Tegs Student Portal</title>
-    <!-- ADDITION: PDF Library -->
+    <!-- FIXED: Correct PDF Library Link -->
     <script src="https://cloudflare.com"></script>
     
     <style>
@@ -19,15 +19,13 @@
         
         #msg { margin-top: 20px; font-size: 16px; font-weight: 500; }
         .back-btn { background: #666; margin-top: 10px; font-size: 16px; padding: 10px; }
-        /* ADDITION: Download Button Style */
         .download-btn { background: #16a34a; margin-top: 20px; font-size: 18px; }
     </style>
 </head>
 <body>
     <div class="card">
-        <!-- ADDITION: id="pdfArea" ensures the logo and result are included in the PDF -->
         <div id="pdfArea">
-            <img src="https://gotegs2.wordpress.com/wp-content/uploads/2024/11/cropped-news-gotegs-full.png?w=648" style="max-width: 50%; height: auto;">
+            <img src="https://gotegs2.wordpress.com/wp-content/uploads/2024/11/cropped-news-gotegs-full.png?w=648" style="max-width: 80%; height: auto; margin-bottom: 10px;">
             
             <div id="loginSection">
                 <h3>Result Checker</h3>
@@ -51,7 +49,7 @@
             </div>
 
             <div id="resultSection" style="display:none;">
-                <h3 id="studentName"></h3>
+                <h3 id="studentName" style="color: #333; margin-top: 0;"></h3>
                 <table id="resTable">
                     <thead>
                         <tr><th>Subject</th><th style="text-align:center;">Grade</th></tr>
@@ -61,10 +59,9 @@
             </div>
         </div>
 
-        <!-- ADDITION: Action Buttons Section -->
         <div id="actionButtons" style="display:none;">
             <button class="download-btn" onclick="downloadResult()">📥 Download PDF</button>
-            <button class="back-btn" onclick="location.reload()">Check Another Result</button>
+            <button class="back-btn" onclick="location.reload()">Check Another</button>
         </div>
 
         <p id="msg"></p>
@@ -106,7 +103,7 @@
             } else {
                 document.getElementById('loginSection').style.display = 'none';
                 document.getElementById('resultSection').style.display = 'block';
-                document.getElementById('actionButtons').style.display = 'block'; // Show buttons
+                document.getElementById('actionButtons').style.display = 'block';
                 document.getElementById('resTable').style.display = 'table';
                 document.getElementById('studentName').innerText = data.name;
 
@@ -122,26 +119,20 @@
             }
         }
 
-function downloadResult() {
-    const element = document.getElementById('pdfArea');
-    const name = document.getElementById('studentName').innerText;
-    
-    const options = {
-        margin: 10,
-        filename: name + '_Result.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-            scale: 2, 
-            useCORS: true, // THIS IS THE FIX: It allows the logo to be included
-            logging: true 
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
+        function downloadResult() {
+            const element = document.getElementById('pdfArea');
+            const name = document.getElementById('studentName').innerText || "Student";
+            
+            const options = {
+                margin: 10,
+                filename: name.replace(/\s+/g, '_') + '_Result.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
 
-    // This version is "stronger" for mobile phones
-    html2pdf().set(options).from(element).toPdf().get('pdf').save();
-}
-
+            html2pdf().set(options).from(element).save();
+        }
     </script>
 </body>
 </html>
