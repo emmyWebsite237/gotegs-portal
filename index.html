@@ -3,7 +3,9 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Go-Tegs Student Portal</title>
-    <!-- FIXED: Correct PDF Library Link -->
+    
+    <!-- NEW PDF ENGINE (Copy this exactly) -->
+    <script src="https://cloudflare.com"></script>
     <script src="https://cloudflare.com"></script>
     
     <style>
@@ -11,17 +13,16 @@
         .card { background: white; padding: 40px 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); width: 100%; max-width: 400px; box-sizing: border-box; }
         input, select { width: 100%; padding: 16px; margin: 12px 0; border: 2px solid #eee; border-radius: 8px; font-size: 18px; box-sizing: border-box; }
         button { width: 100%; padding: 18px; background: #004a99; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 20px; margin-top: 15px; }
-        
         table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 18px; display: none; }
         th, td { border-bottom: 1px solid #eee; padding: 12px; text-align: left; }
         th { background: #004a99; color: white; border-radius: 5px 5px 0 0; }
         .grade-bold { font-weight: bold; color: #004a99; text-align: center; }
-        
         #msg { margin-top: 20px; font-size: 16px; font-weight: 500; }
         .back-btn { background: #666; margin-top: 10px; font-size: 16px; padding: 10px; }
         .download-btn { background: #16a34a; margin-top: 20px; font-size: 18px; }
     </style>
 </head>
+
 <body>
     <div class="card">
         <div id="pdfArea">
@@ -119,20 +120,29 @@
             }
         }
 
-        function downloadResult() {
-            const element = document.getElementById('pdfArea');
-            const name = document.getElementById('studentName').innerText || "Student";
-            
-            const options = {
-                margin: 10,
-                filename: name.replace(/\s+/g, '_') + '_Result.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
+            async function downloadResult() {
+                const { jsPDF } = window.jspdf;
+                const element = document.getElementById('pdfArea');
+                const msg = document.getElementById('msg');
+    
+                msg.innerText = "⏳ Preparing your PDF...";
 
-            html2pdf().set(options).from(element).save();
-        }
+                html2canvas(element, { useCORS: true, scale: 2 }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const imgProps = pdf.getImageProperties(imgData);
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                pdf.save('GoTegs_Result.pdf');
+                msg.innerText = "✅ Downloaded!";
+        }).catch(err => {
+                msg.innerText = "❌ PDF Error. Please take a screenshot instead.";
+                console.error(err);
+    });
+}
+
     </script>
 </body>
 </html>
