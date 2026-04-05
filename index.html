@@ -14,6 +14,7 @@
     <div class="card">
         <img src="https://wordpress.com" width="70">
         <h3>Result Checker</h3>
+        
         <input type="text" id="sid" placeholder="Student ID (e.g. GT/101)">
         
         <select id="yearSelect">
@@ -25,17 +26,16 @@
         <select id="classSelect">
             <option value="">Select Class</option>
             <option value="JSS 1">JSS 1</option>
-            <option value="JSS 2">JSS 1</option>
-            <option value="JSS 3">JSS 1</option>
-            <option value="SSS 1">JSS 1</option>
+            <option value="JSS 2">JSS 2</option>
+            <option value="JSS 3">JSS 3</option>
+            <option value="SSS 1">SSS 1</option>
             <option value="SSS 2">SSS 2</option>
             <option value="SSS 3">SSS 3</option>
-            <!-- Add more classes as needed -->
         </select>
 
+        <!-- The PIN box you added -->
         <input type="password" id="pin" placeholder="Enter Result PIN (from Admin)">
 
-        
         <button onclick="check()">Check Result</button>
         <p id="msg"></p>
     </div>
@@ -45,12 +45,21 @@
             const sid = document.getElementById('sid').value;
             const yr = document.getElementById('yearSelect').value;
             const cls = document.getElementById('classSelect').value;
+            const userPin = document.getElementById('pin').value; // 1. Grab the PIN
             const msg = document.getElementById('msg');
 
-            if(!sid || !yr || !cls) { msg.innerText = "Please fill all fields"; return; }
+            // 2. Make sure PIN is not empty
+            if(!sid || !yr || !cls || !userPin) { 
+                msg.style.color = "orange";
+                msg.innerText = "Please fill all fields, including your PIN"; 
+                return; 
+            }
+            
+            msg.style.color = "black";
             msg.innerText = "Processing...";
 
-            const res = await fetch(`/api/verify?student_id=${sid}&year=${yr}&student_class=${cls}`);
+            // 3. Added &pin=${userPin} to the end of the fetch link
+            const res = await fetch(`/api/verify?student_id=${sid}&year=${yr}&student_class=${cls}&pin=${userPin}`);
             const data = await res.json();
 
             if (res.status !== 200) {
@@ -58,7 +67,7 @@
                 msg.innerText = data.error;
             } else {
                 msg.style.color = "green";
-                msg.innerText = "Redirecting...";
+                msg.innerText = "Success! Redirecting...";
                 window.location.href = data.result_url; 
             }
         }
