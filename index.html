@@ -1,140 +1,116 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <!-- 1. This tag is CRUCIAL for making it look right on mobile phones -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Go-Tegs Student Portal</title>
     <style>
-        /* 2. Increased base font size and better padding for fingers */
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            text-align: center; 
-            padding: 20px; 
-            background: #f4f7f6; 
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
+        body { font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; background: #f4f7f6; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .card { background: white; padding: 40px 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); width: 100%; max-width: 400px; box-sizing: border-box; }
+        input, select { width: 100%; padding: 16px; margin: 12px 0; border: 2px solid #eee; border-radius: 8px; font-size: 18px; box-sizing: border-box; }
+        button { width: 100%; padding: 18px; background: #004a99; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 20px; margin-top: 15px; }
         
-        .card { 
-            background: white; 
-            padding: 40px 25px; 
-            border-radius: 15px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15); 
-            width: 100%; 
-            max-width: 400px; /* Bigger max width for tablets/desktop */
-            box-sizing: border-box;
-        }
-
-        h3 { 
-            font-size: 24px; 
-            color: #333; 
-            margin-bottom: 25px; 
-        }
-
-        /* 3. Larger inputs and selects for easier tapping */
-        input, select { 
-            width: 100%; 
-            padding: 16px; 
-            margin: 12px 0; 
-            border: 2px solid #eee; 
-            border-radius: 8px; 
-            box-sizing: border-box; 
-            font-size: 18px; /* Bigger text inside boxes */
-            outline: none;
-            transition: border-color 0.3s;
-        }
-
-        input:focus, select:focus {
-            border-color: #004a99;
-        }
-
-        /* 4. Massive button for easy clicking */
-        button { 
-            width: 100%; 
-            padding: 18px; 
-            background: #004a99; 
-            color: white; 
-            border: none; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            font-size: 20px; 
-            margin-top: 15px;
-            box-shadow: 0 4px 6px rgba(0,74,153,0.2);
-        }
-
-        button:active {
-            transform: scale(0.98);
-        }
-
-        #msg { 
-            margin-top: 20px; 
-            font-size: 16px; 
-            font-weight: 500;
-        }
-
-        img { margin-bottom: 15px; }
+        /* Table Styles for Live Result */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 18px; display: none; }
+        th, td { border-bottom: 1px solid #eee; padding: 12px; text-align: left; }
+        th { background: #004a99; color: white; border-radius: 5px 5px 0 0; }
+        .grade-bold { font-weight: bold; color: #004a99; text-align: center; }
+        
+        #msg { margin-top: 20px; font-size: 16px; font-weight: 500; }
+        .back-btn { background: #666; margin-top: 20px; font-size: 16px; padding: 10px; }
     </style>
 </head>
 <body>
     <div class="card">
-        <img src="https://gotegs2.wordpress.com/wp-content/uploads/2024/11/cropped-news-gotegs-full.png?w=648" width="90">
-        <h3>Result Checker</h3>
+        <img src="https://gotegs2.wordpress.com/wp-content/uploads/2024/11/cropped-news-gotegs-full.png?w=648" style="max-width: 100%; height: auto;">
         
-        <input type="text" id="sid" placeholder="Student ID (e.g. GT/101)">
-        
-        <select id="yearSelect">
-            <option value="">Select Year</option>
-            <option value="2023/2024">2023/2024</option>
-            <option value="2022/2023">2022/2023</option>
-        </select>
+        <!-- Login Form Section -->
+        <div id="loginSection">
+            <h3>Result Checker</h3>
+            <input type="text" id="sid" placeholder="Student ID (e.g. GT/101)">
+            <select id="yearSelect">
+                <option value="">Select Year</option>
+                <option value="2023/2024">2023/2024</option>
+                <option value="2022/2023">2022/2023</option>
+            </select>
+            <select id="classSelect">
+                <option value="">Select Class</option>
+                <option value="JSS 1">JSS 1</option>
+                <option value="JSS 2">JSS 2</option>
+                <option value="JSS 3">JSS 3</option>
+                <option value="SSS 1">SSS 1</option>
+                <option value="SSS 2">SSS 2</option>
+                <option value="SSS 3">SSS 3</option>
+            </select>
+            <input type="password" id="pin" placeholder="Enter Result PIN">
+            <button onclick="check()">Check Result</button>
+        </div>
 
-        <select id="classSelect">
-            <option value="">Select Class</option>
-            <option value="JSS 1">JSS 1</option>
-            <option value="JSS 2">JSS 2</option>
-            <option value="JSS 3">JSS 3</option>
-            <option value="SSS 1">SSS 1</option>
-            <option value="SSS 2">SSS 2</option>
-            <option value="SSS 3">SSS 3</option>
-        </select>
+        <!-- Live Result Table Section -->
+        <div id="resultSection" style="display:none;">
+            <h3 id="studentName"></h3>
+            <table id="resTable">
+                <thead>
+                    <tr><th>Subject</th><th style="text-align:center;">Grade</th></tr>
+                </thead>
+                <tbody id="resBody"></tbody>
+            </table>
+            <button class="back-btn" onclick="location.reload()">Check Another Result</button>
+        </div>
 
-        <input type="password" id="pin" placeholder="Enter Result PIN">
-
-        <button onclick="check()">Check Result</button>
         <p id="msg"></p>
     </div>
 
     <script>
+        // Automatic Grading Logic
+        function getGrade(score) {
+            if (score >= 75) return "A1";
+            if (score >= 70) return "B2";
+            if (score >= 65) return "B3";
+            if (score >= 60) return "C4";
+            if (score >= 55) return "C5";
+            if (score >= 50) return "C6";
+            return "F9";
+        }
+
         async function check() {
             const sid = document.getElementById('sid').value;
             const yr = document.getElementById('yearSelect').value;
             const cls = document.getElementById('classSelect').value;
-            const userPin = document.getElementById('pin').value;
+            const pin = document.getElementById('pin').value;
             const msg = document.getElementById('msg');
 
-            if(!sid || !yr || !cls || !userPin) { 
+            if(!sid || !yr || !cls || !pin) { 
                 msg.style.color = "#d97706";
-                msg.innerText = "⚠️ Please fill all fields"; 
+                msg.innerText = "⚠️ Fill all fields"; 
                 return; 
             }
             
             msg.style.color = "#4b5563";
-            msg.innerText = "⏳ Processing...";
+            msg.innerText = "⏳ Verifying...";
 
-            const res = await fetch(`/api/verify?student_id=${sid}&year=${yr}&student_class=${cls}&pin=${userPin}`);
+            const res = await fetch(`/api/verify?student_id=${sid}&year=${yr}&student_class=${cls}&pin=${pin}`);
             const data = await res.json();
 
             if (res.status !== 200) {
                 msg.style.color = "#dc2626";
                 msg.innerText = "❌ " + data.error;
             } else {
-                msg.style.color = "#16a34a";
-                msg.innerText = "✅ Success! Redirecting...";
-                window.location.href = data.result_url; 
+                // Hide Login, Show Result
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('resultSection').style.display = 'block';
+                document.getElementById('resTable').style.display = 'table';
+                document.getElementById('studentName').innerText = data.name;
+
+                // Build Table Rows
+                let rows = "";
+                data.scores.forEach(s => {
+                    rows += `<tr>
+                                <td>${s.subject}</td>
+                                <td class="grade-bold">${getGrade(s.score)}</td>
+                             </tr>`;
+                });
+                document.getElementById('resBody').innerHTML = rows;
+                msg.innerText = "";
             }
         }
     </script>
