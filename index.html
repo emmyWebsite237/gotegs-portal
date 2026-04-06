@@ -236,13 +236,7 @@
                 }
             } catch (e) { msg.innerText = "❌ Connection Error. Please check your internet."; }
         }
-
-        async function downloadAsImage() {
-            const element = document.getElementById('pdfArea');
-            const studentName = document.getElementById('dispName').innerText || "Student";
-            const msg = document.getElementById('msg');
-            msg.innerText = "⏳ Preparing Image...";
-
+   
             html2canvas(element, { scale: 3, useCORS: true, backgroundColor: "#ffffff" }).then(canvas => {
                 canvas.toBlob((blob) => {
                     const url = URL.createObjectURL(blob);
