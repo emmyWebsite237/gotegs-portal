@@ -1,31 +1,266 @@
-import { createClient } from '@supabase/supabase-js'
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY)
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Go-Tegs Student Portal</title>
+    
+    <!-- PDF Engine -->
+    <script src="https://cloudflare.com"></script>
+    
+    <style>
+        /* General Page Styling */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 850px; }
+        
+        /* Input Section Styling */
+        #loginSection { max-width: 400px; margin: 0 auto; text-align: center; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
+        button { width: 100%; padding: 14px; background: #004a99; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 18px; transition: 0.3s; }
+        button:hover { background: #003366; }
 
-export default async function handler(req, res) {
-    const { student_id, year, student_class, pin } = req.query;
+        /* RESULT TEMPLATE STYLING (Legal/Letter optimized) */
+        #pdfArea { 
+            padding: 40px; 
+            background: white; 
+            border: 5px double #004a99; 
+            margin: 10px auto;
+            position: relative;
+            min-height: 900px; /* Ensures it fills the page */
+        }
 
-    const { data: student, error } = await supabase
-        .from('students')
-        .select('*')
-        .eq('student_id', student_id)
-        .eq('year', year)
-        .eq('class', student_class)
-        .eq('pin', pin)
-        .single();
+        .report-header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #004a99; padding-bottom: 10px; }
+        .school-logo { width: 100px; margin-bottom: 10px; }
+        .school-name { font-family: 'Times New Roman', Times, serif; font-size: 32px; color: #004a99; margin: 0; text-transform: uppercase; }
+        .term-title { font-size: 18px; font-weight: bold; margin-top: 5px; color: #333; }
+        
+        .student-info { margin: 25px 0; line-height: 1.8; font-size: 16px; }
+        .underline-name { text-decoration: underline; font-weight: bold; font-size: 20px; color: #000; }
 
-    if (error || !student) return res.status(404).json({ error: "Invalid Credentials!" });
-    if (student.check_count >= 3) return res.status(403).json({ error: "Trial exhausted! Contact School Admin" });
+        /* Tables */
+        .result-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .result-table th, .result-table td { border: 1px solid #000; padding: 10px; text-align: left; }
+        .result-table th { background: #eef2f7; color: #004a99; }
+        
+        .summary-table { width: 50%; margin-top: 25px; margin-left: auto; border-collapse: collapse; }
+        .summary-table td { border: 1px solid #000; padding: 10px; font-weight: bold; }
 
-    // Update check count
-    await supabase.from('students').update({ check_count: student.check_count + 1 }).eq('id', student.id);
+        /* Footer & Signature */
+        .footer { margin-top: 60px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .sig-space { text-align: center; width: 200px; }
+        .sig-line { border-top: 2px solid #000; margin-bottom: 5px; }
+        .timestamp { font-size: 11px; color: #777; font-style: italic; }
 
-    // Send back the scores
-    return res.status(200).json({
-        name: student.full_name,
-        scores: [
-            { subject: "Mathematics", score: student.maths_score },
-            { subject: "English", score: student.english_score },
-            { subject: "Science", score: student.science_score }
-        ]
-    });
-}
+        /* Controls */
+        .action-btns { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
+        .download-btn { background: #16a34a; }
+        .back-btn { background: #6b7280; }
+        #msg { text-align: center; font-weight: bold; margin-top: 15px; }
+
+        /* Print Settings */
+        @media print {
+            body { background: white; padding: 0; }
+            .card { box-shadow: none; border: none; width: 100%; }
+            .action-btns, #loginSection { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <!-- LOGIN / INPUT SECTION -->
+        <div id="loginSection">
+            <img src="https://wordpress.com" style="width: 120px;">
+            <h3>Go-Tegs Portal</h3>
+            <input type="text" id="sid" placeholder="Student ID (GT/...)">
+            
+            <select id="yearSelect">
+                <option value="">Select Session</option>
+                <option value="2023/2024">2023/2024</option>
+                <option value="2024/2025">2024/2025</option>
+            </select>
+
+            <select id="classSelect" onchange="toggleDept()">
+                <option value="">Select Class</option>
+                <option value="JSS 1">JSS 1</option>
+                <option value="JSS 2">JSS 2</option>
+                <option value="JSS 3">JSS 3</option>
+                <option value="SSS 1">SSS 1</option>
+                <option value="SSS 2">SSS 2</option>
+                <option value="SSS 3">SSS 3</option>
+            </select>
+
+            <div id="deptDiv" style="display:none;">
+                <select id="deptSelect">
+                    <option value="">Select Department</option>
+                    <option value="Science">Science</option>
+                    <option value="Art">Art</option>
+                    <option value="Commercial">Commercial</option>
+                </select>
+            </div>
+
+            <input type="password" id="pin" placeholder="Access PIN">
+            <button onclick="check()">Check Result</button>
+        </div>
+
+        <!-- THE RESULT TEMPLATE -->
+        <div id="resultSection" style="display:none;">
+            <div id="pdfArea">
+                <div class="report-header">
+                    <img class="school-logo" src="https://wordpress.com">
+                    <h1 class="school-name">Go-Tegs International School</h1>
+                    <div id="dispTerm" class="term-title"></div>
+                </div>
+
+                <div class="student-info">
+                    <p style="text-align: center;">OFFICIAL ACADEMIC REPORT FOR <br>
+                        <span id="dispName" class="underline-name"></span>
+                    </p>
+                    <p><strong>Student ID:</strong> <span id="dispId"></span></p>
+                    <p><strong>Date of Birth:</strong> <span id="dispDob"></span></p>
+                    <p><strong>Class:</strong> <span id="dispClass"></span></p>
+                </div>
+
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th style="text-align:center;">Score (%)</th>
+                            <th style="text-align:center;">Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resBody"></tbody>
+                </table>
+
+                <table class="summary-table">
+                    <tr><td>Total Score</td><td id="resTotal" style="text-align:center;"></td></tr>
+                    <tr><td>Mean Percentage</td><td id="resMean" style="text-align:center;"></td></tr>
+                    <tr><td>Overall Grade</td><td id="resGrade" style="text-align:center;"></td></tr>
+                </table>
+
+                <div class="footer">
+                    <div class="timestamp" id="dispTime"></div>
+                    <div class="sig-space">
+                        <div class="sig-line"></div>
+                        <strong>School Principal</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-btns">
+                <button class="download-btn" onclick="window.print()">📥 Print / Save as PDF</button>
+                <button class="back-btn" onclick="location.reload()">Check Another</button>
+            </div>
+        </div>
+
+        <p id="msg"></p>
+    </div>
+
+    <script>
+        const subjectNames = {
+            maths_score: "Mathematics",
+            english_score: "English Language",
+            physics_score: "Physics",
+            chem_score: "Chemistry",
+            bio_score: "Biology",
+            fmath_score: "Further Mathematics",
+            civic_score: "Civic Education",
+            govt_score: "Government",
+            econs_score: "Economics",
+            markt_score: "Marketing",
+            dp_score: "Data Processing",
+            comme_score: "Commerce",
+            agric_score: "Agricultural Science",
+            crs_score: "C.R.S",
+            finacc_score: "Financial Accounting",
+            litineng_score: "Literature in English",
+            philo_score: "Philosophy",
+            geo_score: "Geography",
+            basic_science_score: "Basic Science",
+            basic_tech_score: "Basic Technology",
+            bus_stud_score: "Business Studies",
+            cmp_score: "Computer Studies",
+            phe_score: "P.H.E",
+            cca_score: "C.C.A",
+            social_stud_score: "Social Studies",
+            home_econs_score: "Home Economics",
+            yoruba_score: "Yoruba",
+            french_score: "French"
+        };
+
+        function toggleDept() {
+            const cls = document.getElementById('classSelect').value;
+            document.getElementById('deptDiv').style.display = cls.includes("SSS") ? "block" : "none";
+        }
+
+        function getGrade(score) {
+            if (score >= 75) return "A1";
+            if (score >= 70) return "B2";
+            if (score >= 65) return "B3";
+            if (score >= 60) return "C4";
+            if (score >= 55) return "C5";
+            if (score >= 50) return "C6";
+            if (score >= 45) return "D7";
+            if (score >= 40) return "E8";
+            return "F9";
+        }
+
+        async function check() {
+            const sid = document.getElementById('sid').value;
+            const yr = document.getElementById('yearSelect').value;
+            const cls = document.getElementById('classSelect').value;
+            const dept = document.getElementById('deptSelect').value;
+            const pin = document.getElementById('pin').value;
+            const msg = document.getElementById('msg');
+
+            if(!sid || !yr || !cls || !pin) { 
+                msg.innerHTML = "⚠️ Please fill all fields"; return; 
+            }
+
+            msg.innerText = "⏳ Connecting to Go-Tegs Database...";
+
+            try {
+                const res = await fetch(`/api/verify?student_id=${sid}&year=${yr}&class=${cls}&dept=${dept}&pin=${pin}`);
+                const data = await res.json();
+
+                if (res.status !== 200) {
+                    msg.style.color = "red";
+                    msg.innerText = "❌ " + data.error;
+                } else {
+                    document.getElementById('loginSection').style.display = 'none';
+                    document.getElementById('resultSection').style.display = 'block';
+                    
+                    // Header Info
+                    document.getElementById('dispTerm').innerText = `${yr} ${data.term || "Examination"}`;
+                    document.getElementById('dispName').innerText = data.full_name;
+                    document.getElementById('dispId').innerText = sid;
+                    document.getElementById('dispDob').innerText = data.dob || "---";
+                    document.getElementById('dispClass').innerText = cls + (dept ? ` (${dept})` : "");
+
+                    // Result Table
+                    let rows = "";
+                    let total = 0;
+                    data.scores.forEach(s => {
+                        total += s.score;
+                        rows += `<tr>
+                                    <td>${subjectNames[s.subject] || s.subject}</td>
+                                    <td style="text-align:center;">${s.score}</td>
+                                    <td style="text-align:center; font-weight:bold;">${getGrade(s.score)}</td>
+                                 </tr>`;
+                    });
+                    
+                    const mean = (total / data.scores.length).toFixed(2);
+                    document.getElementById('resBody').innerHTML = rows;
+                    document.getElementById('resTotal').innerText = total;
+                    document.getElementById('resMean').innerText = mean + "%";
+                    document.getElementById('resGrade').innerText = getGrade(mean);
+                    document.getElementById('dispTime').innerText = "Printed on: " + new Date().toLocaleString();
+                    msg.innerText = "";
+                }
+            } catch (e) {
+                msg.innerText = "❌ Connection Error. Please try again.";
+            }
+        }
+    </script>
+</body>
+</html>
