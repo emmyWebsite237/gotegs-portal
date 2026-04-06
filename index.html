@@ -141,12 +141,17 @@
                 <!-- UPDATED FOOTER -->
 <div class="footer">
     <div class="timestamp" id="dispTime"></div>
-    <div class="sig-space">
-        <!-- Digital Signature Image goes ABOVE the line -->
-        <img id="sigImg" src="./assets/signature.png" style="width: 120px; display: block; margin: 0 auto -10px auto; visibility: hidden;" onerror="this.style.visibility='hidden'">
-        <div class="sig-line"></div>
-        <strong>School Principal</strong>
-    </div>
+<div class="sig-space">
+    <!-- The Image sits ABOVE the line -->
+    <img id="sigImg" src="./assets/signature.png" 
+         style="width: 140px; display: block; margin: 0 auto -20px auto; position: relative; z-index: 1;">
+    
+    <!-- The Line sits BELOW the image -->
+    <div class="sig-line" style="border-top: 2px solid #000; width: 100%; margin-bottom: 5px;"></div>
+    
+    <!-- The Title sits at the BOTTOM -->
+    <strong style="font-size: 14px; text-transform: uppercase;">School Principal</strong>
+</div>
 </div>
 
 <!-- UPDATED BUTTONS -->
