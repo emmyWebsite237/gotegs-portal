@@ -138,21 +138,24 @@
                     <tr><td>Overall Grade</td><td id="resGrade" style="text-align:center;"></td></tr>
                 </table>
 
-                <div class="footer">
-                    <div class="timestamp" id="dispTime"></div>
-                    <div class="sig-space">
-                        <div class="sig-line"></div>
-                            <img src="assets/signature.png" style="width: 150px; display: block; margin: 0 auto;">
-                        <strong>School Principal</strong>
-                    </div>
-                </div>
-            </div>
+                <!-- UPDATED FOOTER -->
+<div class="footer">
+    <div class="timestamp" id="dispTime"></div>
+    <div class="sig-space">
+        <!-- Digital Signature Image goes ABOVE the line -->
+        <img id="sigImg" src="./assets/signature.png" style="width: 120px; display: block; margin: 0 auto -10px auto; visibility: hidden;" onerror="this.style.visibility='hidden'">
+        <div class="sig-line"></div>
+        <strong>School Principal</strong>
+    </div>
+</div>
 
-            <div class="action-btns">
-                <button class="download-btn" onclick="window.print()">📥 Print / Save as PDF</button>
-                <button class="back-btn" onclick="location.reload()">Check Another</button>
-            </div>
-        </div>
+<!-- UPDATED BUTTONS -->
+<div class="action-btns">
+    <button class="download-btn" onclick="window.print()">🖨️ Print / Save PDF</button>
+    <!-- New button specifically for mobile users to save as image -->
+    <button style="background: #0284c7;" onclick="downloadAsImage()">📸 Save as Image (Mobile)</button>
+    <button class="back-btn" onclick="location.reload()">Check Another</button>
+</div>
 
         <p id="msg"></p>
     </div>
@@ -262,6 +265,33 @@
                 msg.innerText = "❌ Connection Error. Please try again.";
             }
         }
-    </script>
+    
+        
+        // ... (Keep your existing subjectNames and check() logic) ...
+
+async function downloadAsImage() {
+    const element = document.getElementById('pdfArea');
+    const studentName = document.getElementById('dispName').innerText || "Student";
+    const msg = document.getElementById('msg');
+    
+    msg.innerText = "⏳ Converting to image...";
+
+    html2canvas(element, { 
+        scale: 2, // Keeps it high quality
+        useCORS: true 
+    }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `${studentName}_Result.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+        msg.innerText = "✅ Saved to Gallery!";
+    });
+}
+
+// Logic to show signature only if the image exists
+document.getElementById('sigImg').onload = function() {
+    this.style.visibility = 'visible';
+};
+</script>
 </body>
 </html>
