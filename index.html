@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Go-Tegs Student Portal</title>
     
-    <!-- Libraries for Direct PDF Download -->
+    <!-- PDF Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
@@ -100,6 +100,7 @@
 <body>
 
     <div class="card">
+        <!-- LOGIN SECTION -->
         <div id="loginSection">
             <img src="./assets/logo.webp" style="width: 120px;" onerror="this.src='https://wordpress.com'">
             <h3 style="color: #004a99;">Student Result Portal</h3>
@@ -130,6 +131,7 @@
             <button onclick="check()">Check Result</button>
         </div>
 
+        <!-- RESULT SECTION -->
         <div id="resultSection" style="display:none;">
             <div id="pdfArea">
                 <div class="report-header">
@@ -204,16 +206,25 @@
         async function downloadResult() {
             const element = document.getElementById('pdfArea');
             const studentName = document.getElementById('dispName').innerText || "Student";
+            const msg = document.getElementById('msg');
+            
+            msg.innerText = "⏳ Generating Official PDF...";
+
             const opt = {
                 margin: 0,
                 filename: `${studentName.replace(/\s+/g, '_')}_Result.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, windowWidth: 1000 },
+                html2canvas: { 
+                    scale: 2, 
+                    useCORS: true, 
+                    windowWidth: 1000 // Forces desktop width for perfect PDF layout
+                },
                 jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
             };
-            document.getElementById('msg').innerText = "⏳ Generating Official PDF...";
+
             html2pdf().set(opt).from(element).save().then(() => {
-                document.getElementById('msg').innerText = "✅ Downloaded Successfully";
+                msg.innerText = "✅ Download Complete!";
+                setTimeout(() => msg.innerText = "", 3000);
             });
         }
 
@@ -225,7 +236,7 @@
             const pin = document.getElementById('pin').value;
             const msg = document.getElementById('msg');
 
-            // FIXED VALIDATION: Prevents SSS glitch
+            // VALIDATION: Ensures dept is selected for SSS
             if(!sid || !yr || !cls || !pin || (cls.includes("SSS") && !dept)) { 
                 msg.style.color = "#d97706"; msg.innerText = "⚠️ Please fill all fields (check Department)"; return; 
             }
@@ -256,6 +267,7 @@
                         total += s.score;
                         rows += `<tr><td>${subjectNames[s.subject] || s.subject}</td><td style="text-align:center;">${s.score}</td><td style="text-align:center; font-weight:bold;">${getGrade(s.score)}</td></tr>`;
                     });
+                    
                     const mean = (total / data.scores.length).toFixed(2);
                     document.getElementById('resBody').innerHTML = rows;
                     document.getElementById('resTotal').innerText = total;
