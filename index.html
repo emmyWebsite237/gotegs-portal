@@ -5,30 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Go-Tegs Student Portal</title>
     
-    <!-- PDF Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- PDF Engine for High-Quality Download -->
+    <script src="https://cloudflare.com"></script>
     
     <style>
         /* General Page Styling */
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
         .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 850px; position: relative; }
         
+        /* Input Section Styling */
         #loginSection { max-width: 400px; margin: 0 auto; text-align: center; }
         input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
         button { width: 100%; padding: 14px; background: #004a99; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 18px; transition: 0.3s; margin-top: 10px; }
         button:hover { background: #003366; }
 
-        /* RESULT TEMPLATE STYLING */
+        /* RESULT TEMPLATE STYLING (A4 Pro Layout) */
         #pdfArea { 
             padding: 40px; 
             background: white !important; 
             border: 5px double #004a99; 
             margin: 10px auto;
             position: relative;
-            min-height: 900px;
+            min-height: 950px;
             width: 100%;
             box-sizing: border-box;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         /* WATERMARK LOGIC */
@@ -67,7 +70,7 @@
         .summary-table { width: 50%; margin-top: 25px; margin-left: auto; border-collapse: collapse; }
         .summary-table td { border: 1px solid #000; padding: 10px; font-weight: bold; }
 
-        .footer { margin-top: 60px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .footer { margin-top: auto; padding-top: 40px; display: flex; justify-content: space-between; align-items: flex-end; }
         .sig-space { text-align: center; width: 200px; }
         .sig-line { border-top: 2px solid #000; margin-bottom: 5px; }
         .timestamp { font-size: 11px; color: #777; font-style: italic; }
@@ -78,7 +81,7 @@
         
         #msg { text-align: center; font-weight: bold; margin-top: 20px; width: 100%; display: block; font-size: 16px; }
 
-        /* MOBILE FIX: Scale UI for Screen but lock for PDF */
+        /* MOBILE FIX: Scales View for Screen, but downloadPDF() uses 800px width */
         @media screen and (max-width: 600px) {
             #pdfArea { 
                 width: 800px; 
@@ -89,18 +92,12 @@
             .card { overflow-x: auto; padding: 15px; }
             body { padding: 10px; }
         }
-
-        @media print {
-            body { background: white; padding: 0; }
-            .card { box-shadow: none; border: none; width: 100%; padding: 0; }
-            .action-btns, #loginSection, #msg { display: none !important; }
-        }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <!-- LOGIN SECTION -->
+        <!-- LOGIN / INPUT SECTION -->
         <div id="loginSection">
             <img src="./assets/logo.webp" style="width: 120px;" onerror="this.src='https://wordpress.com'">
             <h3 style="color: #004a99;">Student Result Portal</h3>
@@ -131,7 +128,7 @@
             <button onclick="check()">Check Result</button>
         </div>
 
-        <!-- RESULT SECTION -->
+        <!-- THE RESULT TEMPLATE -->
         <div id="resultSection" style="display:none;">
             <div id="pdfArea">
                 <div class="report-header">
@@ -150,7 +147,13 @@
                 </div>
 
                 <table class="result-table">
-                    <thead><tr><th>Subject</th><th style="text-align:center;">Score (%)</th><th style="text-align:center;">Grade</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th style="text-align:center;">Score (%)</th>
+                            <th style="text-align:center;">Grade</th>
+                        </tr>
+                    </thead>
                     <tbody id="resBody"></tbody>
                 </table>
 
@@ -175,6 +178,7 @@
                 <button class="back-btn" onclick="location.reload()">Check Another</button>
             </div>
         </div>
+
         <p id="msg"></p>
     </div>
 
@@ -203,21 +207,22 @@
             if (score >= 45) return "D7"; if (score >= 40) return "E8"; return "F9";
         }
 
+        // PERFECTED PDF DOWNLOAD LOGIC
         async function downloadResult() {
             const element = document.getElementById('pdfArea');
             const studentName = document.getElementById('dispName').innerText || "Student";
             const msg = document.getElementById('msg');
             
-            msg.innerText = "⏳ Generating Official PDF...";
+            msg.innerText = "⏳ Generating Official One-Page PDF...";
 
             const opt = {
                 margin: 0,
                 filename: `${studentName.replace(/\s+/g, '_')}_Result.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { 
-                    scale: 2, 
+                    scale: 3, 
                     useCORS: true, 
-                    windowWidth: 1000 // Forces desktop width for perfect PDF layout
+                    windowWidth: 1000 // Forces 'Computer Screen' width for the capture
                 },
                 jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
             };
@@ -225,6 +230,9 @@
             html2pdf().set(opt).from(element).save().then(() => {
                 msg.innerText = "✅ Download Complete!";
                 setTimeout(() => msg.innerText = "", 3000);
+            }).catch(err => {
+                msg.innerText = "❌ Download Failed. Please try again.";
+                console.error(err);
             });
         }
 
@@ -236,7 +244,7 @@
             const pin = document.getElementById('pin').value;
             const msg = document.getElementById('msg');
 
-            // VALIDATION: Ensures dept is selected for SSS
+            // VALIDATION: Ensures no glitches with SSS Departments
             if(!sid || !yr || !cls || !pin || (cls.includes("SSS") && !dept)) { 
                 msg.style.color = "#d97706"; msg.innerText = "⚠️ Please fill all fields (check Department)"; return; 
             }
@@ -276,7 +284,7 @@
                     document.getElementById('dispTime').innerText = "Printed on: " + new Date().toLocaleString();
                     msg.innerText = "✅ Success";
                 }
-            } catch (e) { msg.innerText = "❌ Connection Error."; }
+            } catch (e) { msg.innerText = "❌ Connection Error. Please try again."; }
         }
     </script>
 </body>
