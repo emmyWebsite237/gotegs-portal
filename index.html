@@ -183,7 +183,14 @@
         // Global flag for paid status
         window.isStudentPaid = false;
 
-        // Detect tab switching to deter screenshots (Active only if NOT paid)
+        // NEW SECURITY: Auto-refresh if the user leaves the page/tab
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                location.reload(); // Instantly returns them to the login screen
+            }
+        });
+
+        // Detect tab switching to deter screenshots (Visual blur)
         window.addEventListener('blur', () => {
             if (!window.isStudentPaid) {
                 document.getElementById('pdfArea').classList.add('blurred');
@@ -225,7 +232,6 @@
                     btn.classList.remove('loading');
                     msg.style.color = "red"; msg.innerText = "❌ " + data.error;
                 } else {
-                    // Update Paid Status Security
                     window.isStudentPaid = data.is_paid;
                     const overlay = document.querySelector('.unofficial-overlay');
                     if (data.is_paid) {
