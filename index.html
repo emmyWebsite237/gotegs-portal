@@ -6,7 +6,8 @@
     <title>Go-Tegs Student Portal</title>
     
     <!-- Libraries for Direct PDF Download -->
-    <script src="https://cloudflare.com"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
     
     <style>
         /* General Page Styling */
@@ -93,6 +94,17 @@
             .card { box-shadow: none; border: none; width: 100%; padding: 0; }
             .action-btns, #loginSection, #msg { display: none !important; }
         }
+
+    @media screen and (max-width: 600px) {
+    #pdfArea { 
+        width: 800px; /* Fixed width for better PDF quality */
+        transform: scale(0.45); /* Scales it down to fit the phone screen */
+        transform-origin: top left;
+        margin-bottom: -500px; /* Prevents large empty space below scaled content */
+    }
+    .card { overflow-x: auto; } /* Allows horizontal scrolling to see the full scaled report */
+}
+  
     </style>
 </head>
 <body>
@@ -100,7 +112,7 @@
     <div class="card">
         <div id="loginSection">
             <img src="./assets/logo.webp" style="width: 120px;" onerror="this.src='https://wordpress.com'">
-            <h3 style="color: #004a99;">Go-Tegs Portal</h3>
+            <h3 style="color: #004a99;">Student Result Portal</h3>
             <input type="text" id="sid" placeholder="Student ID (GT/...)">
             
             <select id="yearSelect">
@@ -199,21 +211,36 @@
             if (score >= 45) return "D7"; if (score >= 40) return "E8"; return "F9";
         }
 
-        async function downloadResult() {
-            const element = document.getElementById('pdfArea');
-            const studentName = document.getElementById('dispName').innerText || "Student";
-            const opt = {
-                margin: 0.3,
-                filename: `${studentName}_Result.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-            };
-            document.getElementById('msg').innerText = "⏳ Preparing PDF Download...";
-            html2pdf().set(opt).from(element).save().then(() => {
-                document.getElementById('msg').innerText = "✅ Download Complete!";
-            });
-        }
+async function downloadResult() {
+    const element = document.getElementById('pdfArea');
+    const studentName = document.getElementById('dispName').innerText || "Student";
+    const msg = document.getElementById('msg');
+    
+    // Set professional PDF options
+    const opt = {
+        margin: [0.5, 0.5], // Top and bottom margins
+        filename: `${studentName.replace(/\s+/g, '_')}_Result.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true, // Crucial for showing logo/watermark from other URLs
+            letterRendering: true
+        },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+
+    msg.innerText = "⏳ Generating Official PDF...";
+
+    // Execute the download
+    html2pdf().set(opt).from(element).save().then(() => {
+        msg.innerText = "✅ Downloaded Successfully!";
+        setTimeout(() => msg.innerText = "", 3000);
+    }).catch(err => {
+        console.error("PDF Error:", err);
+        msg.innerText = "❌ Error: Try printing to PDF instead.";
+    });
+}
+
 
         async function check() {
             const sid = document.getElementById('sid').value;
