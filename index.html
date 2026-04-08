@@ -36,11 +36,22 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            -webkit-user-select: none; user-select: none;
+            transition: filter 0.3s;
         }
 
-        /* Logo Watermark Only */
+        /* Watermark & Security Overlay */
         #pdfArea::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; height: 70%; background-image: url('./assets/logo.webp'); background-repeat: no-repeat; background-position: center; background-size: contain; opacity: 0.08; z-index: 0; pointer-events: none; }
         
+        .unofficial-overlay { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 70px; color: rgba(255, 0, 0, 0.12); font-weight: bold; z-index: 10; pointer-events: none; white-space: nowrap; 
+            display: none; /* Controlled by JS based on is_paid status */
+        }
+
+        /* Blur Effect on Screenshot Intent (Tab switching) */
+        .blurred { filter: blur(15px); }
+
         .report-header, .student-info, .result-table, .summary-table, .footer { position: relative; z-index: 1; }
         .report-header { text-align: center; border-bottom: 2px solid #004a99; padding-bottom: 10px; margin-bottom: 30px; }
         .school-name { font-family: 'Times New Roman', serif; font-size: 32px; color: #004a99; margin: 0; text-transform: uppercase; }
@@ -57,19 +68,7 @@
         .sig-line { border-top: 2px solid #000; margin-bottom: 5px; }
         .timestamp { font-size: 11px; color: #777; font-style: italic; }
 
-        /* CELEBRATION SPLASH BOX */
-        #splashBox {
-            display: none; position: fixed; right: 20px; top: 50%; transform: translateY(-50%);
-            width: 260px; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            z-index: 1000; text-align: center; color: white; animation: slideIn 0.5s ease-out;
-        }
-        @keyframes slideIn { from { right: -350px; opacity: 0; } to { right: 20px; opacity: 1; } }
-        .splash-title { font-size: 22px; font-weight: bold; margin-bottom: 8px; }
-        .splash-comment { font-size: 16px; line-height: 1.4; }
-
         .action-btns { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
-        .download-btn { background: #16a34a; }
-        .back-btn { background: #6b7280; }
         #msg { text-align: center; font-weight: bold; margin-top: 20px; font-size: 16px; }
 
         @media screen and (max-width: 600px) {
@@ -78,7 +77,10 @@
         }
 
         @media print {
-            .action-btns, #loginSection, #msg, #splashBox { display: none !important; }
+            body { background: white; padding: 0; }
+            .card { box-shadow: none; border: none; width: 100%; padding: 0; }
+            .action-btns, #loginSection, #msg { display: none !important; }
+            .unofficial-overlay { color: rgba(255, 0, 0, 0.2); } /* Slightly darker for print if not paid */
         }
     </style>
 </head>
@@ -89,26 +91,21 @@
             <img src="./assets/logo.webp" style="width: 120px;" onerror="this.src='https://wordpress.com'">
             <h3 style="color: #004a99;">Student Result Portal</h3>
             <input type="text" id="sid" placeholder="Student ID (GT/...)">
-            
             <select id="yearSelect">
                 <option value="">Select Session</option>
-                <option value="2023/2024">2023/2024</option> <!-- UPDATED HERE -->
-                <option value="2024/2025">2024/2025</option>
+                <option value="2025/2026">2025/2026</option>
             </select>
-
             <select id="classSelect" onchange="toggleDept()">
                 <option value="">Select Class</option>
                 <option value="JSS 1">JSS 1</option><option value="JSS 2">JSS 2</option><option value="JSS 3">JSS 3</option>
                 <option value="SSS 1">SSS 1</option><option value="SSS 2">SSS 2</option><option value="SSS 3">SSS 3</option>
             </select>
-
             <div id="deptDiv" style="display:none;">
                 <select id="deptSelect">
                     <option value="">Select Department</option>
                     <option value="Science">Science</option><option value="Art">Art</option><option value="Commerce">Commerce</option>
                 </select>
             </div>
-
             <input type="password" id="pin" placeholder="Access PIN">
             <button id="checkBtn" onclick="check()">
                 <span class="btn-text">Check Result</span>
@@ -118,6 +115,7 @@
 
         <div id="resultSection" style="display:none;">
             <div id="pdfArea">
+                <div class="unofficial-overlay">UNOFFICIAL COPY</div>
                 <div class="report-header">
                     <img class="school-logo" src="./assets/logo.webp" style="width:100px;">
                     <h1 class="school-name">Go-Tegs International School</h1>
@@ -143,7 +141,6 @@
                 <div class="footer">
                     <div class="timestamp" id="dispTime"></div>
                     <div class="sig-space">
-                        <!-- SIGNATURE WITH 20PX MARGIN LEFT & 5PX MARGIN BOTTOM -->
                         <img id="sigImg" src="./assets/signature.png" style="width: 140px; display: block; margin-left: 20px; margin-bottom: 5px; position: relative; z-index: 1;" onerror="this.style.display='none'">
                         <div class="sig-line"></div>
                         <strong style="text-transform: uppercase;">School Principal</strong>
@@ -158,15 +155,18 @@
         <p id="msg"></p>
     </div>
 
-    <!-- Celebration Splash -->
-    <div id="splashBox">
-        <div class="splash-title"></div>
-        <div id="randomComment" class="splash-comment"></div>
-    </div>
-
     <script>
         const subjectNames = {
-            maths_score: "Mathematics", english_score: "English Language", physics_score: "Physics", chem_score: "Chemistry", bio_score: "Biology", fmath_score: "Further Mathematics", civic_score: "Civic Education", govt_score: "Government", econs_score: "Economics", markt_score: "Marketing", dp_score: "Data Processing", comme_score: "Commerce", agric_score: "Agricultural Science", crs_score: "C.R.S", finacc_score: "Financial Accounting", litineng_score: "Literature in English", philo_score: "Philosophy", geo_score: "Geography", basic_science_score: "Basic Science", basic_tech_score: "Basic Technology", bus_stud_score: "Business Studies", cmp_score: "Computer Studies", phe_score: "P.H.E", cca_score: "C.C.A", social_stud_score: "Social Studies", home_econs_score: "Home Economics", yoruba_score: "Yoruba", french_score: "French"
+            maths_score: "Mathematics", english_score: "English Language", physics_score: "Physics", 
+            chem_score: "Chemistry", bio_score: "Biology", fmath_score: "Further Mathematics", 
+            civic_score: "Civic Education", govt_score: "Government", econs_score: "Economics", 
+            markt_score: "Marketing", dp_score: "Data Processing", comme_score: "Commerce", 
+            agric_score: "Agricultural Science", crs_score: "C.R.S", finacc_score: "Financial Accounting", 
+            litineng_score: "Literature in English", philo_score: "Philosophy", geo_score: "Geography", 
+            basic_science_score: "Basic Science", basic_tech_score: "Basic Technology", 
+            bus_stud_score: "Business Studies", cmp_score: "Computer Studies", phe_score: "P.H.E", 
+            cca_score: "C.C.A", social_stud_score: "Social Studies", home_econs_score: "Home Economics", 
+            yoruba_score: "Yoruba", french_score: "French"
         };
 
         function toggleDept() {
@@ -175,8 +175,23 @@
         }
 
         function getGrade(score) {
-            if (score >= 75) return "A1"; if (score >= 70) return "B2"; if (score >= 65) return "B3"; if (score >= 60) return "C4"; if (score >= 55) return "C5"; if (score >= 50) return "C6"; if (score >= 45) return "D7"; if (score >= 40) return "E8"; return "F9";
+            if (score >= 75) return "A1"; if (score >= 70) return "B2"; if (score >= 65) return "B3";
+            if (score >= 60) return "C4"; if (score >= 55) return "C5"; if (score >= 50) return "C6";
+            if (score >= 45) return "D7"; if (score >= 40) return "E8"; return "F9";
         }
+
+        // Global flag for paid status
+        window.isStudentPaid = false;
+
+        // Detect tab switching to deter screenshots (Active only if NOT paid)
+        window.addEventListener('blur', () => {
+            if (!window.isStudentPaid) {
+                document.getElementById('pdfArea').classList.add('blurred');
+            }
+        });
+        window.addEventListener('focus', () => {
+            document.getElementById('pdfArea').classList.remove('blurred');
+        });
 
         async function check() {
             const sid = document.getElementById('sid').value;
@@ -195,7 +210,7 @@
             msg.style.color = "#004a99";
             msg.innerText = "⏳ Connecting to Go-Tegs Database...";
 
-            // Delay sequence
+            // Deliberate Delay Sequence
             await new Promise(r => setTimeout(r, 1000));
             msg.innerText = "🔍 Verifying Credentials & Trials...";
             await new Promise(r => setTimeout(r, 1000));
@@ -210,6 +225,15 @@
                     btn.classList.remove('loading');
                     msg.style.color = "red"; msg.innerText = "❌ " + data.error;
                 } else {
+                    // Update Paid Status Security
+                    window.isStudentPaid = data.is_paid;
+                    const overlay = document.querySelector('.unofficial-overlay');
+                    if (data.is_paid) {
+                        overlay.style.display = 'none';
+                    } else {
+                        overlay.style.display = 'block';
+                    }
+
                     document.getElementById('loginSection').style.display = 'none';
                     document.getElementById('resultSection').style.display = 'block';
                     document.getElementById('dispTerm').innerText = `${yr} ${data.term || "Examination"}`;
@@ -229,24 +253,12 @@
                     document.getElementById('resMean').innerText = mean + "%";
                     document.getElementById('resGrade').innerText = getGrade(mean);
                     document.getElementById('dispTime').innerText = "Generated: " + new Date().toLocaleString();
-                    msg.innerText = "";
-
-                    // Splash Box Logic
-                    const splash = document.getElementById('splashBox');
-                    const splashTitle = document.querySelector('.splash-title');
-                    const splashComment = document.getElementById('randomComment');
-                    let title = "", comment = "", bgColor = "";
-
-                    if (mean >= 75) { title = "🌟 Outstanding!"; comment = "Exceptional performance! A true scholar."; bgColor = "#16a34a"; }
-                    else if (mean >= 65) { title = "👏 Very Good!"; comment = "Great job! Keep pushing for the top."; bgColor = "#0284c7"; }
-                    else if (mean >= 50) { title = "👍 Good Effort!"; comment = "A solid pass. You can do even better!"; bgColor = "#ca8a04"; }
-                    else { title = "📚 Stay Focused"; comment = "Don't give up. Work harder next term."; bgColor = "#dc2626"; }
-
-                    splashTitle.innerText = title; splashComment.innerText = comment;
-                    splash.style.backgroundColor = bgColor; splash.style.display = 'block';
-                    setTimeout(() => { splash.style.display = 'none'; }, 5000);
+                    msg.innerText = "✅ Success";
                 }
-            } catch (e) { btn.classList.remove('loading'); msg.innerText = "❌ Connection Error."; }
+            } catch (e) { 
+                btn.classList.remove('loading');
+                msg.innerText = "❌ Connection Error."; 
+            }
         }
     </script>
 </body>
