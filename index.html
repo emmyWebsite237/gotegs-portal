@@ -36,7 +36,6 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            /* Security: Prevent text highlighting */
             -webkit-user-select: none; user-select: none;
             transition: filter 0.3s;
         }
@@ -47,17 +46,20 @@
         .unofficial-overlay { 
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg);
             font-size: 70px; color: rgba(255, 0, 0, 0.12); font-weight: bold; z-index: 10; pointer-events: none; white-space: nowrap; 
+            display: none; /* Controlled by JS based on is_paid status */
         }
 
-        /* Blur Effect on Screenshot Intent */
+        /* Blur Effect on Screenshot Intent (Tab switching) */
         .blurred { filter: blur(15px); }
 
         .report-header, .student-info, .result-table, .summary-table, .footer { position: relative; z-index: 1; }
         .report-header { text-align: center; border-bottom: 2px solid #004a99; padding-bottom: 10px; margin-bottom: 30px; }
         .school-name { font-family: 'Times New Roman', serif; font-size: 32px; color: #004a99; margin: 0; text-transform: uppercase; }
+        
         .result-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         .result-table th, .result-table td { border: 1px solid #000; padding: 10px; text-align: left; }
         .result-table th { background: #eef2f7; color: #004a99; }
+        
         .summary-table { width: 50%; margin-top: 25px; margin-left: auto; border-collapse: collapse; }
         .summary-table td { border: 1px solid #000; padding: 10px; font-weight: bold; }
 
@@ -72,6 +74,13 @@
         @media screen and (max-width: 600px) {
             #pdfArea { width: 800px; transform: scale(0.42); transform-origin: top left; margin-bottom: -550px; }
             .card { overflow-x: auto; padding: 15px; }
+        }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .card { box-shadow: none; border: none; width: 100%; padding: 0; }
+            .action-btns, #loginSection, #msg { display: none !important; }
+            .unofficial-overlay { color: rgba(255, 0, 0, 0.2); } /* Slightly darker for print if not paid */
         }
     </style>
 </head>
@@ -127,17 +136,19 @@
                 <table class="summary-table">
                     <tr><td>Total Score</td><td id="resTotal" style="text-align:center;"></td></tr>
                     <tr><td>Mean Percentage</td><td id="resMean" style="text-align:center;"></td></tr>
+                    <tr><td>Overall Grade</td><td id="resGrade" style="text-align:center;"></td></tr>
                 </table>
                 <div class="footer">
                     <div class="timestamp" id="dispTime"></div>
                     <div class="sig-space">
                         <img id="sigImg" src="./assets/signature.png" style="width: 140px; display: block; margin-left: 20px; margin-bottom: 5px; position: relative; z-index: 1;" onerror="this.style.display='none'">
                         <div class="sig-line"></div>
-                        <strong>School Principal</strong>
+                        <strong style="text-transform: uppercase;">School Principal</strong>
                     </div>
                 </div>
             </div>
             <div class="action-btns">
+                <button class="download-btn" onclick="window.print()">📥 Print / Save as PDF</button>
                 <button class="back-btn" onclick="location.reload()">Check Another</button>
             </div>
         </div>
@@ -169,9 +180,18 @@
             if (score >= 45) return "D7"; if (score >= 40) return "E8"; return "F9";
         }
 
-        // SECURITY: Detect tab switching/blur to deter screenshots
-        window.addEventListener('blur', () => document.getElementById('pdfArea').classList.add('blurred'));
-        window.addEventListener('focus', () => document.getElementById('pdfArea').classList.remove('blurred'));
+        // Global flag for paid status
+        window.isStudentPaid = false;
+
+        // Detect tab switching to deter screenshots (Active only if NOT paid)
+        window.addEventListener('blur', () => {
+            if (!window.isStudentPaid) {
+                document.getElementById('pdfArea').classList.add('blurred');
+            }
+        });
+        window.addEventListener('focus', () => {
+            document.getElementById('pdfArea').classList.remove('blurred');
+        });
 
         async function check() {
             const sid = document.getElementById('sid').value;
@@ -190,7 +210,7 @@
             msg.style.color = "#004a99";
             msg.innerText = "⏳ Connecting to Go-Tegs Database...";
 
-            // Robust 3-Second Delay Sequence
+            // Deliberate Delay Sequence
             await new Promise(r => setTimeout(r, 1000));
             msg.innerText = "🔍 Verifying Credentials & Trials...";
             await new Promise(r => setTimeout(r, 1000));
@@ -205,6 +225,15 @@
                     btn.classList.remove('loading');
                     msg.style.color = "red"; msg.innerText = "❌ " + data.error;
                 } else {
+                    // Update Paid Status Security
+                    window.isStudentPaid = data.is_paid;
+                    const overlay = document.querySelector('.unofficial-overlay');
+                    if (data.is_paid) {
+                        overlay.style.display = 'none';
+                    } else {
+                        overlay.style.display = 'block';
+                    }
+
                     document.getElementById('loginSection').style.display = 'none';
                     document.getElementById('resultSection').style.display = 'block';
                     document.getElementById('dispTerm').innerText = `${yr} ${data.term || "Examination"}`;
@@ -222,6 +251,7 @@
                     document.getElementById('resBody').innerHTML = rows;
                     document.getElementById('resTotal').innerText = total;
                     document.getElementById('resMean').innerText = mean + "%";
+                    document.getElementById('resGrade').innerText = getGrade(mean);
                     document.getElementById('dispTime').innerText = "Generated: " + new Date().toLocaleString();
                     msg.innerText = "✅ Success";
                 }
