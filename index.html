@@ -6,8 +6,7 @@
     <title>Go-Tegs Student Portal</title>
     
     <!-- Libraries for Direct PDF Download -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
         /* General Page Styling */
@@ -22,7 +21,7 @@
         /* RESULT TEMPLATE STYLING */
         #pdfArea { 
             padding: 40px; 
-            background: white; 
+            background: white !important; 
             border: 5px double #004a99; 
             margin: 10px auto;
             position: relative;
@@ -43,14 +42,14 @@
             background-repeat: no-repeat;
             background-position: center;
             background-size: contain;
-            opacity: 0.08; /* Very faint */
+            opacity: 0.08;
             z-index: 0;
             pointer-events: none;
         }
 
         .report-header, .student-info, .result-table, .summary-table, .footer {
             position: relative;
-            z-index: 1; /* Stay above watermark */
+            z-index: 1;
         }
 
         .report-header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #004a99; padding-bottom: 10px; }
@@ -79,14 +78,16 @@
         
         #msg { text-align: center; font-weight: bold; margin-top: 20px; width: 100%; display: block; font-size: 16px; }
 
-        /* MOBILE VIEW ADJUSTMENT */
+        /* MOBILE FIX: Scale UI for Screen but lock for PDF */
         @media screen and (max-width: 600px) {
+            #pdfArea { 
+                width: 800px; 
+                transform: scale(0.42); 
+                transform-origin: top left;
+                margin-bottom: -550px;
+            }
+            .card { overflow-x: auto; padding: 15px; }
             body { padding: 10px; }
-            .card { padding: 15px; }
-            #pdfArea { padding: 15px; min-height: auto; border: 3px double #004a99; }
-            .school-name { font-size: 22px; }
-            .result-table th, .result-table td { padding: 5px; font-size: 12px; }
-            .summary-table { width: 100%; }
         }
 
         @media print {
@@ -94,17 +95,6 @@
             .card { box-shadow: none; border: none; width: 100%; padding: 0; }
             .action-btns, #loginSection, #msg { display: none !important; }
         }
-
-    @media screen and (max-width: 600px) {
-    #pdfArea { 
-        width: 800px; /* Fixed width for better PDF quality */
-        transform: scale(0.45); /* Scales it down to fit the phone screen */
-        transform-origin: top left;
-        margin-bottom: -500px; /* Prevents large empty space below scaled content */
-    }
-    .card { overflow-x: auto; } /* Allows horizontal scrolling to see the full scaled report */
-}
-  
     </style>
 </head>
 <body>
@@ -171,7 +161,7 @@
                 <div class="footer">
                     <div class="timestamp" id="dispTime"></div>
                     <div class="sig-space">
-                        <img id="sigImg" src="./assets/signature.png" style="width: 140px; display: block; margin: 0 auto -15px auto; position: relative; z-index: 1;" onerror="this.style.display='none'">
+                        <img id="sigImg" src="./assets/signature.png" style="width: 140px; display: block; margin: 0 auto -20px auto; position: relative; z-index: 1;" onerror="this.style.display='none'">
                         <div class="sig-line"></div>
                         <strong style="text-transform: uppercase;">School Principal</strong>
                     </div>
@@ -211,36 +201,21 @@
             if (score >= 45) return "D7"; if (score >= 40) return "E8"; return "F9";
         }
 
-async function downloadResult() {
-    const element = document.getElementById('pdfArea');
-    const studentName = document.getElementById('dispName').innerText || "Student";
-    const msg = document.getElementById('msg');
-    
-    // Set professional PDF options
-    const opt = {
-        margin: [0.5, 0.5], // Top and bottom margins
-        filename: `${studentName.replace(/\s+/g, '_')}_Result.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-            scale: 2, 
-            useCORS: true, // Crucial for showing logo/watermark from other URLs
-            letterRendering: true
-        },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-    };
-
-    msg.innerText = "⏳ Generating Official PDF...";
-
-    // Execute the download
-    html2pdf().set(opt).from(element).save().then(() => {
-        msg.innerText = "✅ Downloaded Successfully!";
-        setTimeout(() => msg.innerText = "", 3000);
-    }).catch(err => {
-        console.error("PDF Error:", err);
-        msg.innerText = "❌ Error: Try printing to PDF instead.";
-    });
-}
-
+        async function downloadResult() {
+            const element = document.getElementById('pdfArea');
+            const studentName = document.getElementById('dispName').innerText || "Student";
+            const opt = {
+                margin: 0,
+                filename: `${studentName.replace(/\s+/g, '_')}_Result.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, windowWidth: 1000 },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            document.getElementById('msg').innerText = "⏳ Generating Official PDF...";
+            html2pdf().set(opt).from(element).save().then(() => {
+                document.getElementById('msg').innerText = "✅ Downloaded Successfully";
+            });
+        }
 
         async function check() {
             const sid = document.getElementById('sid').value;
@@ -250,8 +225,13 @@ async function downloadResult() {
             const pin = document.getElementById('pin').value;
             const msg = document.getElementById('msg');
 
-            if(!sid || !yr || !cls || !pin) { msg.style.color = "#d97706"; msg.innerText = "⚠️ Please fill all fields"; return; }
-            msg.style.color = "#004a99"; msg.innerText = "⏳ Connecting to Go-Tegs Database...";
+            // FIXED VALIDATION: Prevents SSS glitch
+            if(!sid || !yr || !cls || !pin || (cls.includes("SSS") && !dept)) { 
+                msg.style.color = "#d97706"; msg.innerText = "⚠️ Please fill all fields (check Department)"; return; 
+            }
+
+            msg.style.color = "#004a99";
+            msg.innerText = "⏳ Connecting to Go-Tegs Database...";
 
             try {
                 const res = await fetch(`/api/verify?student_id=${sid}&year=${yr}&class=${cls}&dept=${dept}&pin=${pin}`);
@@ -276,16 +256,15 @@ async function downloadResult() {
                         total += s.score;
                         rows += `<tr><td>${subjectNames[s.subject] || s.subject}</td><td style="text-align:center;">${s.score}</td><td style="text-align:center; font-weight:bold;">${getGrade(s.score)}</td></tr>`;
                     });
-                    
                     const mean = (total / data.scores.length).toFixed(2);
                     document.getElementById('resBody').innerHTML = rows;
                     document.getElementById('resTotal').innerText = total;
                     document.getElementById('resMean').innerText = mean + "%";
                     document.getElementById('resGrade').innerText = getGrade(mean);
-                    document.getElementById('dispTime').innerText = "Generated on: " + new Date().toLocaleString();
+                    document.getElementById('dispTime').innerText = "Printed on: " + new Date().toLocaleString();
                     msg.innerText = "✅ Success";
                 }
-            } catch (e) { msg.innerText = "❌ Error connecting."; }
+            } catch (e) { msg.innerText = "❌ Connection Error."; }
         }
     </script>
 </body>
