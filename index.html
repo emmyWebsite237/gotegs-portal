@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Go-Tegs Student Portal</title>
     
+    <!-- Libraries for Direct PDF Download -->
     <script src="https://cloudflare.com"></script>
     
     <style>
+        /* General Page Styling */
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
         .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 850px; position: relative; }
         
@@ -16,7 +18,40 @@
         button { width: 100%; padding: 14px; background: #004a99; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 18px; transition: 0.3s; margin-top: 10px; }
         button:hover { background: #003366; }
 
-        #pdfArea { padding: 40px; background: white; border: 5px double #004a99; margin: 10px auto; position: relative; min-height: 900px; }
+        /* RESULT TEMPLATE STYLING */
+        #pdfArea { 
+            padding: 40px; 
+            background: white; 
+            border: 5px double #004a99; 
+            margin: 10px auto;
+            position: relative;
+            min-height: 900px;
+            width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        /* WATERMARK LOGIC */
+        #pdfArea::before {
+            content: "";
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70%; height: 70%;
+            background-image: url('./assets/logo.webp');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: contain;
+            opacity: 0.08; /* Very faint */
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .report-header, .student-info, .result-table, .summary-table, .footer {
+            position: relative;
+            z-index: 1; /* Stay above watermark */
+        }
+
         .report-header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #004a99; padding-bottom: 10px; }
         .school-logo { width: 100px; margin-bottom: 10px; }
         .school-name { font-family: 'Times New Roman', Times, serif; font-size: 32px; color: #004a99; margin: 0; text-transform: uppercase; }
@@ -43,6 +78,16 @@
         
         #msg { text-align: center; font-weight: bold; margin-top: 20px; width: 100%; display: block; font-size: 16px; }
 
+        /* MOBILE VIEW ADJUSTMENT */
+        @media screen and (max-width: 600px) {
+            body { padding: 10px; }
+            .card { padding: 15px; }
+            #pdfArea { padding: 15px; min-height: auto; border: 3px double #004a99; }
+            .school-name { font-size: 22px; }
+            .result-table th, .result-table td { padding: 5px; font-size: 12px; }
+            .summary-table { width: 100%; }
+        }
+
         @media print {
             body { background: white; padding: 0; }
             .card { box-shadow: none; border: none; width: 100%; padding: 0; }
@@ -55,7 +100,7 @@
     <div class="card">
         <div id="loginSection">
             <img src="./assets/logo.webp" style="width: 120px;" onerror="this.src='https://wordpress.com'">
-            <h3 style="color: #004a99;">Student Result Portal</h3>
+            <h3 style="color: #004a99;">Go-Tegs Portal</h3>
             <input type="text" id="sid" placeholder="Student ID (GT/...)">
             
             <select id="yearSelect">
@@ -75,7 +120,7 @@
                     <option value="">Select Department</option>
                     <option value="Science">Science</option>
                     <option value="Art">Art</option>
-                    <option value="Commerce">Commercial</option>
+                    <option value="Commerce">Commerce</option>
                 </select>
             </div>
 
@@ -114,7 +159,7 @@
                 <div class="footer">
                     <div class="timestamp" id="dispTime"></div>
                     <div class="sig-space">
-                        <img id="sigImg" src="./assets/signature.png" style="width: 140px; display: block; margin-left: 16px; margin-bottom: 5px; position: relative; z-index: 1;" onerror="this.style.display='none'">
+                        <img id="sigImg" src="./assets/signature.png" style="width: 140px; display: block; margin: 0 auto -15px auto; position: relative; z-index: 1;" onerror="this.style.display='none'">
                         <div class="sig-line"></div>
                         <strong style="text-transform: uppercase;">School Principal</strong>
                     </div>
@@ -122,7 +167,7 @@
             </div>
 
             <div class="action-btns">
-                <button class="download-btn" onclick="window.print()">📥 Print / Save as PDF</button>
+                <button class="download-btn" onclick="downloadResult()">📥 Download Result (PDF)</button>
                 <button class="back-btn" onclick="location.reload()">Check Another</button>
             </div>
         </div>
@@ -154,6 +199,22 @@
             if (score >= 45) return "D7"; if (score >= 40) return "E8"; return "F9";
         }
 
+        async function downloadResult() {
+            const element = document.getElementById('pdfArea');
+            const studentName = document.getElementById('dispName').innerText || "Student";
+            const opt = {
+                margin: 0.3,
+                filename: `${studentName}_Result.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            document.getElementById('msg').innerText = "⏳ Preparing PDF Download...";
+            html2pdf().set(opt).from(element).save().then(() => {
+                document.getElementById('msg').innerText = "✅ Download Complete!";
+            });
+        }
+
         async function check() {
             const sid = document.getElementById('sid').value;
             const yr = document.getElementById('yearSelect').value;
@@ -167,7 +228,7 @@
 
             try {
                 const res = await fetch(`/api/verify?student_id=${sid}&year=${yr}&class=${cls}&dept=${dept}&pin=${pin}`);
-                msg.innerText = "🔍 Verifying Credentials & Trials...";
+                msg.innerText = "🔍 Verifying Credentials...";
                 const data = await res.json();
 
                 if (res.status !== 200) {
@@ -176,6 +237,7 @@
                     msg.innerText = "📋 Generating Report Card...";
                     document.getElementById('loginSection').style.display = 'none';
                     document.getElementById('resultSection').style.display = 'block';
+                    
                     document.getElementById('dispTerm').innerText = `${yr} ${data.term || "Examination"}`;
                     document.getElementById('dispName').innerText = data.full_name;
                     document.getElementById('dispId').innerText = sid;
@@ -187,16 +249,16 @@
                         total += s.score;
                         rows += `<tr><td>${subjectNames[s.subject] || s.subject}</td><td style="text-align:center;">${s.score}</td><td style="text-align:center; font-weight:bold;">${getGrade(s.score)}</td></tr>`;
                     });
+                    
                     const mean = (total / data.scores.length).toFixed(2);
                     document.getElementById('resBody').innerHTML = rows;
                     document.getElementById('resTotal').innerText = total;
                     document.getElementById('resMean').innerText = mean + "%";
                     document.getElementById('resGrade').innerText = getGrade(mean);
-                    document.getElementById('dispTime').innerText = "Printed on: " + new Date().toLocaleString();
+                    document.getElementById('dispTime').innerText = "Generated on: " + new Date().toLocaleString();
                     msg.innerText = "✅ Success";
-                    setTimeout(() => msg.innerText = "", 3000);
                 }
-            } catch (e) { msg.innerText = "❌ Connection Error."; }
+            } catch (e) { msg.innerText = "❌ Error connecting."; }
         }
     </script>
 </body>
