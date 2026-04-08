@@ -4,28 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Go-Tegs Student Portal</title>
-    
     <style>
-        /* General Page Styling */
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
         .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 850px; position: relative; }
-        
-        /* Input Section Styling */
         #loginSection { max-width: 400px; margin: 0 auto; text-align: center; }
         input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
         
-        /* Button & Rolling Loader Styling */
         button { width: 100%; padding: 14px; background: #004a99; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 18px; margin-top: 10px; position: relative; display: flex; align-items: center; justify-content: center; min-height: 50px; transition: 0.3s; }
         button:hover { background: #003366; }
-        
         .spinner { display: none; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        
         .loading .btn-text { display: none; }
         .loading .spinner { display: block; }
         .loading { pointer-events: none; opacity: 0.8; }
 
-        /* RESULT TEMPLATE STYLING */
         #pdfArea { padding: 40px; background: white !important; border: 5px double #004a99; margin: 10px auto; position: relative; min-height: 950px; width: 100%; box-sizing: border-box; overflow: hidden; display: flex; flex-direction: column; }
         #pdfArea::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; height: 70%; background-image: url('./assets/logo.webp'); background-repeat: no-repeat; background-position: center; background-size: contain; opacity: 0.08; z-index: 0; pointer-events: none; }
         .report-header, .student-info, .result-table, .summary-table, .footer { position: relative; z-index: 1; }
@@ -121,7 +113,7 @@
                 <div class="footer">
                     <div class="timestamp" id="dispTime"></div>
                     <div class="sig-space">
-                        <img id="sigImg" src="./assets/signature.png" style="width: 140px; display: block; margin: 0 auto -20px auto; position: relative; z-index: 1;" onerror="this.style.display='none'">
+                        <img id="sigImg" src="./assets/signature.png" style="width: 140px; display: block; margin-left: 20px; margin-bottom: 5px; position: relative; z-index: 1;" onerror="this.style.display='none'">
                         <div class="sig-line"></div>
                         <strong style="text-transform: uppercase;">School Principal</strong>
                     </div>
@@ -177,7 +169,6 @@
             msg.style.color = "#004a99";
             msg.innerText = "⏳ Connecting to Go-Tegs Database...";
 
-            // Start 3-second delay sequence
             await new Promise(r => setTimeout(r, 1000));
             msg.innerText = "🔍 Verifying Credentials & Trials...";
             await new Promise(r => setTimeout(r, 1000));
@@ -194,7 +185,6 @@
                 } else {
                     document.getElementById('loginSection').style.display = 'none';
                     document.getElementById('resultSection').style.display = 'block';
-                    
                     document.getElementById('dispTerm').innerText = `${yr} ${data.term || "Examination"}`;
                     document.getElementById('dispName').innerText = data.full_name;
                     document.getElementById('dispId').innerText = sid;
