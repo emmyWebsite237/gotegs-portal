@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Go-Tegs Student Portal</title>
     
-    <!-- PDF Engine for High-Quality Download -->
-    <script src="https://cloudflare.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
         /* General Page Styling */
@@ -97,7 +96,6 @@
 <body>
 
     <div class="card">
-        <!-- LOGIN / INPUT SECTION -->
         <div id="loginSection">
             <img src="./assets/logo.webp" style="width: 120px;" onerror="this.src='https://wordpress.com'">
             <h3 style="color: #004a99;">Student Result Portal</h3>
@@ -128,7 +126,6 @@
             <button onclick="check()">Check Result</button>
         </div>
 
-        <!-- THE RESULT TEMPLATE -->
         <div id="resultSection" style="display:none;">
             <div id="pdfArea">
                 <div class="report-header">
@@ -207,7 +204,6 @@
             if (score >= 45) return "D7"; if (score >= 40) return "E8"; return "F9";
         }
 
-        // PERFECTED PDF DOWNLOAD LOGIC
         async function downloadResult() {
             const element = document.getElementById('pdfArea');
             const studentName = document.getElementById('dispName').innerText || "Student";
@@ -222,7 +218,7 @@
                 html2canvas: { 
                     scale: 3, 
                     useCORS: true, 
-                    windowWidth: 1000 // Forces 'Computer Screen' width for the capture
+                    windowWidth: 1000 
                 },
                 jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
             };
@@ -244,7 +240,6 @@
             const pin = document.getElementById('pin').value;
             const msg = document.getElementById('msg');
 
-            // VALIDATION: Ensures no glitches with SSS Departments
             if(!sid || !yr || !cls || !pin || (cls.includes("SSS") && !dept)) { 
                 msg.style.color = "#d97706"; msg.innerText = "⚠️ Please fill all fields (check Department)"; return; 
             }
