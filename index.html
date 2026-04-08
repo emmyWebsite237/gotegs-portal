@@ -23,7 +23,7 @@
         .loading .spinner { display: block; }
         .loading { pointer-events: none; opacity: 0.8; }
 
-        /* RESULT TEMPLATE STYLING (Watermark Only) */
+        /* RESULT TEMPLATE STYLING */
         #pdfArea { 
             padding: 40px; 
             background: white !important; 
@@ -38,13 +38,9 @@
             flex-direction: column;
         }
 
-        #pdfArea::before { 
-            content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            width: 70%; height: 70%; background-image: url('./assets/logo.webp'); 
-            background-repeat: no-repeat; background-position: center; background-size: contain; 
-            opacity: 0.08; z-index: 0; pointer-events: none; 
-        }
-
+        /* Logo Watermark Only */
+        #pdfArea::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; height: 70%; background-image: url('./assets/logo.webp'); background-repeat: no-repeat; background-position: center; background-size: contain; opacity: 0.08; z-index: 0; pointer-events: none; }
+        
         .report-header, .student-info, .result-table, .summary-table, .footer { position: relative; z-index: 1; }
         .report-header { text-align: center; border-bottom: 2px solid #004a99; padding-bottom: 10px; margin-bottom: 30px; }
         .school-name { font-family: 'Times New Roman', serif; font-size: 32px; color: #004a99; margin: 0; text-transform: uppercase; }
@@ -52,6 +48,7 @@
         .result-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         .result-table th, .result-table td { border: 1px solid #000; padding: 10px; text-align: left; }
         .result-table th { background: #eef2f7; color: #004a99; }
+        
         .summary-table { width: 50%; margin-top: 25px; margin-left: auto; border-collapse: collapse; }
         .summary-table td { border: 1px solid #000; padding: 10px; font-weight: bold; }
 
@@ -124,7 +121,8 @@
                     <p>OFFICIAL ACADEMIC REPORT FOR <br>
                         <span id="dispName" style="text-decoration:underline; font-weight:bold; font-size:20px;"></span>
                     </p>
-                    <p><strong>Student ID:</strong> <span id="dispId"></span> | <strong>DOB:</strong> <span id="dispDob"></span></p>
+                    <p><strong>Student ID:</strong> <span id="dispId"></span></p>
+                    <p><strong>Date of Birth:</strong> <span id="dispDob"></span></p>
                     <p><strong>Class:</strong> <span id="dispClass"></span></p>
                 </div>
                 <table class="result-table">
@@ -223,7 +221,7 @@
                     document.getElementById('resMean').innerText = mean + "%";
                     document.getElementById('resGrade').innerText = getGrade(mean);
                     document.getElementById('dispTime').innerText = "Generated: " + new Date().toLocaleString();
-                    msg.innerText = "✅ Success";
+                    msg.innerText = "";
 
                     // Celebration Splash Box Logic
                     const splash = document.getElementById('splashBox');
