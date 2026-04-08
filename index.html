@@ -4,12 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Go-Tegs Student Portal</title>
+    
     <style>
+        /* General Page Styling */
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
         .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 850px; position: relative; }
+        
+        /* Input Section Styling */
         #loginSection { max-width: 400px; margin: 0 auto; text-align: center; }
         input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
         
+        /* Button & Rolling Loader */
         button { width: 100%; padding: 14px; background: #004a99; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 18px; margin-top: 10px; position: relative; display: flex; align-items: center; justify-content: center; min-height: 50px; transition: 0.3s; }
         button:hover { background: #003366; }
         .spinner { display: none; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s linear infinite; }
@@ -18,44 +23,60 @@
         .loading .spinner { display: block; }
         .loading { pointer-events: none; opacity: 0.8; }
 
-        #pdfArea { padding: 40px; background: white !important; border: 5px double #004a99; margin: 10px auto; position: relative; min-height: 950px; width: 100%; box-sizing: border-box; overflow: hidden; display: flex; flex-direction: column; }
+        /* RESULT TEMPLATE STYLING */
+        #pdfArea { 
+            padding: 40px; 
+            background: white !important; 
+            border: 5px double #004a99; 
+            margin: 10px auto;
+            position: relative;
+            min-height: 950px;
+            width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            /* Security: Prevent text highlighting */
+            -webkit-user-select: none; user-select: none;
+            transition: filter 0.3s;
+        }
+
+        /* Watermark & Security Overlay */
         #pdfArea::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; height: 70%; background-image: url('./assets/logo.webp'); background-repeat: no-repeat; background-position: center; background-size: contain; opacity: 0.08; z-index: 0; pointer-events: none; }
+        
+        .unofficial-overlay { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 70px; color: rgba(255, 0, 0, 0.12); font-weight: bold; z-index: 10; pointer-events: none; white-space: nowrap; 
+        }
+
+        /* Blur Effect on Screenshot Intent */
+        .blurred { filter: blur(15px); }
+
         .report-header, .student-info, .result-table, .summary-table, .footer { position: relative; z-index: 1; }
-        .report-header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #004a99; padding-bottom: 10px; }
-        .school-logo { width: 100px; margin-bottom: 10px; }
-        .school-name { font-family: 'Times New Roman', Times, serif; font-size: 32px; color: #004a99; margin: 0; text-transform: uppercase; }
-        .term-title { font-size: 18px; font-weight: bold; margin-top: 5px; color: #333; }
-        .student-info { margin: 25px 0; line-height: 1.8; font-size: 16px; }
-        .underline-name { text-decoration: underline; font-weight: bold; font-size: 20px; color: #000; }
+        .report-header { text-align: center; border-bottom: 2px solid #004a99; padding-bottom: 10px; margin-bottom: 30px; }
+        .school-name { font-family: 'Times New Roman', serif; font-size: 32px; color: #004a99; margin: 0; text-transform: uppercase; }
         .result-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         .result-table th, .result-table td { border: 1px solid #000; padding: 10px; text-align: left; }
         .result-table th { background: #eef2f7; color: #004a99; }
         .summary-table { width: 50%; margin-top: 25px; margin-left: auto; border-collapse: collapse; }
         .summary-table td { border: 1px solid #000; padding: 10px; font-weight: bold; }
+
         .footer { margin-top: auto; padding-top: 40px; display: flex; justify-content: space-between; align-items: flex-end; }
         .sig-space { text-align: center; width: 200px; }
         .sig-line { border-top: 2px solid #000; margin-bottom: 5px; }
         .timestamp { font-size: 11px; color: #777; font-style: italic; }
 
         .action-btns { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
-        .download-btn { background: #16a34a; }
-        .back-btn { background: #6b7280; }
-        #msg { text-align: center; font-weight: bold; margin-top: 20px; width: 100%; display: block; font-size: 16px; }
+        #msg { text-align: center; font-weight: bold; margin-top: 20px; font-size: 16px; }
 
         @media screen and (max-width: 600px) {
             #pdfArea { width: 800px; transform: scale(0.42); transform-origin: top left; margin-bottom: -550px; }
             .card { overflow-x: auto; padding: 15px; }
-            body { padding: 10px; }
-        }
-
-        @media print {
-            body { background: white; padding: 0; }
-            .card { box-shadow: none; border: none; width: 100%; padding: 0; }
-            .action-btns, #loginSection, #msg { display: none !important; }
         }
     </style>
 </head>
 <body>
+
     <div class="card">
         <div id="loginSection">
             <img src="./assets/logo.webp" style="width: 120px;" onerror="this.src='https://wordpress.com'">
@@ -64,7 +85,6 @@
             <select id="yearSelect">
                 <option value="">Select Session</option>
                 <option value="2025/2026">2025/2026</option>
-                <option value="2026/2027">2026/2027</option>
             </select>
             <select id="classSelect" onchange="toggleDept()">
                 <option value="">Select Class</option>
@@ -74,9 +94,7 @@
             <div id="deptDiv" style="display:none;">
                 <select id="deptSelect">
                     <option value="">Select Department</option>
-                    <option value="Science">Science</option>
-                    <option value="Art">Art</option>
-                    <option value="Commerce">Commerce</option>
+                    <option value="Science">Science</option><option value="Art">Art</option><option value="Commerce">Commerce</option>
                 </select>
             </div>
             <input type="password" id="pin" placeholder="Access PIN">
@@ -88,14 +106,15 @@
 
         <div id="resultSection" style="display:none;">
             <div id="pdfArea">
+                <div class="unofficial-overlay">UNOFFICIAL COPY</div>
                 <div class="report-header">
-                    <img class="school-logo" src="./assets/logo.webp">
+                    <img class="school-logo" src="./assets/logo.webp" style="width:100px;">
                     <h1 class="school-name">Go-Tegs International School</h1>
-                    <div id="dispTerm" class="term-title"></div>
+                    <div id="dispTerm" style="font-weight:bold; font-style:italic; margin-top:5px;"></div>
                 </div>
-                <div class="student-info">
-                    <p style="text-align: center;">OFFICIAL ACADEMIC REPORT FOR <br>
-                        <span id="dispName" class="underline-name"></span>
+                <div class="student-info" style="text-align:center;">
+                    <p>OFFICIAL ACADEMIC REPORT FOR <br>
+                        <span id="dispName" style="text-decoration:underline; font-weight:bold; font-size:20px;"></span>
                     </p>
                     <p><strong>Student ID:</strong> <span id="dispId"></span></p>
                     <p><strong>Date of Birth:</strong> <span id="dispDob"></span></p>
@@ -108,19 +127,17 @@
                 <table class="summary-table">
                     <tr><td>Total Score</td><td id="resTotal" style="text-align:center;"></td></tr>
                     <tr><td>Mean Percentage</td><td id="resMean" style="text-align:center;"></td></tr>
-                    <tr><td>Overall Grade</td><td id="resGrade" style="text-align:center;"></td></tr>
                 </table>
                 <div class="footer">
                     <div class="timestamp" id="dispTime"></div>
                     <div class="sig-space">
                         <img id="sigImg" src="./assets/signature.png" style="width: 140px; display: block; margin-left: 20px; margin-bottom: 5px; position: relative; z-index: 1;" onerror="this.style.display='none'">
                         <div class="sig-line"></div>
-                        <strong style="text-transform: uppercase;">School Principal</strong>
+                        <strong>School Principal</strong>
                     </div>
                 </div>
             </div>
             <div class="action-btns">
-                <button class="download-btn" onclick="window.print()">📥 Print / Save as PDF</button>
                 <button class="back-btn" onclick="location.reload()">Check Another</button>
             </div>
         </div>
@@ -152,6 +169,10 @@
             if (score >= 45) return "D7"; if (score >= 40) return "E8"; return "F9";
         }
 
+        // SECURITY: Detect tab switching/blur to deter screenshots
+        window.addEventListener('blur', () => document.getElementById('pdfArea').classList.add('blurred'));
+        window.addEventListener('focus', () => document.getElementById('pdfArea').classList.remove('blurred'));
+
         async function check() {
             const sid = document.getElementById('sid').value;
             const yr = document.getElementById('yearSelect').value;
@@ -169,6 +190,7 @@
             msg.style.color = "#004a99";
             msg.innerText = "⏳ Connecting to Go-Tegs Database...";
 
+            // Robust 3-Second Delay Sequence
             await new Promise(r => setTimeout(r, 1000));
             msg.innerText = "🔍 Verifying Credentials & Trials...";
             await new Promise(r => setTimeout(r, 1000));
@@ -200,7 +222,6 @@
                     document.getElementById('resBody').innerHTML = rows;
                     document.getElementById('resTotal').innerText = total;
                     document.getElementById('resMean').innerText = mean + "%";
-                    document.getElementById('resGrade').innerText = getGrade(mean);
                     document.getElementById('dispTime').innerText = "Generated: " + new Date().toLocaleString();
                     msg.innerText = "✅ Success";
                 }
