@@ -49,10 +49,9 @@
         .unofficial-overlay { 
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg);
             font-size: 70px; color: rgba(255, 0, 0, 0.12); font-weight: bold; z-index: 10; pointer-events: none; white-space: nowrap; 
-            display: none; /* Controlled by JS based on is_paid status */
+            display: none; 
         }
 
-        /* Blur Effect on Screenshot Intent (Tab switching) */
         .blurred { filter: blur(15px); }
 
         .report-header, .student-info, .result-table, .summary-table, .footer { position: relative; z-index: 1; }
@@ -83,7 +82,7 @@
             body { background: white; padding: 0; }
             .card { box-shadow: none; border: none; width: 100%; padding: 0; }
             .action-btns, #loginSection, #msg { display: none !important; }
-            .unofficial-overlay { color: rgba(255, 0, 0, 0.2); } /* Slightly darker for print if not paid */
+            .unofficial-overlay { color: rgba(255, 0, 0, 0.2); }
         }
     </style>
 </head>
@@ -132,7 +131,7 @@
                     <p><strong>Date of Birth:</strong> <span id="dispDob"></span></p>
                     <p><strong>Class:</strong> <span id="dispClass"></span></p>
                 </div>
-                <table class="result-table">
+                <table class="result-table" id="mainTable">
                     <thead><tr><th>Subject</th><th style="text-align:center;">Score (%)</th><th style="text-align:center;">Grade</th></tr></thead>
                     <tbody id="resBody"></tbody>
                 </table>
@@ -200,41 +199,53 @@
             document.getElementById('pdfArea').classList.remove('blurred');
         });
 
-        // --- NEW: THE DOWNLOAD PDF FUNCTION ---
+        // --- UPDATED DOWNLOAD PDF FUNCTION ---
         async function downloadPDF() {
             const { jsPDF } = window.jspdf;
             const element = document.getElementById('pdfArea');
+            const tableCells = document.querySelectorAll('#resBody td');
             const studentName = document.getElementById('dispName').innerText || "Student";
+            const rowCount = document.querySelectorAll('#resBody tr').length;
             const btn = document.querySelector('.download-btn');
             
             btn.innerText = "⌛ Generating...";
             btn.style.opacity = "0.7";
 
+            // ADJUST PADDING IF JSS/MANY SUBJECTS (To fit signature on one page)
+            if (rowCount > 15) {
+                tableCells.forEach(cell => {
+                    cell.style.padding = "5px"; // Reduced from 10px
+                    cell.style.fontSize = "14px";
+                });
+            }
+
             try {
-                // Capture the div as an image
                 const canvas = await html2canvas(element, {
-                    scale: 2, // Increases quality/resolution
+                    scale: 2, 
                     useCORS: true,
                     backgroundColor: "#ffffff"
                 });
                 
-                const imgData = canvas.toDataURL('image/png');
+                // CHANGE TO JPEG (0.7 quality) TO FIX THE 15MB SIZE ISSUE
+                const imgData = canvas.toDataURL('image/jpeg', 0.7);
                 const pdf = new jsPDF('p', 'mm', 'a4');
                 
                 const imgProps = pdf.getImageProperties(imgData);
                 const pdfWidth = pdf.internal.pageSize.getWidth();
                 const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
                 
-                // Add the captured image to the PDF
-                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-                
-                // Save the file with the student's name
+                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
                 pdf.save(`${studentName}_Result.pdf`);
                 
             } catch (error) {
                 console.error("PDF Export Error:", error);
-                alert("Failed to generate PDF. Please try again.");
+                alert("Failed to generate PDF.");
             } finally {
+                // REVERT PADDING AFTER DOWNLOAD
+                tableCells.forEach(cell => {
+                    cell.style.padding = "10px";
+                    cell.style.fontSize = "";
+                });
                 btn.innerText = "📥 Download Result PDF";
                 btn.style.opacity = "1";
             }
