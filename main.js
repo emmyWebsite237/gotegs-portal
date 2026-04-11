@@ -12,7 +12,7 @@ const subjectNames = {
     lit_score: "Literature", music_score: "Music"
 };
 
-// 1. Attach functions to 'window' so HTML onclick works
+// Functions must be attached to window so the HTML can see them
 window.toggleDept = function() {
     const cls = document.getElementById('classSelect').value;
     document.getElementById('deptDiv').style.display = cls.includes("SSS") ? "block" : "none";
@@ -42,7 +42,6 @@ window.addEventListener('focus', () => {
 window.downloadPDF = async function() {
     const { jsPDF } = window.jspdf;
     const element = document.getElementById('pdfArea');
-    const tableCells = document.querySelectorAll('#resBody td');
     const studentName = document.getElementById('dispName').innerText || "Student";
     const btn = document.querySelector('.download-btn');
     
@@ -53,9 +52,8 @@ window.downloadPDF = async function() {
         const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
         const imgData = canvas.toDataURL('image/jpeg', 0.7);
         const pdf = new jsPDF('p', 'mm', 'a4');
-        const imgProps = pdf.getImageProperties(imgData);
         const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
         
         pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
         pdf.save(`${studentName}_Result.pdf`);
@@ -85,13 +83,12 @@ window.check = async function() {
     msg.innerText = "⏳ Connecting to Go-Tegs Database...";
 
     try {
-        // This calls the verify.js file in your /api folder
         const res = await fetch(`/api/verify?student_id=${sid}&year=${yr}&class=${cls}&dept=${dept}&pin=${pin}`);
         const data = await res.json();
 
         if (res.status !== 200) {
             btn.classList.remove('loading');
-            msg.style.color = "red"; msg.innerText = "❌ " + data.error;
+            msg.style.color = "red"; msg.innerText = "❌ " + (data.error || "Login Failed");
         } else {
             window.isStudentPaid = data.is_paid;
             document.querySelector('.unofficial-overlay').style.display = data.is_paid ? 'none' : 'block';
