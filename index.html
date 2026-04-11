@@ -36,7 +36,7 @@
             min-height: 950px;
             width: 100%;
             box-sizing: border-box;
-            overflow: visible; /* Changed from hidden to ensure PDF doesn't cut off */
+            overflow: visible;
             display: flex;
             flex-direction: column;
             -webkit-user-select: none; user-select: none;
@@ -90,33 +90,25 @@
 
     <div class="card">
         <div id="loginSection">
-            <img src="./assets/logo.webp" style="width: 120px;" onerror="this.src='https://via.placeholder.com/120'">
+            <img src="./assets/logo.webp" style="width: 120px;" onerror="this.src='https://wordpress.com'">
             <h3 style="color: #004a99;">Students Result Portal</h3>
-            
             <input type="text" id="sid" placeholder="Student ID (GT/...)">
-            
             <select id="yearSelect">
                 <option value="">Select Session</option>
                 <option value="2025/2026">2025/2026</option>
             </select>
-            
             <select id="classSelect" onchange="toggleDept()">
                 <option value="">Select Class</option>
                 <option value="JSS 1">JSS 1</option><option value="JSS 2">JSS 2</option><option value="JSS 3">JSS 3</option>
                 <option value="SSS 1">SSS 1</option><option value="SSS 2">SSS 2</option><option value="SSS 3">SSS 3</option>
             </select>
-            
             <div id="deptDiv" style="display:none;">
                 <select id="deptSelect">
                     <option value="">Select Department</option>
-                    <option value="Science">Science</option>
-                    <option value="Art">Art</option>
-                    <option value="Commerce">Commerce</option>
+                    <option value="Science">Science</option><option value="Art">Art</option><option value="Commerce">Commerce</option>
                 </select>
             </div>
-            
             <input type="password" id="pin" placeholder="Access PIN">
-            
             <button id="checkBtn" onclick="check()">
                 <span class="btn-text">Check Result</span>
                 <div class="spinner"></div>
@@ -126,13 +118,11 @@
         <div id="resultSection" style="display:none;">
             <div id="pdfArea">
                 <div class="unofficial-overlay">UNOFFICIAL COPY</div>
-                
                 <div class="report-header">
                     <img class="school-logo" src="./assets/logo.webp" style="width:100px;">
                     <h1 class="school-name">Go-Tegs International School</h1>
                     <div id="dispTerm" style="font-weight:bold; font-style:italic; margin-top:5px;"></div>
                 </div>
-
                 <div class="student-info" style="text-align:center;">
                     <p>OFFICIAL ACADEMIC REPORT FOR <br>
                         <span id="dispName" style="text-decoration:underline; font-weight:bold; font-size:20px;"></span>
@@ -141,43 +131,32 @@
                     <p><strong>Date of Birth:</strong> <span id="dispDob"></span></p>
                     <p><strong>Class:</strong> <span id="dispClass"></span></p>
                 </div>
-
                 <table class="result-table" id="mainTable">
-                    <thead>
-                        <tr>
-                            <th>Subject</th>
-                            <th style="text-align:center;">Score (%)</th>
-                            <th style="text-align:center;">Grade</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th>Subject</th><th style="text-align:center;">Score (%)</th><th style="text-align:center;">Grade</th></tr></thead>
                     <tbody id="resBody"></tbody>
                 </table>
-
                 <table class="summary-table">
                     <tr><td>Total Score</td><td id="resTotal" style="text-align:center;"></td></tr>
                     <tr><td>Mean Percentage</td><td id="resMean" style="text-align:center;"></td></tr>
                     <tr><td>Overall Grade</td><td id="resGrade" style="text-align:center;"></td></tr>
                 </table>
-
                 <div class="footer">
                     <div class="timestamp" id="dispTime"></div>
                     <div class="sig-space">
                         <img id="sigImg" src="./assets/signature.png" style="width: 140px; display: block; margin-left: 20px; margin-bottom: 5px; position: relative; z-index: 1;" onerror="this.style.display='none'">
                         <div class="sig-line"></div>
-                        <strong>School Principal</strong>
+                        <strong style="text-transform: uppercase;">School Principal</strong>
                     </div>
                 </div>
             </div>
-
             <div class="action-btns">
                 <button class="download-btn" onclick="downloadPDF()">📥 Download Result PDF</button>
                 <button class="back-btn" onclick="location.reload()">Check Another</button>
             </div>
         </div>
-
         <p id="msg"></p>
     </div>
 
-    <script type="module" src="/main.js"></script>
+    <script type="module" src="main.js"></script>
 </body>
 </html>
