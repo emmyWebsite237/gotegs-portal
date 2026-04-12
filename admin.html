@@ -3,36 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERMINAL | MASTER EXPORT</title>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
+    <title>TERMINAL | SYSTEM OUTPUT</title>
     <style>
-        body { font-family: 'Courier New', monospace; background: #0a0a0a; color: #ff0000; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
-        .admin-card { background: #111; padding: 40px; border: 2px solid #ff0000; box-shadow: 0 0 30px rgba(255, 0, 0, 0.3); width: 100%; max-width: 450px; text-align: center; position: relative; }
-        .admin-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 12px; background: repeating-linear-gradient(45deg, #ff0000, #ff0000 10px, #000 10px, #000 20px); }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; background: #000; border: 1px solid #ff0000; color: #ff0000; outline: none; font-family: inherit; }
-        .btn-danger { width: 100%; padding: 20px; background: #ff0000; color: #000; border: none; cursor: pointer; font-weight: 900; text-transform: uppercase; margin-top: 20px; clip-path: polygon(5% 0, 100% 0, 95% 100%, 0% 100%); }
-        .btn-danger:disabled { background: #444; color: #888; cursor: not-allowed; }
-        #statusBox { margin-top: 20px; padding: 15px; border: 1px dashed #ff0000; font-size: 12px; display: none; text-align: left; background: rgba(255, 0, 0, 0.05); }
+        body { font-family: 'Courier New', monospace; background: #0a0a0a; color: #ff0000; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         
-        /* The Ghost-Fixer: Keeps the stack accessible but hidden from view */
-        #render-stack { 
-            position: absolute; 
-            left: 0; 
-            top: 0; 
-            z-index: -9999; 
-            width: 800px; 
-            background: #ffffff;
+        /* Control Panel */
+        .admin-card { background: #111; padding: 30px; border: 2px solid #ff0000; width: 100%; max-width: 450px; text-align: center; margin-bottom: 30px; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; background: #000; border: 1px solid #ff0000; color: #ff0000; outline: none; }
+        .btn-danger { width: 100%; padding: 15px; background: #ff0000; color: #000; border: none; cursor: pointer; font-weight: 900; text-transform: uppercase; }
+        
+        /* Output Area */
+        #output-container {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            align-items: center;
+            width: 100%;
         }
+
+        /* The Exact Rectangular Measurement (A4 Ratio) */
+        .result-sheet {
+            background: white;
+            color: black;
+            padding: 40px;
+            width: 800px; /* Fixed Width */
+            min-height: 1050px; /* Fixed Height Ratio */
+            box-sizing: border-box;
+            border: 10px double #004a99;
+            font-family: 'Times New Roman', serif;
+            box-shadow: 0 0 20px rgba(255,255,255,0.1);
+        }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #000; padding: 10px; text-align: left; }
+        th { background: #f0f0f0; }
+        
+        #statusBox { color: #ff0000; margin-top: 10px; font-size: 13px; display: none; }
     </style>
 </head>
 <body>
 
     <div class="admin-card">
         <h2>⚠️ SYSTEM OVERRIDE</h2>
-        <p>[ LEVEL 5 CLEARANCE ]</p>
         <input type="text" id="adminName" placeholder="ADMIN NAME...">
         <select id="sectionSelect">
             <option value="">SELECT SECTION</option>
@@ -40,107 +52,80 @@
             <option value="SSS">SENIOR (SSS)</option>
         </select>
         <input type="password" id="adminPass" placeholder="ACCESS PIN...">
-        <button id="genBtn" class="btn-danger" onclick="startBulkGeneration()">⚠️ EXECUTE MASTER EXPORT</button>
+        <button id="genBtn" class="btn-danger" onclick="generateOutput()">EXECUTE DATA RETRIEVAL</button>
         <div id="statusBox"></div>
     </div>
 
-    <div id="render-stack"></div>
+    <div id="output-container"></div>
 
     <script>
-        async function startBulkGeneration() {
-            const adminName = document.getElementById('adminName').value;
+        async function generateOutput() {
+            const name = document.getElementById('adminName').value;
             const section = document.getElementById('sectionSelect').value;
             const pin = document.getElementById('adminPass').value;
-            const btn = document.getElementById('genBtn');
             const status = document.getElementById('statusBox');
+            const container = document.getElementById('output-container');
 
-            if (!adminName || !section || !pin) return alert("ACCESS DENIED: DATA MISSING");
+            if (!name || !section || !pin) return alert("REQUIRED: AUTH DATA");
 
-            btn.disabled = true;
             status.style.display = "block";
-            status.innerText = ">>> INITIALIZING...";
+            status.innerText = ">>> SEARCHING DATABASE...";
+            container.innerHTML = ""; // Clear old results
 
             try {
-                // 1. Verify
-                const auth = await fetch(`/api/admin-verify?name=${adminName}&pin=${pin}`);
-                if (auth.status !== 200) throw new Error("UNAUTHORIZED ACCESS");
+                const auth = await fetch(`/api/admin-verify?name=${name}&pin=${pin}`);
+                if (auth.status !== 200) throw new Error("INVALID CREDENTIALS");
 
-                status.innerText = ">>> ACCESS GRANTED. FETCHING DATA...";
-                
-                // 2. Fetch
                 const res = await fetch(`/api/get-section-results?section=${section}`);
                 const students = await res.json();
 
-                if (!students || students.length === 0) throw new Error("ZERO RECORDS FOUND");
+                if (!students || students.length === 0) throw new Error("NO RECORDS FOUND");
 
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const stack = document.getElementById('render-stack');
+                status.innerText = `>>> DISPLAYING ${students.length} RECORDS...`;
 
-                for (let i = 0; i < students.length; i++) {
-                    const student = students[i];
-                    status.innerText = `>>> COMPILING [${i + 1}/${students.length}]: ${student.full_name}`;
-
-                    // Create visual
-                    const tempDiv = document.createElement('div');
-                    tempDiv.innerHTML = createResultHTML(student, section);
-                    stack.appendChild(tempDiv);
-
-                    // --- THE FIX: Wait for the browser to actually "draw" the HTML ---
-                    await new Promise(resolve => setTimeout(resolve, 150));
-
-                    const canvas = await html2canvas(tempDiv, { 
-                        scale: 2, 
-                        useCORS: true,
-                        logging: false,
-                        backgroundColor: "#ffffff"
-                    });
+                students.forEach(student => {
+                    const sheet = document.createElement('div');
+                    sheet.className = 'result-sheet';
                     
-                    const imgData = canvas.toDataURL('image/jpeg', 0.95);
-                    const pdfWidth = 210; // A4 width in mm
-                    const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+                    let rows = (student.scores || []).map(s => `
+                        <tr>
+                            <td>${s.subject_name}</td>
+                            <td style="text-align:center;">${s.score}</td>
+                        </tr>
+                    `).join('');
 
-                    if (i > 0) pdf.addPage();
-                    pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, imgHeight);
+                    sheet.innerHTML = `
+                        <div style="text-align:center; border-bottom:2px solid #004a99; padding-bottom:10px; margin-bottom:20px;">
+                            <h1 style="color:#004a99; font-size:28px; margin:0;">GO-TEGS INTERNATIONAL SCHOOL</h1>
+                            <p style="font-weight:bold;">OFFICIAL ACADEMIC REPORT</p>
+                        </div>
+                        <div style="margin-bottom:20px; font-size:18px;">
+                            <strong>NAME:</strong> ${student.full_name}<br>
+                            <strong>SECTION:</strong> ${section} | <strong>STUDENT ID:</strong> ${student.student_id}
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>SUBJECT</th>
+                                    <th style="text-align:center;">SCORE (%)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rows || '<tr><td colspan="2" style="text-align:center;">No data available</td></tr>'}
+                            </tbody>
+                        </table>
+                        <div style="margin-top:50px; text-align:right;">
+                            <div style="display:inline-block; border-top:1px solid #000; width:200px; text-align:center;">
+                                <p>Principal's Signature</p>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(sheet);
+                });
 
-                    stack.innerHTML = ""; // Clear memory
-                }
-
-                pdf.save(`GoTegs_${section}_MASTER_REPORT.pdf`);
-                status.innerText = ">>> MASTER COMPILATION COMPLETE.";
             } catch (err) {
-                status.innerText = ">>> FATAL ERROR: " + err.message;
-            } finally {
-                btn.disabled = false;
+                status.innerText = ">>> ERROR: " + err.message;
             }
-        }
-
-        function createResultHTML(data, section) {
-            let rows = (data.scores || []).map(s => `
-                <tr>
-                    <td style="border:1px solid #000; padding:8px;">${s.subject_name}</td>
-                    <td style="border:1px solid #000; padding:8px; text-align:center;">${s.score}</td>
-                </tr>
-            `).join('');
-
-            return `
-                <div style="background:white; color:black; padding:40px; width:800px; min-height:1050px; box-sizing:border-box; border:10px double #004a99; font-family: 'Times New Roman', serif;">
-                    <div style="text-align:center; border-bottom:2px solid #004a99; padding-bottom:10px; margin-bottom:20px;">
-                        <h1 style="color:#004a99; font-size:32px; margin:0;">GO-TEGS INTERNATIONAL SCHOOL</h1>
-                        <p style="font-style:italic;">Training the Leaders of Tomorrow</p>
-                    </div>
-                    <div style="margin-bottom:20px; font-size:16px; border:1px solid #000; padding:15px; background:#f9f9f9;">
-                        <strong>STUDENT:</strong> ${data.full_name}<br>
-                        <strong>SECTION:</strong> ${section} | <strong>ID:</strong> ${data.student_id}
-                    </div>
-                    <table style="width:100%; border-collapse:collapse;">
-                        <thead><tr style="background:#eef2f7;">
-                            <th style="border:1px solid #000; padding:10px; text-align:left;">SUBJECT</th>
-                            <th style="border:1px solid #000; padding:10px;">SCORE (%)</th>
-                        </tr></thead>
-                        <tbody>${rows || '<tr><td colspan="2" style="text-align:center; padding:20px;">No Results Found</td></tr>'}</tbody>
-                    </table>
-                </div>`;
         }
     </script>
 </body>
