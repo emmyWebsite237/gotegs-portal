@@ -2,31 +2,44 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>TERMINAL | RESTRICTED ACCESS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TERMINAL | MASTER EXPORT</title>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <style>
-        body { font-family: 'Courier New', monospace; background: #0a0a0a; color: #ff0000; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
-        .admin-card { background: #111; padding: 40px; border: 2px solid #ff0000; box-shadow: 0 0 30px rgba(255,0,0,0.3); width: 450px; text-align: center; position: relative; }
+        body { font-family: 'Courier New', monospace; background: #0a0a0a; color: #ff0000; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
+        .admin-card { background: #111; padding: 40px; border: 2px solid #ff0000; box-shadow: 0 0 30px rgba(255, 0, 0, 0.3); width: 100%; max-width: 450px; text-align: center; position: relative; }
         .admin-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 12px; background: repeating-linear-gradient(45deg, #ff0000, #ff0000 10px, #000 10px, #000 20px); }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; background: #000; border: 1px solid #ff0000; color: #ff0000; outline: none; box-sizing: border-box; }
-        .btn-danger { width: 100%; padding: 20px; background: #ff0000; color: #000; border: none; cursor: pointer; font-weight: 900; text-transform: uppercase; clip-path: polygon(5% 0, 100% 0, 95% 100%, 0% 100%); }
-        .btn-danger:hover { background: #fff; color: #ff0000; }
-        #statusBox { margin-top: 20px; padding: 15px; border: 1px dashed #ff0000; font-size: 12px; display: none; text-align: left; }
-        #render-stack { position: absolute; left: -9999px; top: 0; width: 800px; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; background: #000; border: 1px solid #ff0000; color: #ff0000; outline: none; font-family: inherit; }
+        .btn-danger { width: 100%; padding: 20px; background: #ff0000; color: #000; border: none; cursor: pointer; font-weight: 900; text-transform: uppercase; margin-top: 20px; clip-path: polygon(5% 0, 100% 0, 95% 100%, 0% 100%); }
+        .btn-danger:disabled { background: #444; color: #888; cursor: not-allowed; }
+        #statusBox { margin-top: 20px; padding: 15px; border: 1px dashed #ff0000; font-size: 12px; display: none; text-align: left; background: rgba(255, 0, 0, 0.05); }
+        
+        /* The Ghost-Fixer: Keeps the stack accessible but hidden from view */
+        #render-stack { 
+            position: absolute; 
+            left: 0; 
+            top: 0; 
+            z-index: -9999; 
+            width: 800px; 
+            background: #ffffff;
+        }
     </style>
 </head>
 <body>
 
     <div class="admin-card">
         <h2>⚠️ SYSTEM OVERRIDE</h2>
-        <input type="text" id="adminName" placeholder="IDENTIFY ADMIN NAME...">
+        <p>[ LEVEL 5 CLEARANCE ]</p>
+        <input type="text" id="adminName" placeholder="ADMIN NAME...">
         <select id="sectionSelect">
-            <option value="">SELECT CLEARANCE LEVEL</option>
-            <option value="JSS">JUNIOR SECONDARY (JSS)</option>
-            <option value="SSS">SENIOR SECONDARY (SSS)</option>
+            <option value="">SELECT SECTION</option>
+            <option value="JSS">JUNIOR (JSS)</option>
+            <option value="SSS">SENIOR (SSS)</option>
         </select>
-        <input type="password" id="adminPass" placeholder="ENTER ACCESS PIN...">
+        <input type="password" id="adminPass" placeholder="ACCESS PIN...">
         <button id="genBtn" class="btn-danger" onclick="startBulkGeneration()">⚠️ EXECUTE MASTER EXPORT</button>
         <div id="statusBox"></div>
     </div>
@@ -35,53 +48,74 @@
 
     <script>
         async function startBulkGeneration() {
-            const name = document.getElementById('adminName').value;
+            const adminName = document.getElementById('adminName').value;
             const section = document.getElementById('sectionSelect').value;
             const pin = document.getElementById('adminPass').value;
-            const status = document.getElementById('statusBox');
             const btn = document.getElementById('genBtn');
+            const status = document.getElementById('statusBox');
 
-            if(!name || !section || !pin) return alert("MISSING DATA");
+            if (!adminName || !section || !pin) return alert("ACCESS DENIED: DATA MISSING");
 
             btn.disabled = true;
             status.style.display = "block";
-            status.innerText = ">>> AUTHENTICATING...";
+            status.innerText = ">>> INITIALIZING...";
 
             try {
-                const auth = await fetch(`/api/admin-verify?name=${name}&pin=${pin}`);
-                if (auth.status !== 200) throw new Error("UNAUTHORIZED");
+                // 1. Verify
+                const auth = await fetch(`/api/admin-verify?name=${adminName}&pin=${pin}`);
+                if (auth.status !== 200) throw new Error("UNAUTHORIZED ACCESS");
 
-                status.innerText = ">>> FETCHING DATA...";
+                status.innerText = ">>> ACCESS GRANTED. FETCHING DATA...";
+                
+                // 2. Fetch
                 const res = await fetch(`/api/get-section-results?section=${section}`);
                 const students = await res.json();
+
+                if (!students || students.length === 0) throw new Error("ZERO RECORDS FOUND");
 
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF('p', 'mm', 'a4');
                 const stack = document.getElementById('render-stack');
 
                 for (let i = 0; i < students.length; i++) {
-                    status.innerText = `>>> COMPILING [${i+1}/${students.length}]: ${students[i].full_name}`;
+                    const student = students[i];
+                    status.innerText = `>>> COMPILING [${i + 1}/${students.length}]: ${student.full_name}`;
+
+                    // Create visual
                     const tempDiv = document.createElement('div');
-                    tempDiv.innerHTML = createProfessionalResult(students[i], section);
+                    tempDiv.innerHTML = createResultHTML(student, section);
                     stack.appendChild(tempDiv);
 
-                    const canvas = await html2canvas(tempDiv, { scale: 2, useCORS: true });
-                    const imgData = canvas.toDataURL('image/jpeg', 0.9);
+                    // --- THE FIX: Wait for the browser to actually "draw" the HTML ---
+                    await new Promise(resolve => setTimeout(resolve, 150));
+
+                    const canvas = await html2canvas(tempDiv, { 
+                        scale: 2, 
+                        useCORS: true,
+                        logging: false,
+                        backgroundColor: "#ffffff"
+                    });
+                    
+                    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                    const pdfWidth = 210; // A4 width in mm
+                    const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+
                     if (i > 0) pdf.addPage();
-                    pdf.addImage(imgData, 'JPEG', 0, 0, 210, (canvas.height * 210) / canvas.width);
-                    stack.innerHTML = "";
+                    pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, imgHeight);
+
+                    stack.innerHTML = ""; // Clear memory
                 }
 
-                pdf.save(`GoTegs_${section}_Export.pdf`);
-                status.innerText = ">>> EXPORT COMPLETE.";
+                pdf.save(`GoTegs_${section}_MASTER_REPORT.pdf`);
+                status.innerText = ">>> MASTER COMPILATION COMPLETE.";
             } catch (err) {
-                status.innerText = ">>> ERROR: " + err.message;
+                status.innerText = ">>> FATAL ERROR: " + err.message;
             } finally {
                 btn.disabled = false;
             }
         }
 
-        function createProfessionalResult(data, section) {
+        function createResultHTML(data, section) {
             let rows = (data.scores || []).map(s => `
                 <tr>
                     <td style="border:1px solid #000; padding:8px;">${s.subject_name}</td>
@@ -90,16 +124,21 @@
             `).join('');
 
             return `
-                <div style="background:white; color:black; padding:40px; width:800px; min-height:1050px; font-family: serif; border: 8px double #004a99;">
-                    <center>
-                        <h1 style="color:#004a99; margin:0;">GO-TEGS INTERNATIONAL SCHOOL</h1>
-                        <p>Academic Report Card</p>
-                    </center>
-                    <hr>
-                    <p><strong>Name:</strong> ${data.full_name} | <strong>Class:</strong> ${data.class}</p>
+                <div style="background:white; color:black; padding:40px; width:800px; min-height:1050px; box-sizing:border-box; border:10px double #004a99; font-family: 'Times New Roman', serif;">
+                    <div style="text-align:center; border-bottom:2px solid #004a99; padding-bottom:10px; margin-bottom:20px;">
+                        <h1 style="color:#004a99; font-size:32px; margin:0;">GO-TEGS INTERNATIONAL SCHOOL</h1>
+                        <p style="font-style:italic;">Training the Leaders of Tomorrow</p>
+                    </div>
+                    <div style="margin-bottom:20px; font-size:16px; border:1px solid #000; padding:15px; background:#f9f9f9;">
+                        <strong>STUDENT:</strong> ${data.full_name}<br>
+                        <strong>SECTION:</strong> ${section} | <strong>ID:</strong> ${data.student_id}
+                    </div>
                     <table style="width:100%; border-collapse:collapse;">
-                        <thead><tr style="background:#eee;"><th>Subject</th><th>Score</th></tr></thead>
-                        <tbody>${rows}</tbody>
+                        <thead><tr style="background:#eef2f7;">
+                            <th style="border:1px solid #000; padding:10px; text-align:left;">SUBJECT</th>
+                            <th style="border:1px solid #000; padding:10px;">SCORE (%)</th>
+                        </tr></thead>
+                        <tbody>${rows || '<tr><td colspan="2" style="text-align:center; padding:20px;">No Results Found</td></tr>'}</tbody>
                     </table>
                 </div>`;
         }
