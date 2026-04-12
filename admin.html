@@ -3,158 +3,262 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Go-Tegs | Admin Bulk Export</title>
+    <title>TERMINAL | RESTRICTED ACCESS</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .admin-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; }
-        h2 { color: #dc2626; margin-bottom: 10px; }
-        input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
-        
-        .btn-bulk { width: 100%; padding: 15px; background: #dc2626; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; }
-        .btn-bulk:hover { background: #b91c1c; }
-        .btn-bulk:disabled { background: #9ca3af; cursor: not-allowed; }
+        body { 
+            font-family: 'Courier New', Courier, monospace; 
+            background: #0a0a0a; 
+            color: #ff0000; 
+            margin: 0; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            min-height: 100vh; 
+            justify-content: center;
+        }
 
-        #statusBox { margin-top: 20px; padding: 15px; border-radius: 6px; font-size: 14px; display: none; background: #fef2f2; border: 1px solid #fee2e2; color: #991b1b; }
+        /* The Danger Card */
+        .admin-card { 
+            background: #111; 
+            padding: 40px; 
+            border: 2px solid #ff0000; 
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.3); 
+            width: 100%; 
+            max-width: 450px; 
+            text-align: center;
+            position: relative;
+        }
+
+        /* Hazard Stripes */
+        .admin-card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 12px;
+            background: repeating-linear-gradient(45deg, #ff0000, #ff0000 10px, #000 10px, #000 20px);
+        }
+
+        h2 { font-size: 26px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 2px; text-shadow: 2px 2px #000; }
+        p { font-size: 11px; color: #888; margin-bottom: 25px; letter-spacing: 1px; }
         
-        /* Hidden area for generating results */
-        #render-container { position: absolute; left: -9999px; top: 0; width: 850px; }
+        input, select { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            background: #000;
+            border: 1px solid #ff0000; 
+            color: #ff0000;
+            border-radius: 0; 
+            font-size: 14px; 
+            box-sizing: border-box; 
+            outline: none; 
+            font-family: 'Courier New', monospace;
+        }
         
-        /* Apply your result CSS here so the PDF looks identical */
-        .pdf-page-template { background: white; padding: 25px; border: 5px double #004a99; width: 800px; min-height: 1050px; box-sizing: border-box; position: relative; }
+        input::placeholder { color: rgba(255, 0, 0, 0.5); }
+
+        /* The Tactical Danger Button */
+        .btn-danger { 
+            width: 100%; 
+            padding: 20px; 
+            background: #ff0000; 
+            color: #000; 
+            border: none; 
+            cursor: pointer; 
+            font-weight: 900; 
+            font-size: 18px; 
+            margin-top: 20px; 
+            text-transform: uppercase;
+            transition: 0.3s;
+            clip-path: polygon(5% 0, 100% 0, 95% 100%, 0% 100%);
+            box-shadow: 0 5px 0 #800000;
+        }
+
+        .btn-danger:hover { background: #fff; color: #ff0000; box-shadow: 0 0 20px #ff0000; }
+        .btn-danger:active { transform: translateY(3px); box-shadow: 0 2px 0 #800000; }
+        .btn-danger:disabled { background: #444; color: #888; cursor: not-allowed; box-shadow: none; clip-path: none; }
+
+        #statusBox { 
+            margin-top: 20px; 
+            padding: 15px; 
+            border: 1px dashed #ff0000; 
+            font-size: 12px; 
+            background: rgba(255, 0, 0, 0.05);
+            display: none; 
+            text-align: left;
+            word-wrap: break-word;
+        }
+
+        .exit-link { 
+            display: inline-block; 
+            margin-top: 30px; 
+            color: #555; 
+            font-size: 10px; 
+            text-decoration: none; 
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .exit-link:hover { color: #ff0000; text-decoration: underline; }
+
+        /* Hidden stack for rendering results */
+        #render-stack { position: absolute; left: -9999px; top: 0; width: 850px; }
     </style>
 </head>
 <body>
 
     <div class="admin-card">
-        <img src="./assets/logo.webp" style="width: 80px;" onerror="this.src='https://wordpress.com'">
-        <h2>Master Admin Portal</h2>
-        <p style="font-size: 14px; color: #666;">Generate all student results into a single PDF document.</p>
+        <h2>⚠️ SYSTEM OVERRIDE</h2>
+        <p>[ LEVEL 5 CLEARANCE REQUIRED ]</p>
         
-        <input type="password" id="adminPass" placeholder="Enter Master Passcode">
-        <button id="genBtn" class="btn-bulk" onclick="startBulkGeneration()">🚀 GENERATE ALL RESULTS</button>
+        <input type="text" id="adminName" placeholder="IDENTIFY ADMIN NAME...">
+        
+        <select id="sectionSelect">
+            <option value="">SELECT CLEARANCE LEVEL</option>
+            <option value="JSS">JUNIOR SECONDARY (JSS 1-3)</option>
+            <option value="SSS">SENIOR SECONDARY (SSS 1-3)</option>
+        </select>
+
+        <input type="password" id="adminPass" placeholder="ENTER ACCESS PIN...">
+        
+        <button id="genBtn" class="btn-danger" onclick="startBulkGeneration()">
+            ⚠️ EXECUTE MASTER EXPORT
+        </button>
         
         <div id="statusBox"></div>
-        <a href="index.html" style="display:block; margin-top: 20px; color: #666; font-size: 13px; text-decoration: none;">← Back to Portal</a>
+        
+        <a href="index.html" class="exit-link">DISCONNECT SESSION</a>
     </div>
 
-    <div id="render-container"></div>
+    <div id="render-stack"></div>
 
     <script>
         async function startBulkGeneration() {
-            const pass = document.getElementById('adminPass').value;
+            const adminName = document.getElementById('adminName').value;
+            const section = document.getElementById('sectionSelect').value;
+            const pin = document.getElementById('adminPass').value;
             const btn = document.getElementById('genBtn');
             const status = document.getElementById('statusBox');
 
-            if (!pass) return alert("Please enter the admin passcode");
+            if (!adminName || !section || !pin) {
+                alert("ACCESS DENIED: MISSING AUTHENTICATION DATA");
+                return;
+            }
 
             btn.disabled = true;
             status.style.display = "block";
-            status.innerText = "⏳ Verifying Admin Credentials...";
+            status.style.color = "#ff0000";
+            status.innerText = `>>> INITIALIZING PROTOCOL: ${adminName}...`;
 
             try {
-                // 1. Verify Admin (Matches your Supabase table 'admin_portal')
-                const auth = await fetch(`/api/admin-verify?pin=${pass}`);
+                // 1. Verify Admin (API endpoint checks your admin_portal table)
+                const auth = await fetch(`/api/admin-verify?name=${adminName}&pin=${pin}`);
                 if (auth.status !== 200) {
-                    status.innerText = "❌ Unauthorized: Invalid Admin PIN";
+                    status.innerText = "!!! UNAUTHORIZED ACCESS ATTEMPT. LOCKING SESSION !!!";
+                    setTimeout(() => { location.reload(); }, 3000);
+                    return;
+                }
+
+                status.innerText = ">>> ACCESS GRANTED. FETCHING ENCRYPTED DATA...";
+                
+                // 2. Fetch Section Results
+                const res = await fetch(`/api/get-section-results?section=${section}`);
+                const students = await res.json();
+
+                if (!students || students.length === 0) {
+                    status.innerText = ">>> ERROR: ZERO RECORDS DETECTED IN SELECTED SECTOR.";
                     btn.disabled = false;
                     return;
                 }
 
-                // 2. Fetch all student records
-                status.innerText = "📂 Fetching all records from database...";
-                const res = await fetch(`/api/get-all-results`);
-                const allData = await res.json();
-
-                if (!allData || allData.length === 0) {
-                    status.innerText = "❌ No student data found.";
-                    btn.disabled = false;
-                    return;
-                }
-
-                // 3. Setup PDF
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF('p', 'mm', 'a4');
-                const container = document.getElementById('render-container');
+                const stack = document.getElementById('render-stack');
+                
+                // ADJUSTMENT: SSS has more subjects, so we use a smaller scale 
+                // to fit 1 page perfectly without "shrinking" the content too much.
+                const captureScale = (section === "SSS") ? 2.3 : 2.6;
 
-                for (let i = 0; i < allData.length; i++) {
-                    const student = allData[i];
-                    status.innerText = `📄 Processing (${i + 1}/${allData.length}): ${student.full_name}`;
+                for (let i = 0; i < students.length; i++) {
+                    const student = students[i];
+                    status.innerText = `>>> COMPILING RECORD [${i + 1}/${students.length}]: ${student.full_name}`;
 
-                    // Create HTML for this student
-                    const wrapper = document.createElement('div');
-                    wrapper.className = "pdf-page-template";
-                    wrapper.innerHTML = generateResultHTML(student);
-                    container.appendChild(wrapper);
+                    const tempDiv = document.createElement('div');
+                    // This creates the actual result visual
+                    tempDiv.innerHTML = createProfessionalResult(student, section);
+                    stack.appendChild(tempDiv);
 
-                    // Capture to Image
-                    const canvas = await html2canvas(wrapper, { scale: 2, useCORS: true });
-                    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                    const canvas = await html2canvas(tempDiv, { 
+                        scale: captureScale, 
+                        useCORS: true,
+                        backgroundColor: "#ffffff"
+                    });
                     
+                    const imgData = canvas.toDataURL('image/jpeg', 0.95);
                     const pdfWidth = pdf.internal.pageSize.getWidth();
                     const imgHeight = (canvas.height * pdfWidth) / canvas.width;
 
                     if (i > 0) pdf.addPage();
                     pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, imgHeight);
 
-                    // Clear memory
-                    container.innerHTML = "";
+                    stack.innerHTML = ""; // Clear memory for next page
                 }
 
-                pdf.save(`GoTegs_Master_Results_${new Date().getFullYear()}.pdf`);
-                status.style.background = "#f0fdf4";
-                status.style.borderColor = "#dcfce7";
-                status.style.color = "#166534";
-                status.innerText = "✅ Success! Master PDF downloaded.";
+                pdf.save(`GoTegs_${section}_MASTER_EXPORT.pdf`);
+                status.style.color = "#00ff00";
+                status.innerText = ">>> MASTER COMPILATION COMPLETE. FILE DOWNLOADED.";
                 btn.disabled = false;
 
             } catch (err) {
                 console.error(err);
-                status.innerText = "❌ Error: Could not generate PDF. Check console.";
+                status.innerText = ">>> FATAL ERROR: DATABASE HANDSHAKE FAILED.";
                 btn.disabled = false;
             }
         }
 
-        // This function builds the EXACT same HTML as your index.html
-        function generateResultHTML(data) {
-            // Logic to calculate scores same as student portal
+        // The professional template for the actual PDF content
+        function createProfessionalResult(data, section) {
             let rows = "";
-            let total = 0;
             data.scores.forEach(s => {
-                total += s.score;
                 rows += `<tr>
-                    <td style="border:1px solid #000; padding:8px;">${s.subject_name}</td>
-                    <td style="border:1px solid #000; padding:8px; text-align:center;">${s.score}</td>
+                    <td style="border:1px solid #000; padding:8px; font-size:13px;">${s.subject_name}</td>
+                    <td style="border:1px solid #000; padding:8px; font-size:13px; text-align:center;">${s.score}</td>
                 </tr>`;
             });
-            const mean = (total / data.scores.length).toFixed(1);
 
-            // Returns the template string (trimmed version of your #pdfArea)
             return `
-                <div style="text-align:center;">
-                    <img src="./assets/logo.webp" style="width:80px;">
-                    <h1 style="color:#004a99; margin:5px 0;">GO-TEGS INTERNATIONAL SCHOOL</h1>
-                    <p style="font-size:12px; font-weight:bold;">15, Ayesanmi Street, Lagos, Nigeria</p>
-                    <hr border="1">
-                    <h3 style="text-transform:uppercase;">REPORT SHEET: ${data.full_name}</h3>
-                </div>
-                <div style="display:flex; justify-content:space-between; margin-top:20px; font-size:14px;">
-                    <div><strong>ID:</strong> ${data.student_id}</div>
-                    <div><strong>Class:</strong> ${data.class_name}</div>
-                </div>
-                <table style="width:100%; border-collapse:collapse; margin-top:20px;">
-                    <thead><tr style="background:#eef2f7;">
-                        <th style="border:1px solid #000; padding:8px;">Subject</th>
-                        <th style="border:1px solid #000; padding:8px;">Score</th>
-                    </tr></thead>
-                    <tbody>${rows}</tbody>
-                </table>
-                <div style="margin-top:20px; font-weight:bold;">Average: ${mean}%</div>
-                <div style="margin-top:50px; border-top:2px solid #000; width:200px; text-align:center; float:right;">
-                    Principal's Signature
+                <div style="background:white; color:black; padding:30px; border:10px double #004a99; width:800px; min-height:1080px; box-sizing:border-box; font-family: 'Times New Roman', serif;">
+                    <div style="text-align:center; border-bottom:2px solid #004a99; padding-bottom:10px; margin-bottom:20px;">
+                        <img src="./assets/logo.webp" style="width:100px;">
+                        <h1 style="color:#004a99; font-size:32px; margin:10px 0; text-transform:uppercase;">GO-TEGS INTERNATIONAL SCHOOL</h1>
+                        <p style="font-weight:bold; margin:0; font-size:14px; font-style:italic;">Motto: Training the Leaders of Tomorrow</p>
+                    </div>
+                    
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:20px; font-size:14px; border:1px solid #000; padding:15px; background:#f9f9f9;">
+                        <div><strong>STUDENT NAME:</strong> ${data.full_name}</div>
+                        <div><strong>ACADEMIC SECTION:</strong> ${section}</div>
+                        <div><strong>STUDENT ID:</strong> ${data.student_id}</div>
+                        <div><strong>SESSION:</strong> 2025/2026</div>
+                    </div>
+
+                    <table style="width:100%; border-collapse:collapse; margin-bottom:20px;">
+                        <thead><tr style="background:#eef2f7; color:#004a99;">
+                            <th style="border:1px solid #000; padding:10px; text-align:left;">SUBJECT</th>
+                            <th style="border:1px solid #000; padding:10px; text-align:center;">SCORE (%)</th>
+                        </tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+
+                    <div style="margin-top:auto; padding-top:50px; display:flex; justify-content:space-between; align-items:flex-end;">
+                        <div style="font-size:10px; color:#555;">Official Academic Record - Go-Tegs Portal</div>
+                        <div style="text-align:center; width:220px;">
+                            <div style="border-top:2px solid #000; padding-top:5px; font-weight:bold; text-transform:uppercase;">School Principal</div>
+                        </div>
+                    </div>
                 </div>
             `;
         }
