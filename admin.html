@@ -5,53 +5,114 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TERMINAL | SYSTEM OUTPUT</title>
     <style>
-        body { font-family: 'Courier New', monospace; background: #0a0a0a; color: #ff0000; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        
-        /* Control Panel */
-        .admin-card { background: #111; padding: 30px; border: 2px solid #ff0000; width: 100%; max-width: 450px; text-align: center; margin-bottom: 30px; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; background: #000; border: 1px solid #ff0000; color: #ff0000; outline: none; }
-        .btn-danger { width: 100%; padding: 15px; background: #ff0000; color: #000; border: none; cursor: pointer; font-weight: 900; text-transform: uppercase; }
-        
-        /* Output Area */
+        body { 
+            font-family: 'Courier New', Courier, monospace; 
+            background: #0a0a0a; 
+            color: #ff0000; 
+            margin: 0; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            min-height: 100vh; 
+        }
+
+        /* The Control Panel */
+        .admin-card { 
+            background: #111; 
+            padding: 30px; 
+            border: 2px solid #ff0000; 
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.3); 
+            width: 100%; 
+            max-width: 450px; 
+            text-align: center; 
+            position: relative;
+            margin-bottom: 40px;
+        }
+
+        .admin-card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 10px;
+            background: repeating-linear-gradient(45deg, #ff0000, #ff0000 10px, #000 10px, #000 20px);
+        }
+
+        h2 { font-size: 22px; margin-bottom: 15px; letter-spacing: 2px; }
+        input, select { 
+            width: 100%; padding: 12px; margin: 8px 0; 
+            background: #000; border: 1px solid #ff0000; 
+            color: #ff0000; font-family: inherit; box-sizing: border-box;
+        }
+
+        .btn-danger { 
+            width: 100%; padding: 18px; background: #ff0000; 
+            color: #000; border: none; cursor: pointer; 
+            font-weight: 900; text-transform: uppercase; margin-top: 15px;
+            clip-path: polygon(5% 0, 100% 0, 95% 100%, 0% 100%);
+        }
+
+        .btn-danger:hover { background: #fff; }
+
+        #statusBox { 
+            margin-top: 15px; font-size: 12px; display: none; 
+            text-align: left; border: 1px dashed #ff0000; padding: 10px;
+        }
+
+        /* Result Display Area */
         #output-container {
             display: flex;
             flex-direction: column;
-            gap: 40px;
+            gap: 50px;
             align-items: center;
             width: 100%;
+            padding-bottom: 100px;
         }
 
-        /* The Exact Rectangular Measurement (A4 Ratio) */
+        /* The Exact Rectangular Sheet */
         .result-sheet {
             background: white;
             color: black;
-            padding: 40px;
-            width: 800px; /* Fixed Width */
-            min-height: 1050px; /* Fixed Height Ratio */
+            padding: 50px;
+            width: 800px; 
+            min-height: 1050px; 
             box-sizing: border-box;
             border: 10px double #004a99;
-            font-family: 'Times New Roman', serif;
-            box-shadow: 0 0 20px rgba(255,255,255,0.1);
+            font-family: 'Times New Roman', Times, serif;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.5);
         }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #000; padding: 10px; text-align: left; }
-        th { background: #f0f0f0; }
+        .header { text-align: center; border-bottom: 3px solid #004a99; padding-bottom: 10px; margin-bottom: 30px; }
+        .header h1 { color: #004a99; font-size: 32px; margin: 0; text-transform: uppercase; }
         
-        #statusBox { color: #ff0000; margin-top: 10px; font-size: 13px; display: none; }
+        .student-info { 
+            display: grid; grid-template-columns: 1fr 1fr; 
+            gap: 15px; margin-bottom: 30px; font-size: 16px;
+            background: #f4f4f4; padding: 15px; border: 1px solid #000;
+        }
+
+        table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
+        th, td { border: 1px solid #000; padding: 12px; text-align: left; }
+        th { background: #eef2f7; color: #004a99; }
+
+        .footer { 
+            margin-top: auto; display: flex; 
+            justify-content: space-between; align-items: flex-end; 
+            padding-top: 60px;
+        }
     </style>
 </head>
 <body>
 
     <div class="admin-card">
         <h2>⚠️ SYSTEM OVERRIDE</h2>
-        <input type="text" id="adminName" placeholder="ADMIN NAME...">
+        <input type="text" id="adminName" placeholder="IDENTIFY ADMIN...">
         <select id="sectionSelect">
-            <option value="">SELECT SECTION</option>
-            <option value="JSS">JUNIOR (JSS)</option>
-            <option value="SSS">SENIOR (SSS)</option>
+            <option value="">SELECT SECTOR</option>
+            <option value="JSS">JUNIOR SECONDARY (JSS)</option>
+            <option value="SSS">SENIOR SECONDARY (SSS)</option>
         </select>
-        <input type="password" id="adminPass" placeholder="ACCESS PIN...">
+        <input type="password" id="adminPass" placeholder="ENTER ACCESS PIN...">
         <button id="genBtn" class="btn-danger" onclick="generateOutput()">EXECUTE DATA RETRIEVAL</button>
         <div id="statusBox"></div>
     </div>
@@ -65,44 +126,60 @@
             const pin = document.getElementById('adminPass').value;
             const status = document.getElementById('statusBox');
             const container = document.getElementById('output-container');
+            const btn = document.getElementById('genBtn');
 
-            if (!name || !section || !pin) return alert("REQUIRED: AUTH DATA");
+            if (!name || !section || !pin) return alert("ACCESS DENIED: AUTH DATA REQUIRED");
 
+            btn.disabled = true;
             status.style.display = "block";
-            status.innerText = ">>> SEARCHING DATABASE...";
-            container.innerHTML = ""; // Clear old results
+            status.innerText = ">>> INITIALIZING HANDSHAKE...";
+            container.innerHTML = ""; 
 
             try {
+                // 1. Verify Admin
                 const auth = await fetch(`/api/admin-verify?name=${name}&pin=${pin}`);
-                if (auth.status !== 200) throw new Error("INVALID CREDENTIALS");
+                if (auth.status !== 200) throw new Error("UNAUTHORIZED: INVALID CREDENTIALS");
 
+                // 2. Fetch Results
+                status.innerText = ">>> ACCESS GRANTED. PULLING ENCRYPTED DATA...";
                 const res = await fetch(`/api/get-section-results?section=${section}`);
-                const students = await res.json();
+                let students = await res.json();
 
-                if (!students || students.length === 0) throw new Error("NO RECORDS FOUND");
+                // FIX: Check if students is an array or wrapped in an object
+                if (!Array.isArray(students)) {
+                    students = students.data || students.results || [];
+                }
 
-                status.innerText = `>>> DISPLAYING ${students.length} RECORDS...`;
+                if (students.length === 0) throw new Error("ZERO RECORDS DETECTED IN SECTOR");
 
+                status.innerText = `>>> DECRYPTING ${students.length} RECORDS...`;
+
+                // 3. Render directly to screen
                 students.forEach(student => {
                     const sheet = document.createElement('div');
                     sheet.className = 'result-sheet';
                     
-                    let rows = (student.scores || []).map(s => `
+                    const scoreList = student.scores || [];
+                    let rows = scoreList.map(s => `
                         <tr>
                             <td>${s.subject_name}</td>
-                            <td style="text-align:center;">${s.score}</td>
+                            <td style="text-align:center; font-weight:bold;">${s.score}</td>
                         </tr>
                     `).join('');
 
                     sheet.innerHTML = `
-                        <div style="text-align:center; border-bottom:2px solid #004a99; padding-bottom:10px; margin-bottom:20px;">
-                            <h1 style="color:#004a99; font-size:28px; margin:0;">GO-TEGS INTERNATIONAL SCHOOL</h1>
-                            <p style="font-weight:bold;">OFFICIAL ACADEMIC REPORT</p>
+                        <div class="header">
+                            <h1>GO-TEGS INTERNATIONAL SCHOOL</h1>
+                            <p style="margin:5px 0; font-style:italic; font-weight:bold;">Motto: Training the Leaders of Tomorrow</p>
                         </div>
-                        <div style="margin-bottom:20px; font-size:18px;">
-                            <strong>NAME:</strong> ${student.full_name}<br>
-                            <strong>SECTION:</strong> ${section} | <strong>STUDENT ID:</strong> ${student.student_id}
+                        
+                        <div class="student-info">
+                            <div><strong>NAME:</strong> ${student.full_name}</div>
+                            <div><strong>SECTION:</strong> ${section}</div>
+                            <div><strong>STUDENT ID:</strong> ${student.student_id}</div>
+                            <div><strong>SESSION:</strong> 2025/2026</div>
                         </div>
+
                         <table>
                             <thead>
                                 <tr>
@@ -111,20 +188,27 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                ${rows || '<tr><td colspan="2" style="text-align:center;">No data available</td></tr>'}
+                                ${rows || '<tr><td colspan="2" style="text-align:center;">NO SUBJECT DATA RECORDED</td></tr>'}
                             </tbody>
                         </table>
-                        <div style="margin-top:50px; text-align:right;">
-                            <div style="display:inline-block; border-top:1px solid #000; width:200px; text-align:center;">
-                                <p>Principal's Signature</p>
+
+                        <div class="footer">
+                            <div style="font-size:12px; color:#666;">Official Document - Go-Tegs Academic Portal</div>
+                            <div style="text-align:center; width:250px;">
+                                <div style="border-top:2px solid #000; padding-top:5px; font-weight:bold;">SCHOOL PRINCIPAL</div>
                             </div>
                         </div>
                     `;
                     container.appendChild(sheet);
                 });
 
+                status.innerText = ">>> DATA RETRIEVAL COMPLETE. OUTPUT GENERATED.";
+
             } catch (err) {
-                status.innerText = ">>> ERROR: " + err.message;
+                status.innerText = ">>> FATAL ERROR: " + err.message;
+                console.error(err);
+            } finally {
+                btn.disabled = false;
             }
         }
     </script>
