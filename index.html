@@ -45,31 +45,30 @@
 
         #pdfArea::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; height: 70%; background-image: url('./assets/logo.webp'); background-repeat: no-repeat; background-position: center; background-size: contain; opacity: 0.08; z-index: 0; pointer-events: none; }
         .unofficial-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 70px; color: rgba(255, 0, 0, 0.12); font-weight: bold; z-index: 10; pointer-events: none; white-space: nowrap; display: none; }
-        .blurred { filter: blur(15px); }
-        .report-header, .student-info-grid, .result-table, .bottom-wrap, .footer { position: relative; z-index: 1; }
+        .blurred { filter: blur(20px); pointer-events: none; }
         
-        .report-header { display: flex; align-items: center; border-bottom: 2px solid #004a99; padding-bottom: 15px; margin-bottom: 20px; }
+        .report-header { display: flex; align-items: center; border-bottom: 2px solid #004a99; padding-bottom: 15px; margin-bottom: 20px; position: relative; z-index: 1; }
         .school-logo { width: 110px; height: auto; flex-shrink: 0; }
         .header-text { flex-grow: 1; text-align: center; padding-right: 110px; }
         .school-name { font-family: 'Times New Roman', serif; font-size: 28px; color: #004a99; margin: 0; text-transform: uppercase; font-weight: bold; }
         .motto { font-style: italic; font-weight: bold; font-size: 15px; margin: 2px 0; color: #333; }
         .address { font-size: 12px; font-weight: bold; color: #444; margin: 1px 0; }
         
-        .student-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; border: 1px solid #000; padding: 15px; background: #fafafa; }
+        .student-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; border: 1px solid #000; padding: 15px; background: #fafafa; position: relative; z-index: 1; }
         .info-item { font-size: 14px; border-bottom: 1px solid #eee; padding: 5px 0; }
         .info-label { font-weight: bold; color: #004a99; }
 
-        .result-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .result-table { width: 100%; border-collapse: collapse; margin-top: 10px; position: relative; z-index: 1; }
         .result-table th, .result-table td { border: 1px solid #000; padding: 10px; text-align: left; }
         .result-table th { background: #eef2f7; color: #004a99; }
         
-        .bottom-wrap { display: flex; margin-top: 20px; gap: 15px; }
+        .bottom-wrap { display: flex; margin-top: 20px; gap: 15px; position: relative; z-index: 1; }
         .comments-table { width: 55%; border-collapse: collapse; }
         .comments-table td { border: 1px solid #000; padding: 10px; vertical-align: top; font-size: 13px; height: 60px; line-height: 1.4; }
         .summary-table { width: 45%; border-collapse: collapse; margin-left: auto; }
         .summary-table td { border: 1px solid #000; padding: 10px; font-weight: bold; font-size: 14px; }
 
-        .footer { margin-top: auto; padding-top: 40px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .footer { margin-top: auto; padding-top: 40px; display: flex; justify-content: space-between; align-items: flex-end; position: relative; z-index: 1; }
         .sig-space { text-align: center; width: 200px; }
         .sig-line { border-top: 2px solid #000; margin-bottom: 5px; }
         .timestamp { font-size: 11px; color: #777; font-style: italic; }
@@ -178,6 +177,34 @@
             maths_score: "Mathematics", english_score: "English Language", physics_score: "Physics", chem_score: "Chemistry", bio_score: "Biology", fmath_score: "Further Mathematics", civic_score: "Civic Education", govt_score: "Government", econs_score: "Economics", markt_score: "Marketing", dp_score: "Data Processing", comme_score: "Commerce", agric_score: "Agricultural Science", crs_score: "C.R.S", finacc_score: "Financial Accounting", litineng_score: "Literature in English", philo_score: "Philosophy", geo_score: "Geography", basic_science_score: "Basic Science", basic_tech_score: "Basic Technology", bus_stud_score: "Business Studies", cmp_score: "Computer Studies", phe_score: "P.H.E", cca_score: "C.C.A", social_stud_score: "Social Studies", home_econs_score: "Home Economics", yoruba_score: "Yoruba", french_score: "French", sec_edu_score: "Security Education", lit_score: "Literature", music_score: "Music"
         };
 
+        // REFRESH WATCHDOGS (Anti-Cheat)
+        window.isViewingResult = false;
+        
+        function forceClear() {
+            if(window.isViewingResult) {
+                location.reload();
+            }
+        }
+
+        // 1. If user switches tabs
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') forceClear();
+        });
+
+        // 2. If user leaves page (back button, etc)
+        window.addEventListener('pagehide', forceClear);
+
+        // 3. If user clicks away from the window (Blur)
+        window.addEventListener('blur', () => {
+            if(window.isViewingResult) {
+                document.getElementById('pdfArea').classList.add('blurred');
+            }
+        });
+        
+        window.addEventListener('focus', () => {
+            document.getElementById('pdfArea').classList.remove('blurred');
+        });
+
         function toggleDept() {
             const cls = document.getElementById('classSelect').value;
             document.getElementById('deptDiv').style.display = cls.includes("SSS") ? "block" : "none";
@@ -212,7 +239,6 @@
             btn.classList.add('loading');
             msg.style.color = "#004a99";
             
-            // --- RESTORED LOADING MESSAGES ---
             msg.innerText = "⏳ Connecting to Go-Tegs Database...";
             await new Promise(r => setTimeout(r, 1200));
             msg.innerText = "🔍 Verifying Credentials...";
@@ -228,6 +254,7 @@
                     btn.classList.remove('loading');
                     msg.style.color = "red"; msg.innerText = "❌ " + data.error;
                 } else {
+                    window.isViewingResult = true; // Activate watchdog
                     document.getElementById('loginSection').style.display = 'none';
                     document.getElementById('resultSection').style.display = 'block';
                     document.querySelector('.unofficial-overlay').style.display = data.is_paid ? 'none' : 'block';
@@ -251,7 +278,7 @@
                     const mean = (total / count).toFixed(1);
                     
                     document.getElementById('resBody').innerHTML = rows;
-                    document.getElementById('resObtainable').innerText = count * 100; // NEW
+                    document.getElementById('resObtainable').innerText = count * 100;
                     document.getElementById('resTotal').innerText = total;
                     document.getElementById('resMean').innerText = mean + "%";
                     document.getElementById('resGrade').innerText = getGrade(mean);
