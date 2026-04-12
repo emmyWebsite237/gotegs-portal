@@ -76,6 +76,12 @@
         .action-btns { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
         #msg { text-align: center; font-weight: bold; margin-top: 20px; font-size: 16px; }
 
+        /* ADDED: Ensures full area is captured without clipping */
+        @media screen {
+            #pdfArea { min-width: 800px; }
+            .card { overflow: visible !important; }
+        }
+
         @media screen and (max-width: 600px) {
             #pdfArea { width: 800px; transform: scale(0.42); transform-origin: top left; margin-bottom: -550px; }
             .card { overflow-x: auto; padding: 15px; }
@@ -186,15 +192,12 @@
             }
         }
 
-        // 1. If user switches tabs
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'hidden') forceClear();
         });
 
-        // 2. If user leaves page (back button, etc)
         window.addEventListener('pagehide', forceClear);
 
-        // 3. If user clicks away from the window (Blur)
         window.addEventListener('blur', () => {
             if(window.isViewingResult) {
                 document.getElementById('pdfArea').classList.add('blurred');
@@ -254,7 +257,7 @@
                     btn.classList.remove('loading');
                     msg.style.color = "red"; msg.innerText = "❌ " + data.error;
                 } else {
-                    window.isViewingResult = true; // Activate watchdog
+                    window.isViewingResult = true; 
                     document.getElementById('loginSection').style.display = 'none';
                     document.getElementById('resultSection').style.display = 'block';
                     document.querySelector('.unofficial-overlay').style.display = data.is_paid ? 'none' : 'block';
@@ -292,18 +295,38 @@
             }
         }
 
+        // CORRECTED DOWNLOAD FUNCTION
         async function downloadPDF() {
             const element = document.getElementById('pdfArea');
             const studentName = document.getElementById('dispName').innerText || "Student";
+            
             try {
-                const canvas = await html2canvas(element, { scale: 2, useCORS: true });
-                const imgData = canvas.toDataURL('image/jpeg', 0.8);
+                // High scale for clarity, explicit size for accuracy
+                const canvas = await html2canvas(element, { 
+                    scale: 2, 
+                    useCORS: true,
+                    logging: false,
+                    width: element.scrollWidth,
+                    height: element.scrollHeight
+                });
+
+                const imgData = canvas.toDataURL('image/jpeg', 1.0);
                 const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+                
                 const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                
+                // Calculate scale to fit width while keeping full content visible
+                const imgProps = pdf.getImageProperties(imgData);
+                const ratio = imgProps.width / imgProps.height;
+                const renderHeight = pdfWidth / ratio;
+
+                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, renderHeight);
                 pdf.save(`${studentName}_Result.pdf`);
-            } catch (e) { alert("PDF Error"); }
+            } catch (e) { 
+                alert("PDF Error: Could not generate document."); 
+                console.error(e);
+            }
         }
     </script>
 </body>
