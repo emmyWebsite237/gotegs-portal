@@ -10,7 +10,7 @@
 
     <style>
         /* General Page Styling */
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 850px; position: relative; }
         
         #loginSection { max-width: 400px; margin: 0 auto; text-align: center; }
@@ -168,6 +168,12 @@
         <p id="msg"></p>
     </div>
 
+    <footer style="margin-top: 40px; text-align: center;">
+        <a href="admin.html" style="color: #dc2626; font-size: 12px; text-decoration: none; font-weight: bold; border: 1px solid #dc2626; padding: 5px 10px; border-radius: 4px; display: inline-block; transition: 0.3s;" onmouseover="this.style.background='#dc2626'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='#dc2626';">
+            ⚠️ ADMIN ACCESS ONLY
+        </a>
+    </footer>
+
     <script>
         const subjectNames = {
             maths_score: "Mathematics", english_score: "English Language", physics_score: "Physics", chem_score: "Chemistry", bio_score: "Biology", fmath_score: "Further Mathematics", civic_score: "Civic Education", govt_score: "Government", econs_score: "Economics", markt_score: "Marketing", dp_score: "Data Processing", comme_score: "Commerce", agric_score: "Agricultural Science", crs_score: "C.R.S", finacc_score: "Financial Accounting", litineng_score: "Literature in English", philo_score: "Philosophy", geo_score: "Geography", basic_science_score: "Basic Science", basic_tech_score: "Basic Technology", bus_stud_score: "Business Studies", cmp_score: "Computer Studies", phe_score: "P.H.E", cca_score: "C.C.A", social_stud_score: "Social Studies", home_econs_score: "Home Economics", yoruba_score: "Yoruba", french_score: "French", sec_edu_score: "Security Education", lit_score: "Literature", music_score: "Music"
@@ -214,7 +220,6 @@
             btn.classList.add('loading');
             msg.style.color = "#004a99";
             
-            // Re-added the loading messages
             msg.innerText = "⏳ Connecting to Go-Tegs Database...";
             await new Promise(r => setTimeout(r, 1200));
             msg.innerText = "🔍 Verifying Credentials...";
@@ -272,7 +277,6 @@
             const element = document.getElementById('pdfArea');
             const studentName = document.getElementById('dispName').innerText || "Student";
             try {
-                // High scale for clarity, no extra margin
                 const canvas = await html2canvas(element, { scale: 3, useCORS: true });
                 const imgData = canvas.toDataURL('image/jpeg', 1.0);
                 const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
@@ -280,10 +284,8 @@
                 const pdfWidth = pdf.internal.pageSize.getWidth();
                 const pdfHeight = pdf.internal.pageSize.getHeight();
                 
-                // Calculate height to maintain aspect ratio based on A4 width
                 const imgHeight = (canvas.height * pdfWidth) / canvas.width;
 
-                // Add image starting from top left (0,0) filling the width
                 pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, imgHeight);
                 pdf.save(`${studentName}_Result.pdf`);
             } catch (e) { alert("PDF Error"); }
