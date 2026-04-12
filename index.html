@@ -9,348 +9,169 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
-        /* General Page Styling */
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
         .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 850px; position: relative; }
         
-        /* Input Section Styling */
         #loginSection { max-width: 400px; margin: 0 auto; text-align: center; }
         input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
         
-        /* Button & Rolling Loader */
-        button { width: 100%; padding: 14px; background: #004a99; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 18px; margin-top: 10px; position: relative; display: flex; align-items: center; justify-content: center; min-height: 50px; transition: 0.3s; }
-        button:hover { background: #003366; }
-        .spinner { display: none; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .loading .btn-text { display: none; }
-        .loading .spinner { display: block; }
-        .loading { pointer-events: none; opacity: 0.8; }
-
-        /* RESULT TEMPLATE STYLING */
+        button { width: 100%; padding: 14px; background: #004a99; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 18px; margin-top: 10px; display: flex; align-items: center; justify-content: center; min-height: 50px; }
+        
         #pdfArea { 
-            padding: 40px; 
+            padding: 35px; 
             background: white !important; 
             border: 5px double #004a99; 
             margin: 10px auto;
             position: relative;
-            min-height: 950px;
+            min-height: 1000px;
             width: 100%;
             box-sizing: border-box;
-            overflow: hidden;
             display: flex;
             flex-direction: column;
-            -webkit-user-select: none; user-select: none;
-            transition: filter 0.3s;
         }
 
-        /* Watermark & Security Overlay */
-        #pdfArea::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; height: 70%; background-image: url('./assets/logo.webp'); background-repeat: no-repeat; background-position: center; background-size: contain; opacity: 0.08; z-index: 0; pointer-events: none; }
-        
-        .unofficial-overlay { 
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg);
-            font-size: 70px; color: rgba(255, 0, 0, 0.12); font-weight: bold; z-index: 10; pointer-events: none; white-space: nowrap; 
-            display: none; 
-        }
+        /* HEADER FORMAT */
+        .report-header { display: flex; align-items: center; border-bottom: 2px solid #004a99; padding-bottom: 10px; margin-bottom: 20px; }
+        .school-logo { width: 90px; height: auto; }
+        .header-text { flex-grow: 1; text-align: center; padding-right: 90px; }
+        .school-name { font-family: 'Times New Roman', serif; font-size: 26px; color: #004a99; margin: 0; text-transform: uppercase; font-weight: bold; }
+        .motto { font-style: italic; font-weight: bold; font-size: 14px; margin: 2px 0; }
+        .address { font-size: 12px; font-weight: bold; color: #444; }
 
-        .blurred { filter: blur(15px); }
+        /* STUDENT INFO - 2 COLUMNS */
+        .student-info-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px; margin-bottom: 20px; border: 1px solid #000; padding: 12px; }
+        .info-item { font-size: 14px; padding: 3px 0; border-bottom: 1px solid #eee; }
+        .info-label { font-weight: bold; color: #004a99; margin-right: 5px; }
 
-        .report-header, .student-info, .result-table, .summary-table, .footer { position: relative; z-index: 1; }
-        
-        /* ADJUSTED HEADING FORMAT */
-        .report-header { 
-            display: flex; 
-            align-items: center; 
-            border-bottom: 2px solid #004a99; 
-            padding-bottom: 15px; 
-            margin-bottom: 30px; 
-            position: relative;
-        }
-        .school-logo { width: 110px; height: auto; flex-shrink: 0; }
-        .header-text { flex-grow: 1; text-align: center; padding-right: 110px; /* Offset to keep text perfectly centered */ }
-        .school-name { font-family: 'Times New Roman', serif; font-size: 28px; color: #004a99; margin: 0; text-transform: uppercase; font-weight: bold; }
-        .motto { font-style: italic; font-weight: bold; font-size: 15px; margin: 2px 0; color: #333; }
-        .address { font-size: 12px; font-weight: bold; color: #444; margin: 1px 0; }
-        
-        .result-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        .result-table th, .result-table td { border: 1px solid #000; padding: 10px; text-align: left; }
+        .result-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .result-table th, .result-table td { border: 1px solid #000; padding: 8px; text-align: left; font-size: 14px; }
         .result-table th { background: #eef2f7; color: #004a99; }
-        
-        .summary-table { width: 50%; margin-top: 25px; margin-left: auto; border-collapse: collapse; }
-        .summary-table td { border: 1px solid #000; padding: 10px; font-weight: bold; }
+
+        /* COMMENTS + SUMMARY TABLE */
+        .bottom-container { display: flex; margin-top: 25px; gap: 15px; }
+        .comments-box { width: 65%; border-collapse: collapse; }
+        .comments-box td { border: 1px solid #000; padding: 10px; vertical-align: top; font-size: 13px; height: 55px; }
+        .summary-box { width: 35%; border-collapse: collapse; }
+        .summary-box td { border: 1px solid #000; padding: 10px; font-weight: bold; font-size: 14px; }
 
         .footer { margin-top: auto; padding-top: 40px; display: flex; justify-content: space-between; align-items: flex-end; }
-        .sig-space { text-align: center; width: 200px; }
+        .sig-space { text-align: center; width: 180px; }
         .sig-line { border-top: 2px solid #000; margin-bottom: 5px; }
-        .timestamp { font-size: 11px; color: #777; font-style: italic; }
-
-        .action-btns { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
-        #msg { text-align: center; font-weight: bold; margin-top: 20px; font-size: 16px; }
-
-        @media screen and (max-width: 600px) {
-            #pdfArea { width: 800px; transform: scale(0.42); transform-origin: top left; margin-bottom: -550px; }
-            .card { overflow-x: auto; padding: 15px; }
-            .header-text { padding-right: 0; } /* Reset offset for mobile view */
-        }
-
-        @media print {
-            body { background: white; padding: 0; }
-            .card { box-shadow: none; border: none; width: 100%; padding: 0; }
-            .action-btns, #loginSection, #msg { display: none !important; }
-            .unofficial-overlay { color: rgba(255, 0, 0, 0.2); }
-        }
     </style>
 </head>
 <body>
 
     <div class="card">
         <div id="loginSection">
-            <img src="./assets/logo.webp" style="width: 120px;" onerror="this.src='https://wordpress.com'">
-            <h3 style="color: #004a99;">Students Result Portal</h3>
-            <input type="text" id="sid" placeholder="Student ID (GT/...)">
-            <select id="yearSelect">
-                <option value="">Select Session</option>
-                <option value="2025/2026">2025/2026</option>
-            </select>
-            <select id="classSelect" onchange="toggleDept()">
-                <option value="">Select Class</option>
-                <option value="JSS 1">JSS 1</option><option value="JSS 2">JSS 2</option><option value="JSS 3">JSS 3</option>
-                <option value="SSS 1">SSS 1</option><option value="SSS 2">SSS 2</option><option value="SSS 3">SSS 3</option>
-            </select>
-            <div id="deptDiv" style="display:none;">
-                <select id="deptSelect">
-                    <option value="">Select Department</option>
-                    <option value="Science">Science</option><option value="Art">Art</option><option value="Commerce">Commerce</option>
-                </select>
-            </div>
+            <img src="./assets/logo.webp" style="width: 100px;">
+            <h3 style="color: #004a99;">Result Portal</h3>
+            <input type="text" id="sid" placeholder="Student ID">
             <input type="password" id="pin" placeholder="Access PIN">
-            <button id="checkBtn" onclick="check()">
-                <span class="btn-text">Check Result</span>
-                <div class="spinner"></div>
-            </button>
+            <button onclick="check()">Check Result</button>
         </div>
 
         <div id="resultSection" style="display:none;">
             <div id="pdfArea">
-                <div class="unofficial-overlay">UNOFFICIAL COPY</div>
-                
                 <div class="report-header">
-                    <img class="school-logo" src="./assets/logo.webp" onerror="this.src='https://wordpress.com'">
+                    <img class="school-logo" src="./assets/logo.webp">
                     <div class="header-text">
                         <h1 class="school-name">GO-TEGS INTERNATIONAL SCHOOL</h1>
                         <div class="motto">Motto: Training the Leaders of Tomorrow</div>
                         <div class="address">15, Ayesanmi Street, Pipeline B/Stop, Isheri Olofin, Alimosho L.G.A Lagos, Nigeria</div>
-                        <div class="address">Tel: 08066525319, 08066680932</div>
                     </div>
                 </div>
 
-                <div id="dispTerm" style="font-weight:bold; font-style:italic; text-align:center; margin-bottom: 15px; color:#004a99; text-transform: uppercase;"></div>
-
-                <div class="student-info" style="text-align:center;">
-                    <p>OFFICIAL ACADEMIC REPORT FOR <br>
-                        <span id="dispName" style="text-decoration:underline; font-weight:bold; font-size:20px;"></span>
-                    </p>
-                    <p><strong>Student ID:</strong> <span id="dispId"></span></p>
-                    <p><strong>Date of Birth:</strong> <span id="dispDob"></span></p>
-                    <p><strong>Class:</strong> <span id="dispClass"></span></p>
+                <div class="student-info-grid">
+                    <div class="info-item"><span class="info-label">Name:</span> <span id="dispName"></span></div>
+                    <div class="info-item"><span class="info-label">School Opened:</span> <span id="dispOpened"></span></div>
+                    <div class="info-item"><span class="info-label">Date of Birth:</span> <span id="dispDob"></span></div>
+                    <div class="info-item"><span class="info-label">Times Present:</span> <span id="dispPresent"></span></div>
+                    <div class="info-item"><span class="info-label">Class:</span> <span id="dispClass"></span></div>
+                    <div class="info-item"><span class="info-label">Times Absent:</span> <span id="dispAbsent"></span></div>
                 </div>
-                <table class="result-table" id="mainTable">
+
+                <table class="result-table">
                     <thead><tr><th>Subject</th><th style="text-align:center;">Score (%)</th><th style="text-align:center;">Grade</th></tr></thead>
                     <tbody id="resBody"></tbody>
                 </table>
-                <table class="summary-table">
-                    <tr><td>Total Score</td><td id="resTotal" style="text-align:center;"></td></tr>
-                    <tr><td>Mean Percentage</td><td id="resMean" style="text-align:center;"></td></tr>
-                    <tr><td>Overall Grade</td><td id="resGrade" style="text-align:center;"></td></tr>
-                </table>
+
+                <div class="bottom-container">
+                    <table class="comments-box">
+                        <tr><td><strong>Teacher's Remark:</strong><br><span id="dispTeacher"></span></td></tr>
+                        <tr><td><strong>Principal's Remark:</strong><br><span id="dispPrincipal"></span></td></tr>
+                    </table>
+                    <table class="summary-box">
+                        <tr><td>Total Score</td><td id="resTotal" style="text-align:right;"></td></tr>
+                        <tr><td>Mean %</td><td id="resMean" style="text-align:right;"></td></tr>
+                        <tr><td>Overall Grade</td><td id="resGrade" style="text-align:right;"></td></tr>
+                    </table>
+                </div>
+
                 <div class="footer">
-                    <div class="timestamp" id="dispTime"></div>
+                    <div id="dispTime" style="font-size:10px;"></div>
                     <div class="sig-space">
-                        <img id="sigImg" src="./assets/signature.png" style="width: 140px; display: block; margin-left: 20px; margin-bottom: 5px; position: relative; z-index: 1;" onerror="this.style.display='none'">
                         <div class="sig-line"></div>
-                        <strong style="text-transform: uppercase;">School Principal</strong>
+                        <strong>Principal</strong>
                     </div>
                 </div>
             </div>
-            <div class="action-btns">
-                <button class="download-btn" onclick="downloadPDF()">📥 Download Result PDF</button>
-                <button class="back-btn" onclick="location.reload()">Check Another</button>
-            </div>
+            <button onclick="window.print()">Download Result</button>
         </div>
-        <p id="msg"></p>
     </div>
 
     <script>
-        const subjectNames = {
-            maths_score: "Mathematics", 
-            english_score: "English Language", 
-            physics_score: "Physics", 
-            chem_score: "Chemistry", 
-            bio_score: "Biology", 
-            fmath_score: "Further Mathematics", 
-            civic_score: "Civic Education", 
-            govt_score: "Government", 
-            econs_score: "Economics", 
-            markt_score: "Marketing", 
-            dp_score: "Data Processing", 
-            comme_score: "Commerce", 
-            agric_score: "Agricultural Science", 
-            crs_score: "C.R.S", 
-            finacc_score: "Financial Accounting", 
-            litineng_score: "Literature in English", 
-            philo_score: "Philosophy", 
-            geo_score: "Geography", 
-            basic_science_score: "Basic Science", 
-            basic_tech_score: "Basic Technology", 
-            bus_stud_score: "Business Studies", 
-            cmp_score: "Computer Studies", 
-            phe_score: "P.H.E", 
-            cca_score: "C.C.A", 
-            social_stud_score: "Social Studies", 
-            home_econs_score: "Home Economics", 
-            yoruba_score: "Yoruba", 
-            french_score: "French",
-            sec_edu_score: "Security Education", 
-            lit_score: "Literature",             
-            music_score: "Music"                 
-        };
-
-        function toggleDept() {
-            const cls = document.getElementById('classSelect').value;
-            document.getElementById('deptDiv').style.display = cls.includes("SSS") ? "block" : "none";
-        }
-
         function getGrade(score) {
             if (score >= 75) return "A1"; if (score >= 70) return "B2"; if (score >= 65) return "B3";
             if (score >= 60) return "C4"; if (score >= 55) return "C5"; if (score >= 50) return "C6";
             if (score >= 45) return "D7"; if (score >= 40) return "E8"; return "F9";
         }
 
-        window.isStudentPaid = false;
-
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden') {
-                location.reload(); 
-            }
-        });
-
-        window.addEventListener('blur', () => {
-            if (!window.isStudentPaid) {
-                document.getElementById('pdfArea').classList.add('blurred');
-            }
-        });
-        window.addEventListener('focus', () => {
-            document.getElementById('pdfArea').classList.remove('blurred');
-        });
-
-        async function downloadPDF() {
-            const { jsPDF } = window.jspdf;
-            const element = document.getElementById('pdfArea');
-            const tableCells = document.querySelectorAll('#resBody td');
-            const studentName = document.getElementById('dispName').innerText || "Student";
-            const rowCount = document.querySelectorAll('#resBody tr').length;
-            const btn = document.querySelector('.download-btn');
-            
-            btn.innerText = "⌛ Generating...";
-            btn.style.opacity = "0.7";
-
-            if (rowCount > 15) {
-                tableCells.forEach(cell => {
-                    cell.style.padding = "5px"; 
-                    cell.style.fontSize = "14px";
-                });
-            }
-
-            try {
-                const canvas = await html2canvas(element, {
-                    scale: 2, 
-                    useCORS: true,
-                    backgroundColor: "#ffffff"
-                });
-                
-                const imgData = canvas.toDataURL('image/jpeg', 0.7);
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                
-                const imgProps = pdf.getImageProperties(imgData);
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-                
-                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-                pdf.save(`${studentName}_Result.pdf`);
-                
-            } catch (error) {
-                console.error("PDF Export Error:", error);
-                alert("Failed to generate PDF.");
-            } finally {
-                tableCells.forEach(cell => {
-                    cell.style.padding = "10px";
-                    cell.style.fontSize = "";
-                });
-                btn.innerText = "📥 Download Result PDF";
-                btn.style.opacity = "1";
-            }
+        function getPrincipalComment(mean) {
+            if (mean >= 75) return "An outstanding result. Keep the flag flying.";
+            if (mean >= 60) return "A very good performance. Keep it up.";
+            if (mean >= 45) return "Fair result, but you can do better with more focus.";
+            return "Below average. You must work harder next term.";
         }
 
         async function check() {
-            const sid = document.getElementById('sid').value;
-            const yr = document.getElementById('yearSelect').value;
-            const cls = document.getElementById('classSelect').value;
-            const dept = document.getElementById('deptSelect').value;
-            const pin = document.getElementById('pin').value;
-            const msg = document.getElementById('msg');
-            const btn = document.getElementById('checkBtn');
+            // Your Supabase Fetch logic goes here. Example Data:
+            const data = {
+                full_name: "AGBOOLA JEREMIAH",
+                dob: "12/04/2012",
+                class: "SSS 3",
+                opened: 130,   // Number from Supabase
+                present: 122,  // Number from Supabase
+                teacher_remark: "A dedicated and brilliant student.",
+                scores: [{sub: "Maths", score: 85}, {sub: "English", score: 72}]
+            };
 
-            if(!sid || !yr || !cls || !pin || (cls.includes("SSS") && !dept)) { 
-                msg.style.color = "#d97706"; msg.innerText = "⚠️ Please fill all fields"; return; 
-            }
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('resultSection').style.display = 'block';
 
-            btn.classList.add('loading');
-            msg.style.color = "#004a99";
-            msg.innerText = "⏳ Connecting to Go-Tegs Database...";
+            document.getElementById('dispName').innerText = data.full_name;
+            document.getElementById('dispDob').innerText = data.dob;
+            document.getElementById('dispClass').innerText = data.class;
+            document.getElementById('dispOpened').innerText = data.opened;
+            document.getElementById('dispPresent').innerText = data.present;
+            
+            // AUTOMATIC CALCULATION: OPENED - PRESENT
+            document.getElementById('dispAbsent').innerText = data.opened - data.present;
+            
+            document.getElementById('dispTeacher').innerText = data.teacher_remark;
 
-            await new Promise(r => setTimeout(r, 1000));
-            msg.innerText = "🔍 Verifying Credentials...";
-            await new Promise(r => setTimeout(r, 1000));
-            msg.innerText = "📋 Generating Report Card...";
-            await new Promise(r => setTimeout(r, 1000));
-
-            try {
-                const res = await fetch(`/api/verify?student_id=${sid}&year=${yr}&class=${cls}&dept=${dept}&pin=${pin}`);
-                const data = await res.json();
-
-                if (res.status !== 200) {
-                    btn.classList.remove('loading');
-                    msg.style.color = "red"; msg.innerText = "❌ " + data.error;
-                } else {
-                    window.isStudentPaid = data.is_paid;
-                    const overlay = document.querySelector('.unofficial-overlay');
-                    overlay.style.display = data.is_paid ? 'none' : 'block';
-
-                    document.getElementById('loginSection').style.display = 'none';
-                    document.getElementById('resultSection').style.display = 'block';
-                    document.getElementById('dispTerm').innerText = `${yr} ${data.term || "CONTINUOUS ASSESSMENT REPORT"}`;
-                    document.getElementById('dispName').innerText = data.full_name;
-                    document.getElementById('dispId').innerText = sid;
-                    document.getElementById('dispDob').innerText = data.dob || "---";
-                    document.getElementById('dispClass').innerText = cls + (dept ? ` (${dept})` : "");
-
-                    let rows = ""; let total = 0;
-                    data.scores.forEach(s => {
-                        total += s.score;
-                        const cleanSubjectName = subjectNames[s.subject] || s.subject;
-                        rows += `<tr><td>${cleanSubjectName}</td><td style="text-align:center;">${s.score}</td><td style="text-align:center; font-weight:bold;">${getGrade(s.score)}</td></tr>`;
-                    });
-                    const mean = (total / data.scores.length).toFixed(2);
-                    document.getElementById('resBody').innerHTML = rows;
-                    document.getElementById('resTotal').innerText = total;
-                    document.getElementById('resMean').innerText = mean + "%";
-                    document.getElementById('resGrade').innerText = getGrade(mean);
-                    document.getElementById('dispTime').innerText = "Generated: " + new Date().toLocaleString();
-                    msg.innerText = "✅ Success";
-                }
-            } catch (e) { 
-                btn.classList.remove('loading');
-                msg.innerText = "❌ Connection Error."; 
-            }
+            let total = 0; let rows = "";
+            data.scores.forEach(s => {
+                total += s.score;
+                rows += `<tr><td>${s.sub}</td><td style="text-align:center;">${s.score}</td><td style="text-align:center;">${getGrade(s.score)}</td></tr>`;
+            });
+            const mean = (total / data.scores.length).toFixed(1);
+            
+            document.getElementById('resBody').innerHTML = rows;
+            document.getElementById('resTotal').innerText = total;
+            document.getElementById('resMean').innerText = mean + "%";
+            document.getElementById('resGrade').innerText = getGrade(mean);
+            document.getElementById('dispPrincipal').innerText = getPrincipalComment(mean);
+            document.getElementById('dispTime').innerText = "Printed on: " + new Date().toLocaleString();
         }
     </script>
 </body>
