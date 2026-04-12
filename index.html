@@ -13,11 +13,9 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
         .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 850px; position: relative; }
         
-        /* Input Section Styling */
         #loginSection { max-width: 400px; margin: 0 auto; text-align: center; }
         input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
         
-        /* Button & Rolling Loader */
         button { width: 100%; padding: 14px; background: #004a99; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 18px; margin-top: 10px; position: relative; display: flex; align-items: center; justify-content: center; min-height: 50px; transition: 0.3s; }
         button:hover { background: #003366; }
         .spinner { display: none; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s linear infinite; }
@@ -26,57 +24,53 @@
         .loading .spinner { display: block; }
         .loading { pointer-events: none; opacity: 0.8; }
 
-        /* RESULT TEMPLATE STYLING */
+        /* RESULT TEMPLATE STYLING - COMPACTED */
         #pdfArea { 
-            padding: 40px; 
+            padding: 20px; /* Reduced from 40px */
             background: white !important; 
             border: 5px double #004a99; 
-            margin: 10px auto;
+            margin: 0 auto;
             position: relative;
-            min-height: 1050px;
+            min-height: 1000px;
             width: 100%;
             box-sizing: border-box;
-            overflow: hidden;
             display: flex;
             flex-direction: column;
             -webkit-user-select: none; user-select: none;
-            transition: filter 0.3s;
         }
 
-        #pdfArea::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; height: 70%; background-image: url('./assets/logo.webp'); background-repeat: no-repeat; background-position: center; background-size: contain; opacity: 0.08; z-index: 0; pointer-events: none; }
+        #pdfArea::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60%; height: 60%; background-image: url('./assets/logo.webp'); background-repeat: no-repeat; background-position: center; background-size: contain; opacity: 0.06; z-index: 0; pointer-events: none; }
         .unofficial-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 70px; color: rgba(255, 0, 0, 0.12); font-weight: bold; z-index: 10; pointer-events: none; white-space: nowrap; display: none; }
-        .blurred { filter: blur(20px); pointer-events: none; }
         
-        .report-header { display: flex; align-items: center; border-bottom: 2px solid #004a99; padding-bottom: 15px; margin-bottom: 20px; position: relative; z-index: 1; }
-        .school-logo { width: 110px; height: auto; flex-shrink: 0; }
-        .header-text { flex-grow: 1; text-align: center; padding-right: 110px; }
-        .school-name { font-family: 'Times New Roman', serif; font-size: 28px; color: #004a99; margin: 0; text-transform: uppercase; font-weight: bold; }
-        .motto { font-style: italic; font-weight: bold; font-size: 15px; margin: 2px 0; color: #333; }
-        .address { font-size: 12px; font-weight: bold; color: #444; margin: 1px 0; }
+        .report-header { display: flex; align-items: center; border-bottom: 2px solid #004a99; padding-bottom: 8px; margin-bottom: 12px; position: relative; z-index: 1; }
+        .school-logo { width: 90px; height: auto; flex-shrink: 0; }
+        .header-text { flex-grow: 1; text-align: center; padding-right: 90px; }
+        .school-name { font-family: 'Times New Roman', serif; font-size: 24px; color: #004a99; margin: 0; text-transform: uppercase; font-weight: bold; }
+        .motto { font-style: italic; font-weight: bold; font-size: 13px; margin: 0; color: #333; }
+        .address { font-size: 11px; font-weight: bold; color: #444; margin: 0; }
         
-        .student-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; border: 1px solid #000; padding: 15px; background: #fafafa; position: relative; z-index: 1; }
-        .info-item { font-size: 14px; border-bottom: 1px solid #eee; padding: 5px 0; }
+        .student-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 12px; border: 1px solid #000; padding: 10px; background: #fafafa; position: relative; z-index: 1; }
+        .info-item { font-size: 13px; border-bottom: 1px solid #eee; padding: 2px 0; }
         .info-label { font-weight: bold; color: #004a99; }
 
-        .result-table { width: 100%; border-collapse: collapse; margin-top: 10px; position: relative; z-index: 1; }
-        .result-table th, .result-table td { border: 1px solid #000; padding: 10px; text-align: left; }
+        .result-table { width: 100%; border-collapse: collapse; margin-top: 5px; position: relative; z-index: 1; }
+        .result-table th, .result-table td { border: 1px solid #000; padding: 6px; text-align: left; font-size: 13px; }
         .result-table th { background: #eef2f7; color: #004a99; }
         
-        .bottom-wrap { display: flex; margin-top: 20px; gap: 15px; position: relative; z-index: 1; }
+        .bottom-wrap { display: flex; margin-top: 12px; gap: 10px; position: relative; z-index: 1; }
         .comments-table { width: 55%; border-collapse: collapse; }
-        .comments-table td { border: 1px solid #000; padding: 10px; vertical-align: top; font-size: 13px; height: 60px; line-height: 1.4; }
+        .comments-table td { border: 1px solid #000; padding: 8px; vertical-align: top; font-size: 12px; height: 50px; line-height: 1.3; }
         .summary-table { width: 45%; border-collapse: collapse; margin-left: auto; }
-        .summary-table td { border: 1px solid #000; padding: 10px; font-weight: bold; font-size: 14px; }
+        .summary-table td { border: 1px solid #000; padding: 6px; font-weight: bold; font-size: 13px; }
 
-        .footer { margin-top: auto; padding-top: 40px; display: flex; justify-content: space-between; align-items: flex-end; position: relative; z-index: 1; }
-        .sig-space { text-align: center; width: 200px; }
-        .sig-line { border-top: 2px solid #000; margin-bottom: 5px; }
-        .timestamp { font-size: 11px; color: #777; font-style: italic; }
+        .footer { margin-top: auto; padding-top: 20px; display: flex; justify-content: space-between; align-items: flex-end; position: relative; z-index: 1; }
+        .sig-space { text-align: center; width: 180px; }
+        .sig-line { border-top: 2px solid #000; margin-bottom: 3px; }
+        .timestamp { font-size: 10px; color: #777; font-style: italic; }
 
         .action-btns { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
         #msg { text-align: center; font-weight: bold; margin-top: 20px; font-size: 16px; }
 
-        /* ADDED: Ensures full area is captured without clipping */
         @media screen {
             #pdfArea { min-width: 800px; }
             .card { overflow: visible !important; }
@@ -85,7 +79,6 @@
         @media screen and (max-width: 600px) {
             #pdfArea { width: 800px; transform: scale(0.42); transform-origin: top left; margin-bottom: -550px; }
             .card { overflow-x: auto; padding: 15px; }
-            .header-text { padding-right: 0; }
         }
     </style>
 </head>
@@ -132,7 +125,7 @@
                     </div>
                 </div>
 
-                <div id="dispTerm" style="font-weight:bold; font-style:italic; text-align:center; margin-bottom: 15px; color:#004a99; text-transform: uppercase;"></div>
+                <div id="dispTerm" style="font-weight:bold; font-style:italic; text-align:center; margin-bottom: 10px; color:#004a99; text-transform: uppercase; font-size: 14px;"></div>
 
                 <div class="student-info-grid">
                     <div class="info-item"><span class="info-label">Name:</span> <span id="dispName"></span></div>
@@ -164,9 +157,9 @@
                 <div class="footer">
                     <div class="timestamp" id="dispTime"></div>
                     <div class="sig-space">
-                        <img id="sigImg" src="./assets/signature.png" style="width: 140px; display: block; margin-left: 20px; margin-bottom: 5px; position: relative; z-index: 1;" onerror="this.style.display='none'">
+                        <img id="sigImg" src="./assets/signature.png" style="width: 120px; display: block; margin-left: 30px; margin-bottom: 2px; position: relative; z-index: 1;" onerror="this.style.display='none'">
                         <div class="sig-line"></div>
-                        <strong style="text-transform: uppercase;">School Principal</strong>
+                        <strong style="text-transform: uppercase; font-size: 12px;">School Principal</strong>
                     </div>
                 </div>
             </div>
@@ -183,30 +176,10 @@
             maths_score: "Mathematics", english_score: "English Language", physics_score: "Physics", chem_score: "Chemistry", bio_score: "Biology", fmath_score: "Further Mathematics", civic_score: "Civic Education", govt_score: "Government", econs_score: "Economics", markt_score: "Marketing", dp_score: "Data Processing", comme_score: "Commerce", agric_score: "Agricultural Science", crs_score: "C.R.S", finacc_score: "Financial Accounting", litineng_score: "Literature in English", philo_score: "Philosophy", geo_score: "Geography", basic_science_score: "Basic Science", basic_tech_score: "Basic Technology", bus_stud_score: "Business Studies", cmp_score: "Computer Studies", phe_score: "P.H.E", cca_score: "C.C.A", social_stud_score: "Social Studies", home_econs_score: "Home Economics", yoruba_score: "Yoruba", french_score: "French", sec_edu_score: "Security Education", lit_score: "Literature", music_score: "Music"
         };
 
-        // REFRESH WATCHDOGS (Anti-Cheat)
         window.isViewingResult = false;
-        
-        function forceClear() {
-            if(window.isViewingResult) {
-                location.reload();
-            }
-        }
-
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden') forceClear();
-        });
-
+        function forceClear() { if(window.isViewingResult) location.reload(); }
+        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') forceClear(); });
         window.addEventListener('pagehide', forceClear);
-
-        window.addEventListener('blur', () => {
-            if(window.isViewingResult) {
-                document.getElementById('pdfArea').classList.add('blurred');
-            }
-        });
-        
-        window.addEventListener('focus', () => {
-            document.getElementById('pdfArea').classList.remove('blurred');
-        });
 
         function toggleDept() {
             const cls = document.getElementById('classSelect').value;
@@ -241,13 +214,7 @@
 
             btn.classList.add('loading');
             msg.style.color = "#004a99";
-            
-            msg.innerText = "⏳ Connecting to Go-Tegs Database...";
-            await new Promise(r => setTimeout(r, 1200));
-            msg.innerText = "🔍 Verifying Credentials...";
-            await new Promise(r => setTimeout(r, 1200));
-            msg.innerText = "📋 Generating Report Card...";
-            await new Promise(r => setTimeout(r, 1000));
+            msg.innerText = "⏳ Connecting to Database...";
 
             try {
                 const res = await fetch(`/api/verify?student_id=${sid}&year=${yr}&class=${cls}&dept=${dept}&pin=${pin}`);
@@ -295,19 +262,17 @@
             }
         }
 
-        // CORRECTED DOWNLOAD FUNCTION
         async function downloadPDF() {
             const element = document.getElementById('pdfArea');
             const studentName = document.getElementById('dispName').innerText || "Student";
             
             try {
-                // High scale for clarity, explicit size for accuracy
                 const canvas = await html2canvas(element, { 
-                    scale: 2, 
+                    scale: 3, /* Higher quality */
                     useCORS: true,
                     logging: false,
-                    width: element.scrollWidth,
-                    height: element.scrollHeight
+                    scrollX: 0,
+                    scrollY: -window.scrollY /* Capture from top */
                 });
 
                 const imgData = canvas.toDataURL('image/jpeg', 1.0);
@@ -316,16 +281,27 @@
                 const pdfWidth = pdf.internal.pageSize.getWidth();
                 const pdfHeight = pdf.internal.pageSize.getHeight();
                 
-                // Calculate scale to fit width while keeping full content visible
                 const imgProps = pdf.getImageProperties(imgData);
                 const ratio = imgProps.width / imgProps.height;
                 const renderHeight = pdfWidth / ratio;
 
-                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, renderHeight);
+                // Logic: If height is too long for A4, shrink it slightly to fit the page
+                let finalHeight = renderHeight;
+                let finalWidth = pdfWidth;
+                
+                if (renderHeight > pdfHeight) {
+                    const shrinkRatio = (pdfHeight - 10) / renderHeight;
+                    finalHeight = pdfHeight - 10;
+                    finalWidth = pdfWidth * shrinkRatio;
+                }
+
+                // Center the image horizontally
+                const marginX = (pdfWidth - finalWidth) / 2;
+
+                pdf.addImage(imgData, 'JPEG', marginX, 2, finalWidth, finalHeight);
                 pdf.save(`${studentName}_Result.pdf`);
             } catch (e) { 
-                alert("PDF Error: Could not generate document."); 
-                console.error(e);
+                alert("PDF Error: Content too large or connection interrupted."); 
             }
         }
     </script>
