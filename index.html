@@ -44,40 +44,18 @@
         }
 
         #pdfArea::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; height: 70%; background-image: url('./assets/logo.webp'); background-repeat: no-repeat; background-position: center; background-size: contain; opacity: 0.08; z-index: 0; pointer-events: none; }
-        
-        .unofficial-overlay { 
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg);
-            font-size: 70px; color: rgba(255, 0, 0, 0.12); font-weight: bold; z-index: 10; pointer-events: none; white-space: nowrap; 
-            display: none; 
-        }
-
+        .unofficial-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 70px; color: rgba(255, 0, 0, 0.12); font-weight: bold; z-index: 10; pointer-events: none; white-space: nowrap; display: none; }
         .blurred { filter: blur(15px); }
-
         .report-header, .student-info-grid, .result-table, .bottom-wrap, .footer { position: relative; z-index: 1; }
         
-        .report-header { 
-            display: flex; 
-            align-items: center; 
-            border-bottom: 2px solid #004a99; 
-            padding-bottom: 15px; 
-            margin-bottom: 20px; 
-            position: relative;
-        }
+        .report-header { display: flex; align-items: center; border-bottom: 2px solid #004a99; padding-bottom: 15px; margin-bottom: 20px; }
         .school-logo { width: 110px; height: auto; flex-shrink: 0; }
         .header-text { flex-grow: 1; text-align: center; padding-right: 110px; }
         .school-name { font-family: 'Times New Roman', serif; font-size: 28px; color: #004a99; margin: 0; text-transform: uppercase; font-weight: bold; }
         .motto { font-style: italic; font-weight: bold; font-size: 15px; margin: 2px 0; color: #333; }
         .address { font-size: 12px; font-weight: bold; color: #444; margin: 1px 0; }
         
-        .student-info-grid { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 10px; 
-            margin-bottom: 20px; 
-            border: 1px solid #000; 
-            padding: 15px;
-            background: #fafafa;
-        }
+        .student-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; border: 1px solid #000; padding: 15px; background: #fafafa; }
         .info-item { font-size: 14px; border-bottom: 1px solid #eee; padding: 5px 0; }
         .info-label { font-weight: bold; color: #004a99; }
 
@@ -86,10 +64,10 @@
         .result-table th { background: #eef2f7; color: #004a99; }
         
         .bottom-wrap { display: flex; margin-top: 20px; gap: 15px; }
-        .comments-table { width: 60%; border-collapse: collapse; }
+        .comments-table { width: 55%; border-collapse: collapse; }
         .comments-table td { border: 1px solid #000; padding: 10px; vertical-align: top; font-size: 13px; height: 60px; line-height: 1.4; }
-        .summary-table { width: 40%; border-collapse: collapse; margin-left: auto; }
-        .summary-table td { border: 1px solid #000; padding: 8px; font-weight: bold; font-size: 14px; }
+        .summary-table { width: 45%; border-collapse: collapse; margin-left: auto; }
+        .summary-table td { border: 1px solid #000; padding: 10px; font-weight: bold; font-size: 14px; }
 
         .footer { margin-top: auto; padding-top: 40px; display: flex; justify-content: space-between; align-items: flex-end; }
         .sig-space { text-align: center; width: 200px; }
@@ -102,12 +80,7 @@
         @media screen and (max-width: 600px) {
             #pdfArea { width: 800px; transform: scale(0.42); transform-origin: top left; margin-bottom: -550px; }
             .card { overflow-x: auto; padding: 15px; }
-        }
-
-        @media print {
-            body { background: white; padding: 0; }
-            .card { box-shadow: none; border: none; width: 100%; padding: 0; }
-            .action-btns, #loginSection, #msg { display: none !important; }
+            .header-text { padding-right: 0; }
         }
     </style>
 </head>
@@ -165,7 +138,7 @@
                     <div class="info-item"><span class="info-label">Times Absent:</span> <span id="dispAbsent"></span></div>
                 </div>
 
-                <table class="result-table" id="mainTable">
+                <table class="result-table">
                     <thead><tr><th>Subject</th><th style="text-align:center;">Score (%)</th><th style="text-align:center;">Grade</th></tr></thead>
                     <tbody id="resBody"></tbody>
                 </table>
@@ -193,8 +166,8 @@
                 </div>
             </div>
             <div class="action-btns">
-                <button class="download-btn" onclick="downloadPDF()">📥 Download Result PDF</button>
-                <button class="back-btn" onclick="location.reload()">Check Another</button>
+                <button onclick="downloadPDF()">📥 Download Result PDF</button>
+                <button onclick="location.reload()" style="background:#666;">Check Another</button>
             </div>
         </div>
         <p id="msg"></p>
@@ -202,7 +175,7 @@
 
     <script>
         const subjectNames = {
-            maths_score: "Mathematics", english_score: "English Language", physics_score: "Physics", chem_score: "Chemistry", bio_score: "Biology", fmath_score: "Further Mathematics", civic_score: "Civic Education", govt_score: "Government", econs_score: "Economics", markt_score: "Marketing", dp_score: "Data Processing", comme_score: "Commerce", agric_score: "Agricultural Science", crs_score: "C.R.S", finacc_score: "Financial Accounting", litineng_score: "Literature in English", philo_score: "Philosophy", geo_score: "Geography", basic_science_score: "Basic Science", basic_tech_score: "Basic Technology", bus_stud_score: "Business Studies", cmp_score: "Computer Studies", phe_score: "P.H.E", cca_score: "C.C.A", social_stud_score: "Social Studies", home_econs_score: "Home Economics", yoruba_score: "Yoruba", french_score: "French", sec_edu_score: "Security Education", lit_score: "Literature", music_score: "Music"                 
+            maths_score: "Mathematics", english_score: "English Language", physics_score: "Physics", chem_score: "Chemistry", bio_score: "Biology", fmath_score: "Further Mathematics", civic_score: "Civic Education", govt_score: "Government", econs_score: "Economics", markt_score: "Marketing", dp_score: "Data Processing", comme_score: "Commerce", agric_score: "Agricultural Science", crs_score: "C.R.S", finacc_score: "Financial Accounting", litineng_score: "Literature in English", philo_score: "Philosophy", geo_score: "Geography", basic_science_score: "Basic Science", basic_tech_score: "Basic Technology", bus_stud_score: "Business Studies", cmp_score: "Computer Studies", phe_score: "P.H.E", cca_score: "C.C.A", social_stud_score: "Social Studies", home_econs_score: "Home Economics", yoruba_score: "Yoruba", french_score: "French", sec_edu_score: "Security Education", lit_score: "Literature", music_score: "Music"
         };
 
         function toggleDept() {
@@ -223,47 +196,6 @@
             return "Poor performance. You need to be more focused and work harder.";
         }
 
-        window.isStudentPaid = false;
-
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden') { location.reload(); }
-        });
-
-        window.addEventListener('blur', () => {
-            if (!window.isStudentPaid) { document.getElementById('pdfArea').classList.add('blurred'); }
-        });
-        window.addEventListener('focus', () => {
-            document.getElementById('pdfArea').classList.remove('blurred');
-        });
-
-        async function downloadPDF() {
-            const { jsPDF } = window.jspdf;
-            const element = document.getElementById('pdfArea');
-            const tableCells = document.querySelectorAll('#resBody td');
-            const studentName = document.getElementById('dispName').innerText || "Student";
-            const btn = document.querySelector('.download-btn');
-            
-            btn.innerText = "⌛ Generating...";
-            btn.style.opacity = "0.7";
-
-            try {
-                const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
-                const imgData = canvas.toDataURL('image/jpeg', 0.7);
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const imgProps = pdf.getImageProperties(imgData);
-                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-                
-                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-                pdf.save(`${studentName}_Result.pdf`);
-            } catch (error) {
-                alert("Failed to generate PDF.");
-            } finally {
-                btn.innerText = "📥 Download Result PDF";
-                btn.style.opacity = "1";
-            }
-        }
-
         async function check() {
             const sid = document.getElementById('sid').value;
             const yr = document.getElementById('yearSelect').value;
@@ -278,7 +210,15 @@
             }
 
             btn.classList.add('loading');
+            msg.style.color = "#004a99";
+            
+            // --- RESTORED LOADING MESSAGES ---
             msg.innerText = "⏳ Connecting to Go-Tegs Database...";
+            await new Promise(r => setTimeout(r, 1200));
+            msg.innerText = "🔍 Verifying Credentials...";
+            await new Promise(r => setTimeout(r, 1200));
+            msg.innerText = "📋 Generating Report Card...";
+            await new Promise(r => setTimeout(r, 1000));
 
             try {
                 const res = await fetch(`/api/verify?student_id=${sid}&year=${yr}&class=${cls}&dept=${dept}&pin=${pin}`);
@@ -288,12 +228,11 @@
                     btn.classList.remove('loading');
                     msg.style.color = "red"; msg.innerText = "❌ " + data.error;
                 } else {
-                    window.isStudentPaid = data.is_paid;
-                    document.querySelector('.unofficial-overlay').style.display = data.is_paid ? 'none' : 'block';
                     document.getElementById('loginSection').style.display = 'none';
                     document.getElementById('resultSection').style.display = 'block';
-                    
-                    document.getElementById('dispTerm').innerText = `${yr} ${data.term || "CONTINUOUS ASSESSMENT REPORT"}`;
+                    document.querySelector('.unofficial-overlay').style.display = data.is_paid ? 'none' : 'block';
+
+                    document.getElementById('dispTerm').innerText = `${yr} ${data.term || "REPORT"}`;
                     document.getElementById('dispName').innerText = data.full_name;
                     document.getElementById('dispDob').innerText = data.dob || "---";
                     document.getElementById('dispClass').innerText = cls + (dept ? ` (${dept})` : "");
@@ -302,22 +241,18 @@
                     document.getElementById('dispAbsent').innerText = (data.opened || 0) - (data.present || 0);
                     document.getElementById('dispTeacher').innerText = data.teacher_remark || "---";
 
-                    let rows = ""; let totalObtained = 0;
-                    const subjectCount = data.scores.length;
-
+                    let rows = ""; let total = 0;
                     data.scores.forEach(s => {
-                        totalObtained += s.score;
-                        const cleanSubjectName = subjectNames[s.subject] || s.subject;
-                        rows += `<tr><td>${cleanSubjectName}</td><td style="text-align:center;">${s.score}</td><td style="text-align:center; font-weight:bold;">${getGrade(s.score)}</td></tr>`;
+                        total += s.score;
+                        rows += `<tr><td>${subjectNames[s.subject] || s.subject}</td><td style="text-align:center;">${s.score}</td><td style="text-align:center; font-weight:bold;">${getGrade(s.score)}</td></tr>`;
                     });
                     
-                    // CALCULATIONS
-                    const totalObtainable = subjectCount * 100;
-                    const mean = (totalObtained / subjectCount).toFixed(1);
-
+                    const count = data.scores.length;
+                    const mean = (total / count).toFixed(1);
+                    
                     document.getElementById('resBody').innerHTML = rows;
-                    document.getElementById('resObtainable').innerText = totalObtainable; // Set Obtainable
-                    document.getElementById('resTotal').innerText = totalObtained;      // Set Obtained
+                    document.getElementById('resObtainable').innerText = count * 100; // NEW
+                    document.getElementById('resTotal').innerText = total;
                     document.getElementById('resMean').innerText = mean + "%";
                     document.getElementById('resGrade').innerText = getGrade(mean);
                     document.getElementById('dispPrincipal').innerText = getPrincipalComment(parseFloat(mean));
@@ -328,6 +263,20 @@
                 btn.classList.remove('loading');
                 msg.innerText = "❌ Connection Error."; 
             }
+        }
+
+        async function downloadPDF() {
+            const element = document.getElementById('pdfArea');
+            const studentName = document.getElementById('dispName').innerText || "Student";
+            try {
+                const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+                const imgData = canvas.toDataURL('image/jpeg', 0.8);
+                const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+                pdf.save(`${studentName}_Result.pdf`);
+            } catch (e) { alert("PDF Error"); }
         }
     </script>
 </body>
