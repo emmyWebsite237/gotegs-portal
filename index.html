@@ -55,8 +55,13 @@
         .blurred { filter: blur(15px); }
 
         .report-header, .student-info, .result-table, .summary-table, .footer { position: relative; z-index: 1; }
+        
+        /* FIXED HEADING FORMAT START */
         .report-header { text-align: center; border-bottom: 2px solid #004a99; padding-bottom: 10px; margin-bottom: 30px; }
-        .school-name { font-family: 'Times New Roman', serif; font-size: 32px; color: #004a99; margin: 0; text-transform: uppercase; }
+        .school-name { font-family: 'Times New Roman', serif; font-size: 32px; color: #004a99; margin: 0; text-transform: uppercase; font-weight: bold; }
+        .motto { font-style: italic; font-weight: bold; font-size: 16px; margin: 2px 0; }
+        .address { font-size: 13px; font-weight: bold; color: #333; }
+        /* FIXED HEADING FORMAT END */
         
         .result-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         .result-table th, .result-table td { border: 1px solid #000; padding: 10px; text-align: left; }
@@ -118,11 +123,15 @@
         <div id="resultSection" style="display:none;">
             <div id="pdfArea">
                 <div class="unofficial-overlay">UNOFFICIAL COPY</div>
+                
                 <div class="report-header">
-                    <img class="school-logo" src="./assets/logo.webp" style="width:100px;">
-                    <h1 class="school-name">Go-Tegs International School</h1>
-                    <div id="dispTerm" style="font-weight:bold; font-style:italic; margin-top:5px;"></div>
+                    <h1 class="school-name">GO-TEGS INTERNATIONAL SCHOOL</h1>
+                    <div class="motto">Motto: Training the Leaders of Tomorrow</div>
+                    <div class="address">15, Ayesanmi Street, Pipeline B/Stop, Isheri Olofin, Alimosho L.G.A Lagos, Nigeria</div>
+                    <div class="address">Tel: 08066525319, 08066680932</div>
+                    <div id="dispTerm" style="font-weight:bold; font-style:italic; margin-top:10px; color:#004a99; text-transform: uppercase;"></div>
                 </div>
+
                 <div class="student-info" style="text-align:center;">
                     <p>OFFICIAL ACADEMIC REPORT FOR <br>
                         <span id="dispName" style="text-decoration:underline; font-weight:bold; font-size:20px;"></span>
@@ -184,12 +193,12 @@
             phe_score: "P.H.E", 
             cca_score: "C.C.A", 
             social_stud_score: "Social Studies", 
-            home_econs_score: "Home Economics", // Fixed typo here
+            home_econs_score: "Home Economics", 
             yoruba_score: "Yoruba", 
             french_score: "French",
-            sec_edu_score: "Security Education", // Corrected command code mapping
-            lit_score: "Literature",             // Corrected command code mapping
-            music_score: "Music"                 // Corrected command code mapping
+            sec_edu_score: "Security Education", 
+            lit_score: "Literature",             
+            music_score: "Music"                 
         };
 
         function toggleDept() {
@@ -286,7 +295,7 @@
             msg.innerText = "⏳ Connecting to Go-Tegs Database...";
 
             await new Promise(r => setTimeout(r, 1000));
-            msg.innerText = "🔍 Verifying Credentials & Trials...";
+            msg.innerText = "🔍 Verifying Credentials...";
             await new Promise(r => setTimeout(r, 1000));
             msg.innerText = "📋 Generating Report Card...";
             await new Promise(r => setTimeout(r, 1000));
@@ -305,7 +314,7 @@
 
                     document.getElementById('loginSection').style.display = 'none';
                     document.getElementById('resultSection').style.display = 'block';
-                    document.getElementById('dispTerm').innerText = `${yr} ${data.term || "Examination"}`;
+                    document.getElementById('dispTerm').innerText = `${yr} ${data.term || "CONTINUOUS ASSESSMENT REPORT"}`;
                     document.getElementById('dispName').innerText = data.full_name;
                     document.getElementById('dispId').innerText = sid;
                     document.getElementById('dispDob').innerText = data.dob || "---";
@@ -314,7 +323,6 @@
                     let rows = ""; let total = 0;
                     data.scores.forEach(s => {
                         total += s.score;
-                        // Maps command codes to actual subject names
                         const cleanSubjectName = subjectNames[s.subject] || s.subject;
                         rows += `<tr><td>${cleanSubjectName}</td><td style="text-align:center;">${s.score}</td><td style="text-align:center; font-weight:bold;">${getGrade(s.score)}</td></tr>`;
                     });
