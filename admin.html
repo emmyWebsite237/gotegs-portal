@@ -3,187 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Go-Tegs Admin - Class Broadsheet</title>
+    <title>Go-Tegs | Admin Bulk Export</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #e5e7eb; margin: 0; padding: 20px; }
-        .admin-card { background: white; padding: 25px; border-radius: 12px; max-width: 1200px; margin: 0 auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .admin-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; }
+        h2 { color: #dc2626; margin-bottom: 10px; }
+        input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
         
-        /* Admin Login Area */
-        #adminLogin { max-width: 400px; margin: 0 auto; text-align: center; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; }
+        .btn-bulk { width: 100%; padding: 15px; background: #dc2626; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; }
+        .btn-bulk:hover { background: #b91c1c; }
+        .btn-bulk:disabled { background: #9ca3af; cursor: not-allowed; }
+
+        #statusBox { margin-top: 20px; padding: 15px; border-radius: 6px; font-size: 14px; display: none; background: #fef2f2; border: 1px solid #fee2e2; color: #991b1b; }
         
-        button { width: 100%; padding: 14px; background: #b91c1c; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; }
-        button:hover { background: #991b1b; }
-
-        /* Broadsheet Area (Landscape) */
-        #broadsheetArea { 
-            background: white !important; 
-            padding: 30px; 
-            width: 1100px; /* Wider for Landscape */
-            margin: 20px auto;
-            border: 2px solid #333;
-        }
-
-        .header { text-align: center; border-bottom: 3px solid #b91c1c; margin-bottom: 20px; padding-bottom: 10px; }
-        .header h1 { color: #b91c1c; margin: 0; text-transform: uppercase; letter-spacing: 2px; }
-
-        .broadsheet-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        .broadsheet-table th, .broadsheet-table td { border: 1px solid #000; padding: 8px; text-align: center; }
-        .broadsheet-table th { background: #f3f4f6; color: #b91c1c; font-weight: bold; }
-        .subject-cell { text-align: left !important; font-weight: bold; width: 200px; }
+        /* Hidden area for generating results */
+        #render-container { position: absolute; left: -9999px; top: 0; width: 850px; }
         
-        .footer-info { margin-top: 25px; display: flex; justify-content: space-between; align-items: flex-end; }
-        .gen-date { font-size: 14px; color: #444; font-weight: bold; } /* Increased size as requested */
-
-        .action-btns { text-align: center; margin-top: 20px; }
-        .dl-btn { background: #059669; width: auto; padding: 12px 25px; }
-
-        @media print {
-            .action-btns, #adminLogin { display: none; }
-            body { padding: 0; background: white; }
-        }
+        /* Apply your result CSS here so the PDF looks identical */
+        .pdf-page-template { background: white; padding: 25px; border: 5px double #004a99; width: 800px; min-height: 1050px; box-sizing: border-box; position: relative; }
     </style>
 </head>
 <body>
 
     <div class="admin-card">
-        <div id="adminLogin">
-            <h2 style="color: #b91c1c;">Class Broadsheet Admin</h2>
-            <p>Accessing broadsheet requires a master key.</p>
-            <input type="password" id="adminPin" placeholder="Enter Admin Secret PIN">
-            <select id="classSelect">
-                <option value="">Select Class to Fetch</option>
-                <option value="JSS 1">JSS 1</option><option value="JSS 2">JSS 2</option><option value="JSS 3">JSS 3</option>
-                <option value="SSS 1">SSS 1</option><option value="SSS 2">SSS 2</option><option value="SSS 3">SSS 3</option>
-            </select>
-            <button onclick="fetchBroadsheet()">Generate Broadsheet</button>
-            <p id="statusMsg"></p>
-        </div>
-
-        <div id="broadsheetSection" style="display:none;">
-            <div id="broadsheetArea">
-                <div class="header">
-                    <h1>GO-TEGS INTERNATIONAL SCHOOL</h1>
-                    <p><strong>OFFICIAL CLASS BROADSHEET - <span id="dispClass"></span></strong></p>
-                </div>
-
-                <table class="broadsheet-table">
-                    <thead>
-                        <tr>
-                            <th>Student ID</th>
-                            <th>Student Full Name</th>
-                            <th class="subject-cell">Subject</th>
-                            <th>CA (40)</th>
-                            <th>Exam (60)</th>
-                            <th>Total (%)</th>
-                            <th>Grade</th>
-                            <th>Remarks/Comments</th>
-                        </tr>
-                    </thead>
-                    <tbody id="broadsheetBody">
-                        </tbody>
-                </table>
-
-                <div class="footer-info">
-                    <div class="gen-date" id="dispTime"></div>
-                    <div style="text-align:center;">
-                        <div style="border-top: 2px solid #000; width: 200px; margin-bottom: 5px;"></div>
-                        <strong>Registrar / Admin Signature</strong>
-                    </div>
-                </div>
-            </div>
-
-            <div class="action-btns">
-                <button class="dl-btn" onclick="downloadLandscapePDF()">📥 Download Landscape Broadsheet (PDF)</button>
-                <button onclick="location.reload()" style="background:#666; width: auto;">Exit Admin</button>
-            </div>
-        </div>
+        <img src="./assets/logo.webp" style="width: 80px;" onerror="this.src='https://wordpress.com'">
+        <h2>Master Admin Portal</h2>
+        <p style="font-size: 14px; color: #666;">Generate all student results into a single PDF document.</p>
+        
+        <input type="password" id="adminPass" placeholder="Enter Master Passcode">
+        <button id="genBtn" class="btn-bulk" onclick="startBulkGeneration()">🚀 GENERATE ALL RESULTS</button>
+        
+        <div id="statusBox"></div>
+        <a href="index.html" style="display:block; margin-top: 20px; color: #666; font-size: 13px; text-decoration: none;">← Back to Portal</a>
     </div>
 
+    <div id="render-container"></div>
+
     <script>
-        function getGradeInfo(score) {
-            if (score >= 75) return { g: "A1", c: "Outstanding" };
-            if (score >= 70) return { g: "B2", c: "Solid" };
-            if (score >= 65) return { g: "B3", c: "Productive" };
-            if (score >= 60) return { g: "C4", c: "Satisfactory" };
-            if (score >= 55) return { g: "C5", c: "Developing" };
-            if (score >= 50) return { g: "C6", c: "Fair" };
-            if (score >= 45) return { g: "D7", c: "Marginal" };
-            if (score >= 40) return { g: "E8", c: "Weak Pass" };
-            return { g: "F9", c: "Remedial" };
-        }
+        async function startBulkGeneration() {
+            const pass = document.getElementById('adminPass').value;
+            const btn = document.getElementById('genBtn');
+            const status = document.getElementById('statusBox');
 
-        async function fetchBroadsheet() {
-            const pin = document.getElementById('adminPin').value;
-            const cls = document.getElementById('classSelect').value;
-            const msg = document.getElementById('statusMsg');
+            if (!pass) return alert("Please enter the admin passcode");
 
-            if(!pin || !cls) { alert("PIN and Class required"); return; }
+            btn.disabled = true;
+            status.style.display = "block";
+            status.innerText = "⏳ Verifying Admin Credentials...";
 
-            msg.innerText = "⏳ Verifying Admin Access...";
-            
             try {
-                // IMPORTANT: You will need to create a specific API endpoint for this called /api/broadsheet
-                const res = await fetch(`/api/broadsheet?admin_pin=${pin}&class=${cls}`);
-                const data = await res.json();
-
-                if(res.status !== 200) {
-                    msg.style.color = "red";
-                    msg.innerText = "❌ Access Denied: " + data.error;
-                } else {
-                    document.getElementById('adminLogin').style.display = 'none';
-                    document.getElementById('broadsheetSection').style.display = 'block';
-                    document.getElementById('dispClass').innerText = cls;
-                    document.getElementById('dispTime').innerText = "Generated: " + new Date().toLocaleString();
-
-                    let rows = "";
-                    // Expecting data to be an array of student scores
-                    data.records.forEach(student => {
-                        student.scores.forEach((s, index) => {
-                            const info = getGradeInfo(s.total_score);
-                            rows += `
-                                <tr>
-                                    <td>${index === 0 ? student.sid : ""}</td>
-                                    <td style="text-align:left;">${index === 0 ? student.name : ""}</td>
-                                    <td class="subject-cell">${s.subject_name}</td>
-                                    <td>${s.ca_score}</td>
-                                    <td>${s.exam_score}</td>
-                                    <td style="font-weight:bold;">${s.total_score}</td>
-                                    <td style="font-weight:bold;">${info.g}</td>
-                                    <td style="font-style:italic;">${info.c}</td>
-                                </tr>
-                            `;
-                        });
-                    });
-                    document.getElementById('broadsheetBody').innerHTML = rows;
+                // 1. Verify Admin (Matches your Supabase table 'admin_portal')
+                const auth = await fetch(`/api/admin-verify?pin=${pass}`);
+                if (auth.status !== 200) {
+                    status.innerText = "❌ Unauthorized: Invalid Admin PIN";
+                    btn.disabled = false;
+                    return;
                 }
-            } catch (e) {
-                msg.innerText = "❌ Error connecting to server.";
+
+                // 2. Fetch all student records
+                status.innerText = "📂 Fetching all records from database...";
+                const res = await fetch(`/api/get-all-results`);
+                const allData = await res.json();
+
+                if (!allData || allData.length === 0) {
+                    status.innerText = "❌ No student data found.";
+                    btn.disabled = false;
+                    return;
+                }
+
+                // 3. Setup PDF
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const container = document.getElementById('render-container');
+
+                for (let i = 0; i < allData.length; i++) {
+                    const student = allData[i];
+                    status.innerText = `📄 Processing (${i + 1}/${allData.length}): ${student.full_name}`;
+
+                    // Create HTML for this student
+                    const wrapper = document.createElement('div');
+                    wrapper.className = "pdf-page-template";
+                    wrapper.innerHTML = generateResultHTML(student);
+                    container.appendChild(wrapper);
+
+                    // Capture to Image
+                    const canvas = await html2canvas(wrapper, { scale: 2, useCORS: true });
+                    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                    
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+
+                    if (i > 0) pdf.addPage();
+                    pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, imgHeight);
+
+                    // Clear memory
+                    container.innerHTML = "";
+                }
+
+                pdf.save(`GoTegs_Master_Results_${new Date().getFullYear()}.pdf`);
+                status.style.background = "#f0fdf4";
+                status.style.borderColor = "#dcfce7";
+                status.style.color = "#166534";
+                status.innerText = "✅ Success! Master PDF downloaded.";
+                btn.disabled = false;
+
+            } catch (err) {
+                console.error(err);
+                status.innerText = "❌ Error: Could not generate PDF. Check console.";
+                btn.disabled = false;
             }
         }
 
-        async function downloadLandscapePDF() {
-            const { jsPDF } = window.jspdf;
-            const element = document.getElementById('broadsheetArea');
-            
-            try {
-                const canvas = await html2canvas(element, { scale: 2 });
-                const imgData = canvas.toDataURL('image/jpeg', 0.9);
-                
-                // Set orientation to 'l' for LANDSCAPE
-                const pdf = new jsPDF('l', 'mm', 'a4');
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-                
-                pdf.addImage(imgData, 'JPEG', 0, 10, pdfWidth, pdfHeight);
-                pdf.save(`Broadsheet_${document.getElementById('dispClass').innerText}.pdf`);
-            } catch (e) {
-                alert("Generation failed. Check console.");
-            }
+        // This function builds the EXACT same HTML as your index.html
+        function generateResultHTML(data) {
+            // Logic to calculate scores same as student portal
+            let rows = "";
+            let total = 0;
+            data.scores.forEach(s => {
+                total += s.score;
+                rows += `<tr>
+                    <td style="border:1px solid #000; padding:8px;">${s.subject_name}</td>
+                    <td style="border:1px solid #000; padding:8px; text-align:center;">${s.score}</td>
+                </tr>`;
+            });
+            const mean = (total / data.scores.length).toFixed(1);
+
+            // Returns the template string (trimmed version of your #pdfArea)
+            return `
+                <div style="text-align:center;">
+                    <img src="./assets/logo.webp" style="width:80px;">
+                    <h1 style="color:#004a99; margin:5px 0;">GO-TEGS INTERNATIONAL SCHOOL</h1>
+                    <p style="font-size:12px; font-weight:bold;">15, Ayesanmi Street, Lagos, Nigeria</p>
+                    <hr border="1">
+                    <h3 style="text-transform:uppercase;">REPORT SHEET: ${data.full_name}</h3>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-top:20px; font-size:14px;">
+                    <div><strong>ID:</strong> ${data.student_id}</div>
+                    <div><strong>Class:</strong> ${data.class_name}</div>
+                </div>
+                <table style="width:100%; border-collapse:collapse; margin-top:20px;">
+                    <thead><tr style="background:#eef2f7;">
+                        <th style="border:1px solid #000; padding:8px;">Subject</th>
+                        <th style="border:1px solid #000; padding:8px;">Score</th>
+                    </tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+                <div style="margin-top:20px; font-weight:bold;">Average: ${mean}%</div>
+                <div style="margin-top:50px; border-top:2px solid #000; width:200px; text-align:center; float:right;">
+                    Principal's Signature
+                </div>
+            `;
         }
     </script>
 </body>
