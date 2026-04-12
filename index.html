@@ -33,7 +33,7 @@
             border: 5px double #004a99; 
             margin: 10px auto;
             position: relative;
-            min-height: 1050px; /* Slightly taller to accommodate new tables */
+            min-height: 1050px;
             width: 100%;
             box-sizing: border-box;
             overflow: hidden;
@@ -43,7 +43,6 @@
             transition: filter 0.3s;
         }
 
-        /* Watermark & Security Overlay */
         #pdfArea::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; height: 70%; background-image: url('./assets/logo.webp'); background-repeat: no-repeat; background-position: center; background-size: contain; opacity: 0.08; z-index: 0; pointer-events: none; }
         
         .unofficial-overlay { 
@@ -56,7 +55,6 @@
 
         .report-header, .student-info-grid, .result-table, .bottom-wrap, .footer { position: relative; z-index: 1; }
         
-        /* HEADING FORMAT */
         .report-header { 
             display: flex; 
             align-items: center; 
@@ -71,7 +69,6 @@
         .motto { font-style: italic; font-weight: bold; font-size: 15px; margin: 2px 0; color: #333; }
         .address { font-size: 12px; font-weight: bold; color: #444; margin: 1px 0; }
         
-        /* STUDENT INFO GRID (2 COLUMNS) */
         .student-info-grid { 
             display: grid; 
             grid-template-columns: 1fr 1fr; 
@@ -88,12 +85,11 @@
         .result-table th, .result-table td { border: 1px solid #000; padding: 10px; text-align: left; }
         .result-table th { background: #eef2f7; color: #004a99; }
         
-        /* BOTTOM SECTION: COMMENTS + SUMMARY */
         .bottom-wrap { display: flex; margin-top: 20px; gap: 15px; }
         .comments-table { width: 60%; border-collapse: collapse; }
         .comments-table td { border: 1px solid #000; padding: 10px; vertical-align: top; font-size: 13px; height: 60px; line-height: 1.4; }
         .summary-table { width: 40%; border-collapse: collapse; margin-left: auto; }
-        .summary-table td { border: 1px solid #000; padding: 10px; font-weight: bold; }
+        .summary-table td { border: 1px solid #000; padding: 8px; font-weight: bold; font-size: 14px; }
 
         .footer { margin-top: auto; padding-top: 40px; display: flex; justify-content: space-between; align-items: flex-end; }
         .sig-space { text-align: center; width: 200px; }
@@ -106,14 +102,12 @@
         @media screen and (max-width: 600px) {
             #pdfArea { width: 800px; transform: scale(0.42); transform-origin: top left; margin-bottom: -550px; }
             .card { overflow-x: auto; padding: 15px; }
-            .header-text { padding-right: 0; }
         }
 
         @media print {
             body { background: white; padding: 0; }
             .card { box-shadow: none; border: none; width: 100%; padding: 0; }
             .action-btns, #loginSection, #msg { display: none !important; }
-            .unofficial-overlay { color: rgba(255, 0, 0, 0.2); }
         }
     </style>
 </head>
@@ -182,7 +176,8 @@
                         <tr><td><strong>Principal's Remark:</strong><br><span id="dispPrincipal"></span></td></tr>
                     </table>
                     <table class="summary-table">
-                        <tr><td>Total Score</td><td id="resTotal" style="text-align:center;"></td></tr>
+                        <tr><td>Total Mark Obtainable</td><td id="resObtainable" style="text-align:center;"></td></tr>
+                        <tr><td>Total Mark Obtained</td><td id="resTotal" style="text-align:center;"></td></tr>
                         <tr><td>Mean Percentage</td><td id="resMean" style="text-align:center;"></td></tr>
                         <tr><td>Overall Grade</td><td id="resGrade" style="text-align:center;"></td></tr>
                     </table>
@@ -207,37 +202,7 @@
 
     <script>
         const subjectNames = {
-            maths_score: "Mathematics", 
-            english_score: "English Language", 
-            physics_score: "Physics", 
-            chem_score: "Chemistry", 
-            bio_score: "Biology", 
-            fmath_score: "Further Mathematics", 
-            civic_score: "Civic Education", 
-            govt_score: "Government", 
-            econs_score: "Economics", 
-            markt_score: "Marketing", 
-            dp_score: "Data Processing", 
-            comme_score: "Commerce", 
-            agric_score: "Agricultural Science", 
-            crs_score: "C.R.S", 
-            finacc_score: "Financial Accounting", 
-            litineng_score: "Literature in English", 
-            philo_score: "Philosophy", 
-            geo_score: "Geography", 
-            basic_science_score: "Basic Science", 
-            basic_tech_score: "Basic Technology", 
-            bus_stud_score: "Business Studies", 
-            cmp_score: "Computer Studies", 
-            phe_score: "P.H.E", 
-            cca_score: "C.C.A", 
-            social_stud_score: "Social Studies", 
-            home_econs_score: "Home Economics", 
-            yoruba_score: "Yoruba", 
-            french_score: "French",
-            sec_edu_score: "Security Education", 
-            lit_score: "Literature",             
-            music_score: "Music"                 
+            maths_score: "Mathematics", english_score: "English Language", physics_score: "Physics", chem_score: "Chemistry", bio_score: "Biology", fmath_score: "Further Mathematics", civic_score: "Civic Education", govt_score: "Government", econs_score: "Economics", markt_score: "Marketing", dp_score: "Data Processing", comme_score: "Commerce", agric_score: "Agricultural Science", crs_score: "C.R.S", finacc_score: "Financial Accounting", litineng_score: "Literature in English", philo_score: "Philosophy", geo_score: "Geography", basic_science_score: "Basic Science", basic_tech_score: "Basic Technology", bus_stud_score: "Business Studies", cmp_score: "Computer Studies", phe_score: "P.H.E", cca_score: "C.C.A", social_stud_score: "Social Studies", home_econs_score: "Home Economics", yoruba_score: "Yoruba", french_score: "French", sec_edu_score: "Security Education", lit_score: "Literature", music_score: "Music"                 
         };
 
         function toggleDept() {
@@ -251,7 +216,6 @@
             if (score >= 45) return "D7"; if (score >= 40) return "E8"; return "F9";
         }
 
-        // Automatic Principal Comment logic
         function getPrincipalComment(mean) {
             if (mean >= 75) return "An outstanding result. Keep the flag flying high.";
             if (mean >= 60) return "A very good performance. Keep it up.";
@@ -262,15 +226,11 @@
         window.isStudentPaid = false;
 
         document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'hidden') {
-                location.reload(); 
-            }
+            if (document.visibilityState === 'hidden') { location.reload(); }
         });
 
         window.addEventListener('blur', () => {
-            if (!window.isStudentPaid) {
-                document.getElementById('pdfArea').classList.add('blurred');
-            }
+            if (!window.isStudentPaid) { document.getElementById('pdfArea').classList.add('blurred'); }
         });
         window.addEventListener('focus', () => {
             document.getElementById('pdfArea').classList.remove('blurred');
@@ -281,44 +241,24 @@
             const element = document.getElementById('pdfArea');
             const tableCells = document.querySelectorAll('#resBody td');
             const studentName = document.getElementById('dispName').innerText || "Student";
-            const rowCount = document.querySelectorAll('#resBody tr').length;
             const btn = document.querySelector('.download-btn');
             
             btn.innerText = "⌛ Generating...";
             btn.style.opacity = "0.7";
 
-            if (rowCount > 15) {
-                tableCells.forEach(cell => {
-                    cell.style.padding = "5px"; 
-                    cell.style.fontSize = "14px";
-                });
-            }
-
             try {
-                const canvas = await html2canvas(element, {
-                    scale: 2, 
-                    useCORS: true,
-                    backgroundColor: "#ffffff"
-                });
-                
+                const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
                 const imgData = canvas.toDataURL('image/jpeg', 0.7);
                 const pdf = new jsPDF('p', 'mm', 'a4');
-                
-                const imgProps = pdf.getImageProperties(imgData);
                 const pdfWidth = pdf.internal.pageSize.getWidth();
+                const imgProps = pdf.getImageProperties(imgData);
                 const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
                 
                 pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
                 pdf.save(`${studentName}_Result.pdf`);
-                
             } catch (error) {
-                console.error("PDF Export Error:", error);
                 alert("Failed to generate PDF.");
             } finally {
-                tableCells.forEach(cell => {
-                    cell.style.padding = "10px";
-                    cell.style.fontSize = "";
-                });
                 btn.innerText = "📥 Download Result PDF";
                 btn.style.opacity = "1";
             }
@@ -338,14 +278,7 @@
             }
 
             btn.classList.add('loading');
-            msg.style.color = "#004a99";
             msg.innerText = "⏳ Connecting to Go-Tegs Database...";
-
-            await new Promise(r => setTimeout(r, 1000));
-            msg.innerText = "🔍 Verifying Credentials...";
-            await new Promise(r => setTimeout(r, 1000));
-            msg.innerText = "📋 Generating Report Card...";
-            await new Promise(r => setTimeout(r, 1000));
 
             try {
                 const res = await fetch(`/api/verify?student_id=${sid}&year=${yr}&class=${cls}&dept=${dept}&pin=${pin}`);
@@ -356,9 +289,7 @@
                     msg.style.color = "red"; msg.innerText = "❌ " + data.error;
                 } else {
                     window.isStudentPaid = data.is_paid;
-                    const overlay = document.querySelector('.unofficial-overlay');
-                    overlay.style.display = data.is_paid ? 'none' : 'block';
-
+                    document.querySelector('.unofficial-overlay').style.display = data.is_paid ? 'none' : 'block';
                     document.getElementById('loginSection').style.display = 'none';
                     document.getElementById('resultSection').style.display = 'block';
                     
@@ -366,31 +297,30 @@
                     document.getElementById('dispName').innerText = data.full_name;
                     document.getElementById('dispDob').innerText = data.dob || "---";
                     document.getElementById('dispClass').innerText = cls + (dept ? ` (${dept})` : "");
-                    
-                    // Displaying Attendance Info
                     document.getElementById('dispOpened').innerText = data.opened || "0";
                     document.getElementById('dispPresent').innerText = data.present || "0";
                     document.getElementById('dispAbsent').innerText = (data.opened || 0) - (data.present || 0);
-                    
-                    // Displaying Teacher Remark
                     document.getElementById('dispTeacher').innerText = data.teacher_remark || "---";
 
-                    let rows = ""; let total = 0;
+                    let rows = ""; let totalObtained = 0;
+                    const subjectCount = data.scores.length;
+
                     data.scores.forEach(s => {
-                        total += s.score;
+                        totalObtained += s.score;
                         const cleanSubjectName = subjectNames[s.subject] || s.subject;
                         rows += `<tr><td>${cleanSubjectName}</td><td style="text-align:center;">${s.score}</td><td style="text-align:center; font-weight:bold;">${getGrade(s.score)}</td></tr>`;
                     });
                     
-                    const mean = (total / data.scores.length).toFixed(1);
+                    // CALCULATIONS
+                    const totalObtainable = subjectCount * 100;
+                    const mean = (totalObtained / subjectCount).toFixed(1);
+
                     document.getElementById('resBody').innerHTML = rows;
-                    document.getElementById('resTotal').innerText = total;
+                    document.getElementById('resObtainable').innerText = totalObtainable; // Set Obtainable
+                    document.getElementById('resTotal').innerText = totalObtained;      // Set Obtained
                     document.getElementById('resMean').innerText = mean + "%";
                     document.getElementById('resGrade').innerText = getGrade(mean);
-                    
-                    // Auto-set Principal Comment
                     document.getElementById('dispPrincipal').innerText = getPrincipalComment(parseFloat(mean));
-                    
                     document.getElementById('dispTime').innerText = "Generated: " + new Date().toLocaleString();
                     msg.innerText = "✅ Success";
                 }
