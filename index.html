@@ -24,14 +24,14 @@
         .loading .spinner { display: block; }
         .loading { pointer-events: none; opacity: 0.8; }
 
-        /* RESULT TEMPLATE STYLING - COMPACTED */
+        /* COMPACTED RESULT TEMPLATE */
         #pdfArea { 
-            padding: 20px; /* Reduced from 40px */
+            padding: 25px; /* Reduced from 40px */
             background: white !important; 
             border: 5px double #004a99; 
             margin: 0 auto;
             position: relative;
-            min-height: 1000px;
+            min-height: 950px;
             width: 100%;
             box-sizing: border-box;
             display: flex;
@@ -39,29 +39,30 @@
             -webkit-user-select: none; user-select: none;
         }
 
-        #pdfArea::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60%; height: 60%; background-image: url('./assets/logo.webp'); background-repeat: no-repeat; background-position: center; background-size: contain; opacity: 0.06; z-index: 0; pointer-events: none; }
+        #pdfArea::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; height: 70%; background-image: url('./assets/logo.webp'); background-repeat: no-repeat; background-position: center; background-size: contain; opacity: 0.08; z-index: 0; pointer-events: none; }
         .unofficial-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 70px; color: rgba(255, 0, 0, 0.12); font-weight: bold; z-index: 10; pointer-events: none; white-space: nowrap; display: none; }
+        .blurred { filter: blur(20px); pointer-events: none; }
         
-        .report-header { display: flex; align-items: center; border-bottom: 2px solid #004a99; padding-bottom: 8px; margin-bottom: 12px; position: relative; z-index: 1; }
-        .school-logo { width: 90px; height: auto; flex-shrink: 0; }
-        .header-text { flex-grow: 1; text-align: center; padding-right: 90px; }
-        .school-name { font-family: 'Times New Roman', serif; font-size: 24px; color: #004a99; margin: 0; text-transform: uppercase; font-weight: bold; }
-        .motto { font-style: italic; font-weight: bold; font-size: 13px; margin: 0; color: #333; }
-        .address { font-size: 11px; font-weight: bold; color: #444; margin: 0; }
+        .report-header { display: flex; align-items: center; border-bottom: 2px solid #004a99; padding-bottom: 10px; margin-bottom: 12px; position: relative; z-index: 1; }
+        .school-logo { width: 100px; height: auto; flex-shrink: 0; }
+        .header-text { flex-grow: 1; text-align: center; padding-right: 100px; }
+        .school-name { font-family: 'Times New Roman', serif; font-size: 26px; color: #004a99; margin: 0; text-transform: uppercase; font-weight: bold; }
+        .motto { font-style: italic; font-weight: bold; font-size: 14px; margin: 0; color: #333; }
+        .address { font-size: 11px; font-weight: bold; color: #444; margin: 1px 0; }
         
-        .student-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 12px; border: 1px solid #000; padding: 10px; background: #fafafa; position: relative; z-index: 1; }
-        .info-item { font-size: 13px; border-bottom: 1px solid #eee; padding: 2px 0; }
+        .student-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; border: 1px solid #000; padding: 12px; background: #fafafa; position: relative; z-index: 1; }
+        .info-item { font-size: 13px; border-bottom: 1px solid #eee; padding: 3px 0; }
         .info-label { font-weight: bold; color: #004a99; }
 
         .result-table { width: 100%; border-collapse: collapse; margin-top: 5px; position: relative; z-index: 1; }
-        .result-table th, .result-table td { border: 1px solid #000; padding: 6px; text-align: left; font-size: 13px; }
+        .result-table th, .result-table td { border: 1px solid #000; padding: 8px; text-align: left; font-size: 13px; }
         .result-table th { background: #eef2f7; color: #004a99; }
         
-        .bottom-wrap { display: flex; margin-top: 12px; gap: 10px; position: relative; z-index: 1; }
+        .bottom-wrap { display: flex; margin-top: 15px; gap: 10px; position: relative; z-index: 1; }
         .comments-table { width: 55%; border-collapse: collapse; }
-        .comments-table td { border: 1px solid #000; padding: 8px; vertical-align: top; font-size: 12px; height: 50px; line-height: 1.3; }
+        .comments-table td { border: 1px solid #000; padding: 8px; vertical-align: top; font-size: 12px; height: 55px; line-height: 1.3; }
         .summary-table { width: 45%; border-collapse: collapse; margin-left: auto; }
-        .summary-table td { border: 1px solid #000; padding: 6px; font-weight: bold; font-size: 13px; }
+        .summary-table td { border: 1px solid #000; padding: 8px; font-weight: bold; font-size: 13px; }
 
         .footer { margin-top: auto; padding-top: 20px; display: flex; justify-content: space-between; align-items: flex-end; position: relative; z-index: 1; }
         .sig-space { text-align: center; width: 180px; }
@@ -71,14 +72,10 @@
         .action-btns { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
         #msg { text-align: center; font-weight: bold; margin-top: 20px; font-size: 16px; }
 
-        @media screen {
-            #pdfArea { min-width: 800px; }
-            .card { overflow: visible !important; }
-        }
-
         @media screen and (max-width: 600px) {
             #pdfArea { width: 800px; transform: scale(0.42); transform-origin: top left; margin-bottom: -550px; }
             .card { overflow-x: auto; padding: 15px; }
+            .header-text { padding-right: 0; }
         }
     </style>
 </head>
@@ -180,6 +177,8 @@
         function forceClear() { if(window.isViewingResult) location.reload(); }
         document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') forceClear(); });
         window.addEventListener('pagehide', forceClear);
+        window.addEventListener('blur', () => { if(window.isViewingResult) document.getElementById('pdfArea').classList.add('blurred'); });
+        window.addEventListener('focus', () => { document.getElementById('pdfArea').classList.remove('blurred'); });
 
         function toggleDept() {
             const cls = document.getElementById('classSelect').value;
@@ -214,7 +213,14 @@
 
             btn.classList.add('loading');
             msg.style.color = "#004a99";
-            msg.innerText = "⏳ Connecting to Database...";
+            
+            // Re-added the loading messages
+            msg.innerText = "⏳ Connecting to Go-Tegs Database...";
+            await new Promise(r => setTimeout(r, 1200));
+            msg.innerText = "🔍 Verifying Credentials...";
+            await new Promise(r => setTimeout(r, 1200));
+            msg.innerText = "📋 Generating Report Card...";
+            await new Promise(r => setTimeout(r, 1000));
 
             try {
                 const res = await fetch(`/api/verify?student_id=${sid}&year=${yr}&class=${cls}&dept=${dept}&pin=${pin}`);
@@ -265,44 +271,22 @@
         async function downloadPDF() {
             const element = document.getElementById('pdfArea');
             const studentName = document.getElementById('dispName').innerText || "Student";
-            
             try {
-                const canvas = await html2canvas(element, { 
-                    scale: 3, /* Higher quality */
-                    useCORS: true,
-                    logging: false,
-                    scrollX: 0,
-                    scrollY: -window.scrollY /* Capture from top */
-                });
-
+                // High scale for clarity, no extra margin
+                const canvas = await html2canvas(element, { scale: 3, useCORS: true });
                 const imgData = canvas.toDataURL('image/jpeg', 1.0);
                 const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
                 
                 const pdfWidth = pdf.internal.pageSize.getWidth();
                 const pdfHeight = pdf.internal.pageSize.getHeight();
                 
-                const imgProps = pdf.getImageProperties(imgData);
-                const ratio = imgProps.width / imgProps.height;
-                const renderHeight = pdfWidth / ratio;
+                // Calculate height to maintain aspect ratio based on A4 width
+                const imgHeight = (canvas.height * pdfWidth) / canvas.width;
 
-                // Logic: If height is too long for A4, shrink it slightly to fit the page
-                let finalHeight = renderHeight;
-                let finalWidth = pdfWidth;
-                
-                if (renderHeight > pdfHeight) {
-                    const shrinkRatio = (pdfHeight - 10) / renderHeight;
-                    finalHeight = pdfHeight - 10;
-                    finalWidth = pdfWidth * shrinkRatio;
-                }
-
-                // Center the image horizontally
-                const marginX = (pdfWidth - finalWidth) / 2;
-
-                pdf.addImage(imgData, 'JPEG', marginX, 2, finalWidth, finalHeight);
+                // Add image starting from top left (0,0) filling the width
+                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, imgHeight);
                 pdf.save(`${studentName}_Result.pdf`);
-            } catch (e) { 
-                alert("PDF Error: Content too large or connection interrupted."); 
-            }
+            } catch (e) { alert("PDF Error"); }
         }
     </script>
 </body>
