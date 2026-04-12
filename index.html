@@ -56,12 +56,20 @@
 
         .report-header, .student-info, .result-table, .summary-table, .footer { position: relative; z-index: 1; }
         
-        /* FIXED HEADING FORMAT START */
-        .report-header { text-align: center; border-bottom: 2px solid #004a99; padding-bottom: 10px; margin-bottom: 30px; }
-        .school-name { font-family: 'Times New Roman', serif; font-size: 32px; color: #004a99; margin: 0; text-transform: uppercase; font-weight: bold; }
-        .motto { font-style: italic; font-weight: bold; font-size: 16px; margin: 2px 0; }
-        .address { font-size: 13px; font-weight: bold; color: #333; }
-        /* FIXED HEADING FORMAT END */
+        /* ADJUSTED HEADING FORMAT */
+        .report-header { 
+            display: flex; 
+            align-items: center; 
+            border-bottom: 2px solid #004a99; 
+            padding-bottom: 15px; 
+            margin-bottom: 30px; 
+            position: relative;
+        }
+        .school-logo { width: 110px; height: auto; flex-shrink: 0; }
+        .header-text { flex-grow: 1; text-align: center; padding-right: 110px; /* Offset to keep text perfectly centered */ }
+        .school-name { font-family: 'Times New Roman', serif; font-size: 28px; color: #004a99; margin: 0; text-transform: uppercase; font-weight: bold; }
+        .motto { font-style: italic; font-weight: bold; font-size: 15px; margin: 2px 0; color: #333; }
+        .address { font-size: 12px; font-weight: bold; color: #444; margin: 1px 0; }
         
         .result-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         .result-table th, .result-table td { border: 1px solid #000; padding: 10px; text-align: left; }
@@ -81,6 +89,7 @@
         @media screen and (max-width: 600px) {
             #pdfArea { width: 800px; transform: scale(0.42); transform-origin: top left; margin-bottom: -550px; }
             .card { overflow-x: auto; padding: 15px; }
+            .header-text { padding-right: 0; } /* Reset offset for mobile view */
         }
 
         @media print {
@@ -125,12 +134,16 @@
                 <div class="unofficial-overlay">UNOFFICIAL COPY</div>
                 
                 <div class="report-header">
-                    <h1 class="school-name">GO-TEGS INTERNATIONAL SCHOOL</h1>
-                    <div class="motto">Motto: Training the Leaders of Tomorrow</div>
-                    <div class="address">15, Ayesanmi Street, Pipeline B/Stop, Isheri Olofin, Alimosho L.G.A Lagos, Nigeria</div>
-                    <div class="address">Tel: 08066525319, 08066680932</div>
-                    <div id="dispTerm" style="font-weight:bold; font-style:italic; margin-top:10px; color:#004a99; text-transform: uppercase;"></div>
+                    <img class="school-logo" src="./assets/logo.webp" onerror="this.src='https://wordpress.com'">
+                    <div class="header-text">
+                        <h1 class="school-name">GO-TEGS INTERNATIONAL SCHOOL</h1>
+                        <div class="motto">Motto: Training the Leaders of Tomorrow</div>
+                        <div class="address">15, Ayesanmi Street, Pipeline B/Stop, Isheri Olofin, Alimosho L.G.A Lagos, Nigeria</div>
+                        <div class="address">Tel: 08066525319, 08066680932</div>
+                    </div>
                 </div>
+
+                <div id="dispTerm" style="font-weight:bold; font-style:italic; text-align:center; margin-bottom: 15px; color:#004a99; text-transform: uppercase;"></div>
 
                 <div class="student-info" style="text-align:center;">
                     <p>OFFICIAL ACADEMIC REPORT FOR <br>
