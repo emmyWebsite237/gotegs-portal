@@ -10,7 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
-        /* FULL PAGE LOADER */
+        /* FULL PAGE LOADER (3 SECONDS) */
         #preloader {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #ffffff; display: flex; flex-direction: column;
@@ -204,7 +204,7 @@
         // --- EDIT THIS LINE TO CHANGE THE TERM ---
         const CURRENT_TERM = "First Term Report"; 
 
-        // 3-SECOND LOADING TIMER
+        // 3-SECOND INITIAL PRELOADER
         window.addEventListener('load', () => {
             setTimeout(() => {
                 document.getElementById('preloader').style.display = 'none';
@@ -249,7 +249,14 @@
 
             btn.classList.add('loading');
             msg.style.color = "#004a99";
+            
+            // LOADING MESSAGES
             msg.innerText = "⏳ Connecting to Go-Tegs Database...";
+            await new Promise(r => setTimeout(r, 1200));
+            msg.innerText = "🔍 Verifying Credentials...";
+            await new Promise(r => setTimeout(r, 1200));
+            msg.innerText = "📋 Generating Report Card...";
+            await new Promise(r => setTimeout(r, 1000));
             
             try {
                 const res = await fetch(`/api/verify?student_id=${sid}&year=${yr}&class=${cls}&dept=${dept}&pin=${pin}`);
@@ -265,9 +272,7 @@
                     document.getElementById('adminFooter').style.display = 'none';
                     document.querySelector('.unofficial-overlay').style.display = data.is_paid ? 'none' : 'block';
 
-                    // Combine Year and the Editable Term variable
                     document.getElementById('dispTerm').innerText = `${yr} ${CURRENT_TERM}`;
-                    
                     document.getElementById('dispName').innerText = data.full_name;
                     document.getElementById('dispDob').innerText = data.dob || "---";
                     document.getElementById('dispClass').innerText = cls + (dept ? ` (${dept})` : "");
