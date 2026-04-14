@@ -3,123 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Go-Tegs Admin Dashboard</title>
+    <title>Go-Tegs | Management Vault</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
-        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .admin-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 30px; border-top: 5px solid #004a99; }
-        h2 { color: #004a99; margin-top: 0; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 1px; }
-        
-        .table-container { width: 100%; overflow-x: auto; border: 1px solid #e1e4e8; border-radius: 8px; }
-        table { width: 100%; border-collapse: collapse; min-width: 1500px; font-size: 13px; }
-        th { background: #f8f9fa; color: #004a99; padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6; white-space: nowrap; }
-        td { padding: 10px; border-bottom: 1px solid #eee; white-space: nowrap; }
-        tr:hover { background: #f1f5f9; }
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-        .btn-refresh { background: #004a99; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-refresh:hover { background: #003366; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+    <style>
+        :root { --vault-blue: #002b5c; --gold: #c5a059; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
         
-        .status-paid { color: #059669; font-weight: bold; background: #ecfdf5; padding: 4px 10px; border-radius: 20px; font-size: 11px; border: 1px solid #10b981; }
-        .status-unpaid { color: #dc2626; font-weight: bold; background: #fef2f2; padding: 4px 10px; border-radius: 20px; font-size: 11px; border: 1px solid #ef4444; }
+        /* SECURE LOGIN OVERLAY */
+        #authOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--vault-blue); display: flex; justify-content: center; align-items: center;
+            z-index: 10000; color: white;
+        }
+        .auth-card {
+            background: #ffffff10; backdrop-filter: blur(10px); padding: 40px;
+            border-radius: 15px; border: 1px solid var(--gold); text-align: center; width: 350px;
+        }
+        .auth-card h2 { color: var(--gold); margin-bottom: 25px; letter-spacing: 2px; }
+        .auth-card input, .auth-card select { 
+            width: 100%; padding: 12px; margin: 10px 0; border-radius: 5px; border: none; outline: none; box-sizing: border-box;
+        }
+        .auth-btn { 
+            background: var(--gold); color: var(--vault-blue); width: 100%; padding: 15px; 
+            font-weight: bold; border: none; cursor: pointer; border-radius: 5px; margin-top: 20px;
+        }
+
+        /* MAIN DASHBOARD */
+        #mainDashboard { display: none; }
+        .vault-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--vault-blue); padding-bottom: 10px; margin-bottom: 20px; }
         
-        .loading-text { padding: 20px; text-align: center; color: #666; font-style: italic; }
+        .table-wrapper { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th { background: var(--vault-blue); color: white; padding: 8px; text-align: left; white-space: nowrap; }
+        td { padding: 6px 8px; border-bottom: 1px solid #eee; white-space: nowrap; }
+        
+        /* Tightening the Name column */
+        .col-full_name { min-width: 180px; font-weight: bold; color: var(--vault-blue); }
+        .score-col { width: 40px; text-align: center; }
+        
+        .calc-col { background: #fff9eb; font-weight: bold; border-left: 1px solid #ddd; text-align: center; }
+
+        .btn-action { background: var(--vault-blue); color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 20px; }
+        .status-tag { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+        .paid { background: #e6fffa; color: #006b5f; }
+        .unpaid { background: #fff5f5; color: #c53030; }
     </style>
 </head>
 <body>
 
-    <div class="header-flex">
-        <h1>Go-Tegs Database Management</h1>
-        <div>
-            <button class="btn-refresh" onclick="loadAllData()">🔄 Sync Database</button>
-            <button class="btn-refresh" style="background:#666;" onclick="window.location.href='index.html'">Portal</button>
+    <div id="authOverlay">
+        <div class="auth-card">
+            <h2>MANAGEMENT VAULT</h2>
+            <input type="text" id="adminName" placeholder="Administrator Name">
+            <select id="targetSection">
+                <option value="">Select Section</option>
+                <option value="jss_students">Junior Secondary (JSS)</option>
+                <option value="sss_students">Senior Secondary (SSS)</option>
+            </select>
+            <input type="password" id="adminPin" placeholder="Access PIN">
+            <button class="auth-btn" onclick="unlockVault()">AUTHENTICATE</button>
+            <p id="authMsg" style="color: #ff9b9b; font-size: 12px; margin-top: 10px;"></p>
         </div>
     </div>
 
-    <div class="admin-card">
-        <h2>Junior Secondary School (JSS) Student Records</h2>
-        <div class="table-container">
-            <table id="jssTable">
-                <thead><tr id="jssHead"></tr></thead>
-                <tbody id="jssBody"><tr class="loading-text"><td>Awaiting Database Connection...</td></tr></tbody>
+    <div id="mainDashboard">
+        <div class="vault-header">
+            <div>
+                <h1 style="margin:0; color:var(--vault-blue)">System Audit Log</h1>
+                <p id="vaultStatus" style="margin:0; font-size: 13px; color: var(--gold); font-weight: bold;"></p>
+            </div>
+            <button class="btn-action" style="background:#666" onclick="location.reload()">Lock Vault</button>
+        </div>
+
+        <div id="exportArea" class="table-wrapper">
+            <table id="dataTable">
+                <thead id="dataHead"></thead>
+                <tbody id="dataBody"></tbody>
             </table>
         </div>
-    </div>
 
-    <div class="admin-card">
-        <h2>Senior Secondary School (SSS) Student Records</h2>
-        <div class="table-container">
-            <table id="sssTable">
-                <thead><tr id="sssHead"></tr></thead>
-                <tbody id="sssBody"><tr class="loading-text"><td>Awaiting Database Connection...</td></tr></tbody>
-            </table>
+        <div style="text-align: right;">
+            <button class="btn-action" onclick="downloadLandscapePDF()">📥 Download Landscape Ledger (PDF)</button>
         </div>
     </div>
 
     <script>
-        // --- 1. CONFIGURATION (REPLACE WITH YOUR ACTUAL KEYS) ---
-        const SB_URL = 'https://lsyegaciprnerysmyesy.supabase.co'; 
-        const SB_KEY = 'sb_publishable_sM0x3SdV4iy8GwYb5S5HUg_S9qLZLeJ';
+        const SB_URL = 'YOUR_SUPABASE_URL';
+        const SB_KEY = 'YOUR_SUPABASE_ANON_KEY';
+        const ADMIN_SECRET_PIN = '1234'; // Change this to your preferred Admin PIN
 
-        // Initialize the client with a unique variable name
-        const _supabaseAdmin = supabase.createClient(SB_URL, SB_KEY);
+        const _client = supabase.createClient(SB_URL, SB_KEY);
 
-        // --- 2. DATA FETCHING LOGIC ---
-        async function loadTableData(tableName, headId, bodyId) {
-            const headRow = document.getElementById(headId);
-            const body = document.getElementById(bodyId);
+        function getGrade(score) {
+            if (score >= 75) return "A1"; if (score >= 70) return "B2";
+            if (score >= 65) return "B3"; if (score >= 60) return "C4";
+            if (score >= 50) return "C6"; if (score >= 45) return "D7";
+            if (score >= 40) return "E8"; return "F9";
+        }
 
-            try {
-                // Fetch data from Supabase
-                const { data, error } = await _supabaseAdmin
-                    .from(tableName)
-                    .select('*')
-                    .order('full_name', { ascending: true });
+        async function unlockVault() {
+            const name = document.getElementById('adminName').value;
+            const table = document.getElementById('targetSection').value;
+            const pin = document.getElementById('adminPin').value;
+            const msg = document.getElementById('authMsg');
 
-                if (error) throw error;
+            if(!name || !table || !pin) { msg.innerText = "All credentials required."; return; }
+            if(pin !== ADMIN_SECRET_PIN) { msg.innerText = "Invalid Access PIN."; return; }
 
-                if (data && data.length > 0) {
-                    // Get all column keys from the database dynamically
-                    const columns = Object.keys(data[0]);
+            document.getElementById('authOverlay').style.display = 'none';
+            document.getElementById('mainDashboard').style.display = 'block';
+            document.getElementById('vaultStatus').innerText = `Session: ${name} | Accessing: ${table.replace('_',' ').toUpperCase()}`;
+            
+            loadData(table);
+        }
+
+        async function loadData(tableName) {
+            const { data, error } = await _client.from(tableName).select('*').order('full_name', { ascending: true });
+            if(error) { alert(error.message); return; }
+
+            // 1. Identify "Dead" (Fully Null) Columns
+            const allKeys = Object.keys(data[0]);
+            const activeKeys = allKeys.filter(key => {
+                return data.some(row => row[key] !== null && row[key] !== "");
+            });
+
+            // 2. Build Headers
+            let headHtml = "<tr>";
+            activeKeys.forEach(k => {
+                headHtml += `<th class="col-${k}">${k.toUpperCase().replace('_SCORE','').replace('_',' ')}</th>`;
+            });
+            headHtml += `<th class="calc-col">TOTAL</th><th class="calc-col">MEAN %</th><th class="calc-col">GRADE</th></tr>`;
+            document.getElementById('dataHead').innerHTML = headHtml;
+
+            // 3. Build Rows + Calculations
+            let bodyHtml = "";
+            data.forEach(row => {
+                let rowTotal = 0;
+                let subjectCount = 0;
+                let rowHtml = "<tr>";
+
+                activeKeys.forEach(k => {
+                    let val = row[k] === null ? "---" : row[k];
                     
-                    // Generate Table Headers
-                    headRow.innerHTML = columns.map(col => `<th>${col.toUpperCase().replace(/_/g, ' ')}</th>`).join('');
+                    // Add to calculation if it's a score column
+                    if(k.includes('_score') && typeof row[k] === 'number') {
+                        rowTotal += row[k];
+                        subjectCount++;
+                    }
 
-                    // Generate Table Rows
-                    body.innerHTML = data.map(row => {
-                        return `<tr>${columns.map(col => {
-                            let cellValue = row[col];
-                            
-                            // Handle empty values
-                            if (cellValue === null || cellValue === undefined) return `<td>---</td>`;
-                            
-                            // Format the Payment Status column
-                            if (col === 'is_paid') {
-                                return `<td><span class="${cellValue ? 'status-paid' : 'status-unpaid'}">${cellValue ? 'PAID' : 'PENDING'}</span></td>`;
-                            }
-                            
-                            return `<td>${cellValue}</td>`;
-                        }).join('')}</tr>`;
-                    }).join('');
-                } else {
-                    body.innerHTML = "<tr><td colspan='10'>No data available in this table.</td></tr>";
-                }
-            } catch (err) {
-                console.error("Database Fetch Error:", err);
-                body.innerHTML = `<tr><td style="color:red; font-weight:bold;">Error: ${err.message}</td></tr>`;
+                    if(k === 'is_paid') {
+                        rowHtml += `<td><span class="status-tag ${val ? 'paid':'unpaid'}">${val ? 'PAID':'PENDING'}</span></td>`;
+                    } else {
+                        rowHtml += `<td class="col-${k}">${val}</td>`;
+                    }
+                });
+
+                const mean = subjectCount > 0 ? (rowTotal / subjectCount).toFixed(1) : 0;
+                rowHtml += `<td class="calc-col">${rowTotal}</td>`;
+                rowHtml += `<td class="calc-col">${mean}%</td>`;
+                rowHtml += `<td class="calc-col">${getGrade(parseFloat(mean))}</td></tr>`;
+                bodyHtml += rowHtml;
+            });
+            document.getElementById('dataBody').innerHTML = bodyHtml;
+        }
+
+        async function downloadLandscapePDF() {
+            const element = document.getElementById('exportArea');
+            const btn = document.querySelector('.btn-action[onclick*="PDF"]');
+            btn.innerText = "⏳ Processing Ledger...";
+            
+            try {
+                const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+                const imgData = canvas.toDataURL('image/png');
+                
+                // Set to Landscape ('l')
+                const pdf = new jspdf.jsPDF('l', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                
+                const ratio = Math.min(pdfWidth / canvas.width, pdfHeight / canvas.height);
+                const finalWidth = canvas.width * ratio;
+                const finalHeight = canvas.height * ratio;
+
+                pdf.addImage(imgData, 'PNG', 5, 5, finalWidth - 10, finalHeight - 10);
+                pdf.save(`System_Audit_Log_${new Date().getTime()}.pdf`);
+            } catch (e) {
+                alert("Export Failed: " + e.message);
+            } finally {
+                btn.innerText = "📥 Download Landscape Ledger (PDF)";
             }
         }
-
-        // --- 3. EXECUTION ---
-        function loadAllData() {
-            // Note: Replace 'jss_students' and 'sss_students' with your actual Supabase table names
-            loadTableData('jss_students', 'jssHead', 'jssBody');
-            loadTableData('sss_students', 'sssHead', 'sssBody');
-        }
-
-        // Run automatically when the page is ready
-        window.addEventListener('DOMContentLoaded', loadAllData);
     </script>
 </body>
 </html>
