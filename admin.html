@@ -3,113 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Portal | Go-Tegs Database</title>
+    <title>Go-Tegs Admin Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f9; margin: 0; padding: 20px; }
-        .admin-container { max-width: 100%; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow-x: auto; }
-        h2 { color: #004a99; border-bottom: 2px solid #004a99; padding-bottom: 10px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; padding: 20px; }
+        .admin-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        h2 { color: #004a99; border-left: 5px solid #004a99; padding-left: 15px; margin-bottom: 20px; }
         
-        .controls { display: flex; gap: 15px; margin-bottom: 20px; align-items: center; }
-        select, button { padding: 10px; border-radius: 5px; border: 1px solid #ccc; font-size: 14px; }
-        button { background: #004a99; color: white; cursor: pointer; border: none; font-weight: bold; }
-        button:hover { background: #003366; }
+        .table-container { width: 100%; overflow-x: auto; margin-top: 10px; border: 1px solid #ddd; border-radius: 8px; }
+        table { width: 100%; border-collapse: collapse; min-width: 1200px; font-size: 13px; }
+        th { background: #004a99; color: white; padding: 12px; text-align: left; white-space: nowrap; position: sticky; top: 0; }
+        td { padding: 10px; border-bottom: 1px solid #eee; white-space: nowrap; }
+        tr:hover { background: #f9f9f9; }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; white-space: nowrap; }
-        th { background: #004a99; color: white; padding: 12px; text-align: left; position: sticky; top: 0; }
-        td { padding: 10px; border-bottom: 1px solid #ddd; }
-        tr:hover { background: #f1f1f1; }
-        
-        .status-paid { color: green; font-weight: bold; }
-        .status-unpaid { color: red; font-weight: bold; }
-        .loading { text-align: center; padding: 20px; font-style: italic; color: #666; }
+        .btn-refresh { background: #004a99; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-bottom: 20px; }
+        .status-paid { color: #059669; font-weight: bold; background: #ecfdf5; padding: 4px 8px; border-radius: 4px; }
+        .status-unpaid { color: #dc2626; font-weight: bold; background: #fef2f2; padding: 4px 8px; border-radius: 4px; }
     </style>
 </head>
 <body>
 
-    <div class="admin-container">
-        <h2>Go-Tegs Result Management System</h2>
-        
-        <div class="controls">
-            <select id="tableSelect">
-                <option value="jss_results">Junior Secondary (JSS)</option>
-                <option value="sss_results">Senior Secondary (SSS)</option>
-            </select>
-            <button onclick="fetchData()">🔄 Refresh Data</button>
-            <button onclick="window.location.href='index.html'" style="background:#666;">Back to Portal</button>
-        </div>
+    <h1>Go-Tegs Student Database Management</h1>
+    <button class="btn-refresh" onclick="loadAllData()">🔄 Refresh All Data</button>
 
-        <div id="loader" class="loading" style="display:none;">Fetching records from Supabase...</div>
-        
-        <table id="adminTable">
-            <thead id="tableHead">
-                </thead>
-            <tbody id="tableBody">
-                </tbody>
-        </table>
+    <div class="admin-card">
+        <h2>Junior Secondary School (JSS) Records</h2>
+        <div class="table-container">
+            <table id="jssTable">
+                <thead><tr id="jssHead"></tr></thead>
+                <tbody id="jssBody"><tr><td>Loading JSS data...</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="admin-card">
+        <h2>Senior Secondary School (SSS) Records</h2>
+        <div class="table-container">
+            <table id="sssTable">
+                <thead><tr id="sssHead"></tr></thead>
+                <tbody id="sssBody"><tr><td>Loading SSS data...</td></tr></tbody>
+            </table>
+        </div>
     </div>
 
     <script>
-        // Initialize Supabase (Replace with your actual keys)
+        // --- CONFIGURE YOUR SUPABASE HERE ---
         const SUPABASE_URL = 'YOUR_SUPABASE_URL';
         const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        async function fetchData() {
-            const tableName = document.getElementById('tableSelect').value;
-            const loader = document.getElementById('loader');
-            const tbody = document.getElementById('tableBody');
-            const thead = document.getElementById('tableHead');
-
-            loader.style.display = 'block';
-            tbody.innerHTML = '';
-            thead.innerHTML = '';
+        async function loadTableData(tableName, headId, bodyId) {
+            const headRow = document.getElementById(headId);
+            const body = document.getElementById(bodyId);
 
             try {
-                const { data, error } = await supabase
-                    .from(tableName)
-                    .select('*')
-                    .order('full_name', { ascending: true });
-
+                const { data, error } = await supabase.from(tableName).select('*').order('full_name', { ascending: true });
                 if (error) throw error;
 
                 if (data.length > 0) {
-                    // Create Headers based on keys in the first object
-                    const headers = Object.keys(data[0]);
-                    let headHtml = '<tr>';
-                    headers.forEach(h => {
-                        headHtml += `<th>${h.replace(/_/g, ' ').toUpperCase()}</th>`;
-                    });
-                    headHtml += '</tr>';
-                    thead.innerHTML = headHtml;
+                    // 1. Generate Headers Dynamically
+                    const columns = Object.keys(data[0]);
+                    headRow.innerHTML = columns.map(col => `<th>${col.toUpperCase().replace('_', ' ')}</th>`).join('');
 
-                    // Create Rows
-                    data.forEach(row => {
-                        let rowHtml = '<tr>';
-                        headers.forEach(h => {
-                            let val = row[h] === null ? '---' : row[h];
-                            
-                            // Special formatting for is_paid
-                            if (h === 'is_paid') {
-                                val = val ? '<span class="status-paid">YES</span>' : '<span class="status-unpaid">NO</span>';
+                    // 2. Generate Rows
+                    body.innerHTML = data.map(row => {
+                        return `<tr>${columns.map(col => {
+                            let value = row[col] === null ? "---" : row[col];
+                            if (col === 'is_paid') {
+                                return `<td><span class="${value ? 'status-paid' : 'status-unpaid'}">${value ? 'YES' : 'NO'}</span></td>`;
                             }
-                            rowHtml += `<td>${val}</td>`;
-                        });
-                        rowHtml += '</tr>';
-                        tbody.innerHTML += rowHtml;
-                    });
+                            return `<td>${value}</td>`;
+                        }).join('')}</tr>`;
+                    }).join('');
                 } else {
-                    tbody.innerHTML = '<tr><td colspan="100%">No records found.</td></tr>';
+                    body.innerHTML = "<tr><td>No records found in this table.</td></tr>";
                 }
             } catch (err) {
-                alert("Error fetching data: " + err.message);
-            } finally {
-                loader.style.display = 'none';
+                body.innerHTML = `<tr><td style="color:red;">Error: ${err.message}</td></tr>`;
             }
         }
 
-        // Load data on start
-        fetchData();
+        function loadAllData() {
+            // Replace 'jss_students' and 'sss_students' with your actual Supabase table names
+            loadTableData('jss_students', 'jssHead', 'jssBody');
+            loadTableData('sss_students', 'sssHead', 'sssBody');
+        }
+
+        // Initial Load
+        window.onload = loadAllData;
     </script>
 </body>
 </html>
