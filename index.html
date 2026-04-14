@@ -5,10 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Go-Tegs Student Portal</title>
     
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
+        /* FULL PAGE LOADER */
+        #preloader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #ffffff; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 9999;
+        }
+        .pulse-loader {
+            width: 80px; height: 80px; background: #004a99;
+            border-radius: 50%; animation: pulse 1.2s infinite ease-in-out;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
         /* General Page Styling */
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 850px; position: relative; }
@@ -26,17 +42,9 @@
 
         /* COMPACTED RESULT TEMPLATE */
         #pdfArea { 
-            padding: 25px; 
-            background: white !important; 
-            border: 5px double #004a99; 
-            margin: 0 auto;
-            position: relative;
-            min-height: 950px; /* Base height */
-            width: 100%;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            padding: 25px; background: white !important; border: 5px double #004a99; 
+            margin: 0 auto; position: relative; min-height: 950px; width: 100%;
+            box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;
             -webkit-user-select: none; user-select: none;
         }
 
@@ -47,7 +55,10 @@
         .report-header { display: flex; align-items: center; border-bottom: 2px solid #004a99; padding-bottom: 10px; margin-bottom: 12px; position: relative; z-index: 1; }
         .school-logo { width: 100px; height: auto; flex-shrink: 0; }
         .header-text { flex-grow: 1; text-align: center; padding-right: 100px; }
-        .school-name { font-family: 'Times New Roman', serif; font-size: 30px; color: #004a99; margin: 0; text-transform: uppercase; font-weight: bold; }
+        
+        /* THE STYLED CURSIVE HEADING */
+        .school-name { font-family: 'Great Vibes', cursive; font-size: 42px; color: #004a99; margin: 0; font-weight: normal; }
+        
         .motto { font-style: italic; font-weight: bold; font-size: 14px; margin: 0; color: #333; }
         .address { font-size: 11px; font-weight: bold; color: #444; margin: 1px 0; }
         
@@ -73,7 +84,6 @@
         .action-btns { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
         #msg { text-align: center; font-weight: bold; margin-top: 20px; font-size: 16px; }
 
-        /* Mobile Scaling Logic */
         @media screen and (max-width: 600px) {
             #pdfArea { width: 800px; transform: scale(0.45); transform-origin: top left; margin-bottom: -500px; }
             body.is-sss #pdfArea { transform: scale(0.42); margin-bottom: -550px; }
@@ -83,6 +93,11 @@
     </style>
 </head>
 <body>
+
+    <div id="preloader">
+        <div class="pulse-loader"></div>
+        <p style="color:#004a99; font-weight:bold; margin-top:20px; letter-spacing:2px;">SECURE ACCESS...</p>
+    </div>
 
     <div class="card">
         <div id="loginSection">
@@ -118,7 +133,7 @@
                 <div class="report-header">
                     <img class="school-logo" src="./assets/logo.webp" onerror="this.src='https://wordpress.com'">
                     <div class="header-text">
-                        <h1 class="school-name">GO-TEGS INTERNATIONAL SCHOOL</h1>
+                        <h1 class="school-name">Go-Tegs International School</h1>
                         <div class="motto">Motto: Training the Leaders of Tomorrow</div>
                         <div class="address">15, Ayesanmi Street, Pipeline B/Stop, Isheri Olofin, Alimosho L.G.A Lagos, Nigeria</div>
                         <div class="address">Tel: 08066525319, 08066680932</div>
@@ -137,7 +152,14 @@
                 </div>
 
                 <table class="result-table">
-                    <thead><tr><th>Subject</th><th style="text-align:center;">Score (%)</th><th style="text-align:center;">Grade</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th style="text-align:center;">Score (%)</th>
+                            <th style="text-align:center;">Grade</th>
+                            <th style="text-align:center;">Comments</th>
+                        </tr>
+                    </thead>
                     <tbody id="resBody"></tbody>
                 </table>
 
@@ -179,28 +201,30 @@
     </footer>
 
     <script>
+        // --- EDIT THIS LINE TO CHANGE THE TERM ---
+        const CURRENT_TERM = "First Term Report"; 
+
+        // 3-SECOND LOADING TIMER
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('preloader').style.display = 'none';
+            }, 3000);
+        });
+
         const subjectNames = {
             maths_score: "Mathematics", english_score: "English Language", physics_score: "Physics", chem_score: "Chemistry", bio_score: "Biology", fmath_score: "Further Mathematics", civic_score: "Civic Education", govt_score: "Government", econs_score: "Economics", markt_score: "Marketing", dp_score: "Data Processing", comme_score: "Commerce", agric_score: "Agricultural Science", crs_score: "C.R.S", finacc_score: "Financial Accounting", litineng_score: "Literature in English", philo_score: "Philosophy", geo_score: "Geography", basic_science_score: "Basic Science", basic_tech_score: "Basic Technology", bus_stud_score: "Business Studies", cmp_score: "Computer Studies", phe_score: "P.H.E", cca_score: "C.C.A", social_stud_score: "Social Studies", home_econs_score: "Home Economics", yoruba_score: "Yoruba", french_score: "French", sec_edu_score: "Security Education", lit_score: "Literature", music_score: "Music", diction_score: "Diction", history_score: "History"
         };
 
-        window.isViewingResult = false;
-        function forceClear() { if(window.isViewingResult) location.reload(); }
-        document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') forceClear(); });
-        window.addEventListener('pagehide', forceClear);
-        window.addEventListener('blur', () => { if(window.isViewingResult) document.getElementById('pdfArea').classList.add('blurred'); });
-        window.addEventListener('focus', () => { document.getElementById('pdfArea').classList.remove('blurred'); });
-
-        function toggleDept() {
-            const cls = document.getElementById('classSelect').value;
-            document.getElementById('deptDiv').style.display = cls.includes("SSS") ? "block" : "none";
-            if(cls.includes("SSS")) { document.body.classList.add('is-sss'); } 
-            else { document.body.classList.remove('is-sss'); }
-        }
-
-        function getGrade(score) {
-            if (score >= 75) return "A1"; if (score >= 70) return "B2"; if (score >= 65) return "B3";
-            if (score >= 60) return "C4"; if (score >= 55) return "C5"; if (score >= 50) return "C6";
-            if (score >= 45) return "D7"; if (score >= 40) return "E8"; return "F9";
+        function getGradeInfo(score) {
+            if (score >= 75) return { g: "A1", c: "Excellent" };
+            if (score >= 70) return { g: "B2", c: "V.Good" };
+            if (score >= 65) return { g: "B3", c: "Good" };
+            if (score >= 60) return { g: "C4", c: "Credit" };
+            if (score >= 55) return { g: "C5", c: "Credit" };
+            if (score >= 50) return { g: "C6", c: "Pass" };
+            if (score >= 45) return { g: "D7", c: "Pass" };
+            if (score >= 40) return { g: "E8", c: "Weak" };
+            return { g: "F9", c: "Poor" };
         }
 
         function getPrincipalComment(mean) {
@@ -225,14 +249,8 @@
 
             btn.classList.add('loading');
             msg.style.color = "#004a99";
-            
             msg.innerText = "⏳ Connecting to Go-Tegs Database...";
-            await new Promise(r => setTimeout(r, 1200));
-            msg.innerText = "🔍 Verifying Credentials...";
-            await new Promise(r => setTimeout(r, 1200));
-            msg.innerText = "📋 Generating Report Card...";
-            await new Promise(r => setTimeout(r, 1000));
-
+            
             try {
                 const res = await fetch(`/api/verify?student_id=${sid}&year=${yr}&class=${cls}&dept=${dept}&pin=${pin}`);
                 const data = await res.json();
@@ -247,7 +265,9 @@
                     document.getElementById('adminFooter').style.display = 'none';
                     document.querySelector('.unofficial-overlay').style.display = data.is_paid ? 'none' : 'block';
 
-                    document.getElementById('dispTerm').innerText = `${yr} ${data.term || "REPORT"}`;
+                    // Combine Year and the Editable Term variable
+                    document.getElementById('dispTerm').innerText = `${yr} ${CURRENT_TERM}`;
+                    
                     document.getElementById('dispName').innerText = data.full_name;
                     document.getElementById('dispDob').innerText = data.dob || "---";
                     document.getElementById('dispClass').innerText = cls + (dept ? ` (${dept})` : "");
@@ -259,7 +279,13 @@
                     let rows = ""; let total = 0;
                     data.scores.forEach(s => {
                         total += s.score;
-                        rows += `<tr><td>${subjectNames[s.subject] || s.subject}</td><td style="text-align:center;">${s.score}</td><td style="text-align:center; font-weight:bold;">${getGrade(s.score)}</td></tr>`;
+                        const info = getGradeInfo(s.score);
+                        rows += `<tr>
+                            <td>${subjectNames[s.subject] || s.subject}</td>
+                            <td style="text-align:center;">${s.score}</td>
+                            <td style="text-align:center; font-weight:bold;">${info.g}</td>
+                            <td style="text-align:center; font-style:italic; font-size:11px;">${info.c}</td>
+                        </tr>`;
                     });
                     
                     const count = data.scores.length;
@@ -269,7 +295,7 @@
                     document.getElementById('resObtainable').innerText = count * 100;
                     document.getElementById('resTotal').innerText = total;
                     document.getElementById('resMean').innerText = mean + "%";
-                    document.getElementById('resGrade').innerText = getGrade(mean);
+                    document.getElementById('resGrade').innerText = getGradeInfo(mean).g;
                     document.getElementById('dispPrincipal').innerText = getPrincipalComment(parseFloat(mean));
                     document.getElementById('dispTime').innerText = "Generated: " + new Date().toLocaleString();
                     msg.innerText = "✅ Success";
@@ -283,46 +309,31 @@
         async function downloadPDF() {
             const element = document.getElementById('pdfArea');
             const studentName = document.getElementById('dispName').innerText || "Student";
-            
-            // Temporary button feedback
             const btn = document.querySelector('.action-btns button');
             const originalText = btn.innerText;
             btn.innerText = "⏳ Resizing & Downloading...";
             btn.disabled = true;
 
             try {
-                const canvas = await html2canvas(element, { 
-                    scale: 2, 
-                    useCORS: true, 
-                    backgroundColor: "#ffffff" 
-                });
-                
+                const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
                 const imgData = canvas.toDataURL('image/jpeg', 1.0);
                 const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
-                
                 const pdfWidth = pdf.internal.pageSize.getWidth();
                 const pdfHeight = pdf.internal.pageSize.getHeight();
-
-                // DYNAMIC SCALING LOGIC
-                const imgWidth = canvas.width;
-                const imgHeight = canvas.height;
-                const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-                
-                const finalWidth = imgWidth * ratio;
-                const finalHeight = imgHeight * ratio;
-
-                // Center content on page
-                const offsetX = (pdfWidth - finalWidth) / 2;
-                const offsetY = (pdfHeight - finalHeight) / 2;
-
-                pdf.addImage(imgData, 'JPEG', offsetX, offsetY, finalWidth, finalHeight);
+                const ratio = Math.min(pdfWidth / canvas.width, pdfHeight / canvas.height);
+                const finalWidth = canvas.width * ratio;
+                const finalHeight = canvas.height * ratio;
+                pdf.addImage(imgData, 'JPEG', (pdfWidth - finalWidth) / 2, (pdfHeight - finalHeight) / 2, finalWidth, finalHeight);
                 pdf.save(`${studentName}_Result.pdf`);
-            } catch (e) { 
-                alert("PDF Generation Failed."); 
-            } finally {
-                btn.innerText = originalText;
-                btn.disabled = false;
-            }
+            } catch (e) { alert("PDF Error"); } 
+            finally { btn.innerText = originalText; btn.disabled = false; }
+        }
+
+        function toggleDept() {
+            const cls = document.getElementById('classSelect').value;
+            document.getElementById('deptDiv').style.display = cls.includes("SSS") ? "block" : "none";
+            if(cls.includes("SSS")) document.body.classList.add('is-sss');
+            else document.body.classList.remove('is-sss');
         }
     </script>
 </body>
