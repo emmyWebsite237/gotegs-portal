@@ -9,8 +9,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
-        :root { --vault-blue: #001f3f; --gold: #d4af37; --bg: #f8f9fa; }
-        body { font-family: 'Arial Narrow', sans-serif; background: var(--bg); margin: 0; padding: 15px; }
+        :root { --vault-blue: #001f3f; --gold: #d4af37; --bg: #ffffff; }
+        body { font-family: 'Arial Narrow', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
         
         /* AUTH OVERLAY */
         #authOverlay {
@@ -23,67 +23,100 @@
             border-radius: 12px; border: 1px solid var(--gold); text-align: center; width: 340px;
         }
         .auth-card input, .auth-card select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 4px; border: none; outline: none; }
-        .auth-btn { background: var(--gold); color: var(--vault-blue); width: 100%; padding: 14px; font-weight: bold; border: none; cursor: pointer; border-radius: 4px; width: 100%; }
+        .auth-btn { background: var(--gold); color: var(--vault-blue); width: 100%; padding: 14px; font-weight: bold; border: none; cursor: pointer; border-radius: 4px; transition: 0.3s; }
+        .auth-btn:hover { opacity: 0.9; }
 
-        /* DASHBOARD */
-        #mainDashboard { display: none; }
-        
-        /* DYNAMIC HEADING STYLE - Matches Index.html style */
-        .report-header { text-align: center; margin-bottom: 20px; border-bottom: 4px double var(--vault-blue); padding-bottom: 10px; }
-        .report-header h1 { margin: 0; color: var(--vault-blue); font-size: 28px; text-transform: uppercase; letter-spacing: 2px; }
-        .report-header p { margin: 5px 0; font-size: 18px; font-weight: bold; color: #444; }
+        /* LOADING SCREEN */
+        #loadingScreen {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--vault-blue); color: white; z-index: 9999;
+            flex-direction: column; justify-content: center; align-items: center; text-align: center;
+        }
+        .spinner { border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--gold); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .table-wrapper { background: white; padding: 10px; overflow-x: auto; border: 1px solid #ccc; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; }
-        th { background: var(--vault-blue); color: white; padding: 6px 3px; border: 1px solid #444; text-transform: uppercase; }
-        td { padding: 5px 6px; border: 1px solid #ddd; white-space: nowrap; text-align: center; }
+        /* MAIN DASHBOARD */
+        #mainDashboard { display: none; background: var(--bg); padding: 30px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 1400px; margin: auto; }
         
-        .name-cell { text-align: left; font-weight: bold; min-width: 170px; color: var(--vault-blue); }
+        .nav-bar { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .btn-nav { text-decoration: none; color: var(--vault-blue); font-weight: bold; border: 1px solid var(--vault-blue); padding: 8px 15px; border-radius: 4px; font-size: 13px; }
+
+        .report-header { text-align: center; margin-bottom: 30px; border-bottom: 4px double var(--vault-blue); padding-bottom: 15px; }
+        .report-header h1 { margin: 0; color: var(--vault-blue); font-size: 32px; text-transform: uppercase; letter-spacing: 2px; }
+        .report-header p { margin: 8px 0; font-size: 20px; font-weight: bold; color: #333; }
+
+        /* TABLE STYLES */
+        .table-wrapper { width: 100%; overflow-x: auto; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; background: #fff; }
+        th { background: var(--vault-blue); color: white; padding: 10px 5px; border: 1px solid #333; text-transform: uppercase; text-align: center; }
+        td { padding: 8px 6px; border: 1px solid #ccc; white-space: nowrap; text-align: center; color: #333; }
+        
+        /* ALIGNMENT FIXES */
+        .text-left { text-align: left !important; padding-left: 10px; }
+        .name-cell { font-weight: bold; min-width: 200px; color: var(--vault-blue); }
+        .comment-cell { min-width: 250px; white-space: normal; line-height: 1.4; }
+        
         .calc-col { background: #fff9e6; font-weight: bold; color: #000; border-left: 2px solid #000; }
         
-        .btn-dl { background: #1a73e8; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 20px; float: right; }
-        .btn-dl:hover { background: #1557b0; }
+        .footer-actions { margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; }
+        .btn-dl { background: var(--vault-blue); color: white; padding: 15px 35px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; float: right; letter-spacing: 1px; }
     </style>
 </head>
 <body>
 
     <div id="authOverlay">
         <div class="auth-card">
-            <h2>VAULT ACCESS</h2>
-            <input type="text" id="adminName" placeholder="Administrator Name">
+            <h2 style="color:var(--gold)">SECURE GATEWAY</h2>
+            <input type="text" id="adminName" placeholder="Admin Username">
             <select id="targetSection">
-                <option value="jss_students">JUNIOR SECTION (JSS)</option>
-                <option value="sss_students">SENIOR SECTION (SSS)</option>
+                <option value="jss_students">JUNIOR SECONDARY (JSS)</option>
+                <option value="sss_students">SENIOR SECONDARY (SSS)</option>
             </select>
-            <input type="password" id="adminPin" placeholder="Security PIN">
-            <button class="auth-btn" onclick="unlockVault()">AUTHENTICATE</button>
+            <input type="password" id="adminPin" placeholder="Access PIN">
+            <button class="auth-btn" onclick="startLoading()">AUTHENTICATE SESSION</button>
             <p id="authMsg" style="color: #ff6b6b; font-size: 12px; margin-top: 10px;"></p>
         </div>
     </div>
 
+    <div id="loadingScreen">
+        <div class="spinner"></div>
+        <h3 id="loadMsg" style="letter-spacing: 2px;">ESTABLISHING ENCRYPTED LINK...</h3>
+        <p style="font-size: 12px; opacity: 0.7;">Accessing Go-Tegs Management Vault</p>
+    </div>
+
     <div id="mainDashboard">
-        <div class="report-header">
-            <h1>GO-TEGS CONSOLIDATED MASTER LEDGER</h1>
-            <p id="dynamicSubtitle">(Loading Session Data...)</p>
+        <div class="nav-bar">
+            <a href="index.html" class="btn-nav">← BACK TO PORTAL</a>
+            <button onclick="location.reload()" style="background:none; border:none; color:red; cursor:pointer; font-weight:bold;">TERMINATE SESSION</button>
         </div>
 
-        <div id="exportArea" class="table-wrapper">
-            <table id="dataTable">
-                <thead id="dataHead"></thead>
-                <tbody id="dataBody"></tbody>
-            </table>
+        <div id="captureArea" style="background: #fff; padding: 10px;">
+            <div class="report-header">
+                <h1>GO-TEGS CONSOLIDATED MASTER LEDGER</h1>
+                <p id="dynamicSubtitle">Result Data</p>
+            </div>
+
+            <div class="table-wrapper">
+                <table id="dataTable">
+                    <thead id="dataHead"></thead>
+                    <tbody id="dataBody"></tbody>
+                </table>
+            </div>
         </div>
 
-        <button class="btn-dl" onclick="downloadWidePDF()">📥 DOWNLOAD FULL LEDGER (A3 LANDSCAPE)</button>
+        <div class="footer-actions">
+            <button class="btn-dl" onclick="downloadWidePDF()">📥 EXPORT AUDIT LEDGER (A3 LANDSCAPE)</button>
+        </div>
     </div>
 
     <script>
-        // --- 1. CONFIGURATION ---
         const SB_URL = 'https://lsyegaciprnerysmyesy.supabase.co';
         const SB_KEY = 'sb_publishable_sM0x3SdV4iy8GwYb5S5HUg_S9qLZLeJ';
         const _client = supabase.createClient(SB_URL, SB_KEY);
 
-        // Subject Code Mapping - Ensures CMP, PHE, CCA etc. are displayed correctly
+        let sessionYear = "Unknown";
+        let sessionTerm = "Session";
+
         const codes = {
             english_score: "ENG", maths_score: "MTH", basic_science_score: "BSC", basic_tech_score: "BTH",
             bus_stud_score: "BST", agric_score: "AGS", social_stud_score: "SOS", home_econs_score: "HEC",
@@ -93,31 +126,56 @@
             govt_score: "GOV", econs_score: "ECO", markt_score: "MKT", dp_score: "D.P", comme_score: "COM"
         };
 
-        // Columns to strictly hide
-        const blackList = ['is_paid', 'check_count', 'pin', 'year', 'term', 'created_at'];
+        const blackList = ['is_paid', 'check_count', 'pin', 'year', 'term', 'created_at', 'id'];
 
-        // --- 2. AUTHENTICATION ---
+        function startLoading() {
+            const name = document.getElementById('adminName').value;
+            const pin = document.getElementById('adminPin').value;
+            if(!name || !pin) { document.getElementById('authMsg').innerText = "Credentials Required"; return; }
+
+            document.getElementById('authOverlay').style.display = 'none';
+            document.getElementById('loadingScreen').style.display = 'flex';
+
+            const messages = [
+                "Verifying Administrator Credentials...",
+                "Decrypting Ledger Databases...",
+                "Optimizing Table Layouts...",
+                "Finalizing Secure Session..."
+            ];
+            
+            let i = 0;
+            const interval = setInterval(() => {
+                if(i < messages.length) {
+                    document.getElementById('loadMsg').innerText = messages[i];
+                    i++;
+                } else {
+                    clearInterval(interval);
+                    unlockVault();
+                }
+            }, 1200);
+        }
+
         async function unlockVault() {
             const name = document.getElementById('adminName').value;
             const pin = document.getElementById('adminPin').value;
             const table = document.getElementById('targetSection').value;
-            const msg = document.getElementById('authMsg');
 
             const { data, error } = await _client.from('admin_portal')
                 .select('*').eq('admin_name', name).eq('admin_pin', pin).single();
 
             if(data) {
-                document.getElementById('authOverlay').style.display = 'none';
+                sessionYear = data.year || "2025-2026";
+                sessionTerm = data.term || "Session";
+                document.getElementById('loadingScreen').style.display = 'none';
                 document.getElementById('mainDashboard').style.display = 'block';
-                // Pulls Year and Term from Supabase Admin Table
-                document.getElementById('dynamicSubtitle').innerText = `${data.year || '2025/2026'} ${data.term || 'Second Term'} Result Data`;
+                document.getElementById('dynamicSubtitle').innerText = `${sessionYear} ${sessionTerm} Result Data`;
                 loadData(table);
             } else {
-                msg.innerText = "ACCESS DENIED: Invalid Credentials.";
+                location.reload(); 
+                alert("ACCESS DENIED");
             }
         }
 
-        // --- 3. DATA RENDERING ---
         async function loadData(tableName) {
             const { data, error } = await _client.from(tableName)
                 .select('*').order('class', {ascending: true}).order('full_name', {ascending: true});
@@ -125,10 +183,8 @@
             if(error || !data.length) return;
 
             const allKeys = Object.keys(data[0]);
-            // Logic: Hide blacklisted columns and columns that have no data (NULL)
             const activeKeys = allKeys.filter(k => !blackList.includes(k) && data.some(row => row[k] !== null && row[k] !== ""));
 
-            // Build Header Row
             let headHtml = "<tr>";
             activeKeys.forEach(k => {
                 let label = codes[k] || k.toUpperCase().replace('_SCORE','').replace('_',' ');
@@ -137,19 +193,18 @@
             headHtml += `<th class="calc-col">TOTAL</th><th class="calc-col">AVG %</th><th class="calc-col">GRD</th></tr>`;
             document.getElementById('dataHead').innerHTML = headHtml;
 
-            // Build Student Data Rows
             let bodyHtml = "";
             data.forEach(row => {
                 let total = 0, count = 0, rowHtml = "<tr>";
                 activeKeys.forEach(k => {
                     let val = (row[k] === null || row[k] === "") ? "---" : row[k];
+                    if(k.includes('_score') && typeof row[k] === 'number'){ total += row[k]; count++; }
                     
-                    // Calculation logic for score columns
-                    if(k.includes('_score') && typeof row[k] === 'number'){
-                        total += row[k];
-                        count++;
-                    }
-                    rowHtml += `<td class="${k === 'full_name' ? 'name-cell' : ''}">${val}</td>`;
+                    // ALIGNMENT LOGIC: Name and Comment left-aligned, others centered
+                    let alignClass = (k === 'full_name' || k.includes('comment')) ? 'text-left' : '';
+                    let specificClass = k === 'full_name' ? 'name-cell' : (k.includes('comment') ? 'comment-cell' : '');
+                    
+                    rowHtml += `<td class="${alignClass} ${specificClass}">${val}</td>`;
                 });
                 const avg = count > 0 ? (total / count).toFixed(1) : 0;
                 rowHtml += `<td class="calc-col">${total}</td><td class="calc-col">${avg}%</td><td class="calc-col">${calculateGrade(avg)}</td></tr>`;
@@ -164,22 +219,28 @@
             if(n >= 60) return "C4"; if(n >= 50) return "C6"; if(n >= 40) return "E8"; return "F9";
         }
 
-        // --- 4. EXPORT SYSTEM ---
         async function downloadWidePDF() {
-            const element = document.getElementById('exportArea');
+            // We now capture "captureArea" which includes the H1 and Subtitle
+            const element = document.getElementById('captureArea');
             const btn = document.querySelector('.btn-dl');
-            btn.innerText = "⏳ GENERATING PDF...";
+            btn.innerText = "⏳ ENCRYPTING PDF FILE...";
+            
             try {
                 const canvas = await html2canvas(element, { scale: 2, useCORS: true });
                 const imgData = canvas.toDataURL('image/png');
-                const pdf = new jspdf.jsPDF('l', 'mm', 'a3'); // A3 Landscape for maximum clarity
+                const pdf = new jspdf.jsPDF('l', 'mm', 'a3'); 
+                
                 const pageWidth = pdf.internal.pageSize.getWidth();
                 const pageHeight = pdf.internal.pageSize.getHeight();
                 const ratio = Math.min((pageWidth - 20) / canvas.width, (pageHeight - 20) / canvas.height);
+                
                 pdf.addImage(imgData, 'PNG', 10, 10, canvas.width * ratio, canvas.height * ratio);
-                pdf.save(`GoTegs_Master_Ledger.pdf`);
-            } catch (e) { alert("PDF Error: " + e.message); }
-            finally { btn.innerText = "📥 DOWNLOAD FULL LEDGER (A3 LANDSCAPE)"; }
+                
+                // Formatted Filename: Year_Term_Go-Tegs_Ledger.pdf
+                const fileName = `${sessionYear}_${sessionTerm}_Go-Tegs_Ledger.pdf`.replace(/\s+/g, '_');
+                pdf.save(fileName);
+            } catch (e) { alert("Error: " + e.message); }
+            finally { btn.innerText = "📥 EXPORT AUDIT LEDGER (A3 LANDSCAPE)"; }
         }
     </script>
 </body>
