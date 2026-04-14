@@ -1,431 +1,186 @@
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Go-Tegs | Management Vault</title>
-
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-
-
     <style>
-
         :root { --vault-blue: #001f3f; --gold: #d4af37; --bg: #f8f9fa; }
-
         body { font-family: 'Arial Narrow', sans-serif; background: var(--bg); margin: 0; padding: 15px; }
-
         
-
-        /* AUTHENTICATION SCREEN */
-
+        /* AUTH OVERLAY */
         #authOverlay {
-
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-
             background: var(--vault-blue); display: flex; justify-content: center; align-items: center;
-
             z-index: 10000; color: white;
-
         }
-
         .auth-card {
-
             background: rgba(255,255,255,0.05); backdrop-filter: blur(15px); padding: 40px;
-
             border-radius: 12px; border: 1px solid var(--gold); text-align: center; width: 340px;
-
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-
         }
+        .auth-card input, .auth-card select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 4px; border: none; outline: none; }
+        .auth-btn { background: var(--gold); color: var(--vault-blue); width: 100%; padding: 14px; font-weight: bold; border: none; cursor: pointer; border-radius: 4px; width: 100%; }
 
-        .auth-card h2 { color: var(--gold); letter-spacing: 3px; margin-bottom: 20px; }
-
-        .auth-card input, .auth-card select { 
-
-            width: 100%; padding: 12px; margin: 10px 0; border-radius: 4px; border: none; font-size: 14px; box-sizing: border-box;
-
-        }
-
-        .auth-btn { 
-
-            background: var(--gold); color: var(--vault-blue); width: 100%; padding: 14px; 
-
-            font-weight: bold; border: none; cursor: pointer; border-radius: 4px; margin-top: 15px;
-
-        }
-
-
-
-        /* MAIN DASHBOARD */
-
+        /* DASHBOARD */
         #mainDashboard { display: none; }
-
-        .vault-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--vault-blue); margin-bottom: 15px; padding-bottom: 5px; }
-
         
+        /* DYNAMIC HEADING STYLE - Matches Index.html style */
+        .report-header { text-align: center; margin-bottom: 20px; border-bottom: 4px double var(--vault-blue); padding-bottom: 10px; }
+        .report-header h1 { margin: 0; color: var(--vault-blue); font-size: 28px; text-transform: uppercase; letter-spacing: 2px; }
+        .report-header p { margin: 5px 0; font-size: 18px; font-weight: bold; color: #444; }
 
-        /* LEDGER TABLE STYLING */
-
-        .table-wrapper { background: white; padding: 10px; overflow-x: auto; border: 1px solid #ccc; }
-
+        .table-wrapper { background: white; padding: 10px; overflow-x: auto; border: 1px solid #ccc; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
         table { width: 100%; border-collapse: collapse; font-size: 11px; }
-
-        th { background: var(--vault-blue); color: white; padding: 6px 3px; border: 1px solid #444; text-transform: uppercase; font-size: 10px; }
-
+        th { background: var(--vault-blue); color: white; padding: 6px 3px; border: 1px solid #444; text-transform: uppercase; }
         td { padding: 5px 6px; border: 1px solid #ddd; white-space: nowrap; text-align: center; }
-
         
-
-        /* Specialized Column Widths */
-
-        .name-cell { text-align: left; font-weight: bold; min-width: 160px; color: var(--vault-blue); }
-
+        .name-cell { text-align: left; font-weight: bold; min-width: 170px; color: var(--vault-blue); }
         .calc-col { background: #fff9e6; font-weight: bold; color: #000; border-left: 2px solid #000; }
-
         
-
-        .btn-dl { 
-
-            background: #1a73e8; color: white; padding: 15px 30px; border: none; border-radius: 5px; 
-
-            cursor: pointer; font-weight: bold; margin-top: 20px; float: right; 
-
-        }
-
+        .btn-dl { background: #1a73e8; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 20px; float: right; }
+        .btn-dl:hover { background: #1557b0; }
     </style>
-
 </head>
-
 <body>
 
-
-
     <div id="authOverlay">
-
         <div class="auth-card">
-
             <h2>VAULT ACCESS</h2>
-
             <input type="text" id="adminName" placeholder="Administrator Name">
-
             <select id="targetSection">
-
                 <option value="jss_students">JUNIOR SECTION (JSS)</option>
-
                 <option value="sss_students">SENIOR SECTION (SSS)</option>
-
             </select>
-
             <input type="password" id="adminPin" placeholder="Security PIN">
-
             <button class="auth-btn" onclick="unlockVault()">AUTHENTICATE</button>
-
             <p id="authMsg" style="color: #ff6b6b; font-size: 12px; margin-top: 10px;"></p>
-
         </div>
-
     </div>
-
-
 
     <div id="mainDashboard">
-
-        <div class="vault-header">
-
-            <h2 id="headerTitle" style="margin:0; color:var(--vault-blue)">STUDENT MASTER LEDGER</h2>
-
-            <button onclick="location.reload()" style="background:#cc0000; color:white; border:none; padding:5px 15px; border-radius:4px; cursor:pointer;">EXIT VAULT</button>
-
+        <div class="report-header">
+            <h1>GO-TEGS CONSOLIDATED MASTER LEDGER</h1>
+            <p id="dynamicSubtitle">(Loading Session Data...)</p>
         </div>
-
-
 
         <div id="exportArea" class="table-wrapper">
-
             <table id="dataTable">
-
                 <thead id="dataHead"></thead>
-
                 <tbody id="dataBody"></tbody>
-
             </table>
-
         </div>
 
-
-
         <button class="btn-dl" onclick="downloadWidePDF()">📥 DOWNLOAD FULL LEDGER (A3 LANDSCAPE)</button>
-
     </div>
 
-
-
     <script>
-
         // --- 1. CONFIGURATION ---
-
         const SB_URL = 'https://lsyegaciprnerysmyesy.supabase.co';
-
         const SB_KEY = 'sb_publishable_sM0x3SdV4iy8GwYb5S5HUg_S9qLZLeJ';
-
         const _client = supabase.createClient(SB_URL, SB_KEY);
 
-
-
-        // Subject Mapping for Extreme Compactness
-
+        // Subject Code Mapping - Ensures CMP, PHE, CCA etc. are displayed correctly
         const codes = {
-
             english_score: "ENG", maths_score: "MTH", basic_science_score: "BSC", basic_tech_score: "BTH",
-
             bus_stud_score: "BST", agric_score: "AGS", social_stud_score: "SOS", home_econs_score: "HEC",
-
             sec_edu_score: "SEC", french_score: "FRE", music_score: "MUS", diction_score: "DIC", 
-
-            history_score: "HIS", lit_score: "LIT", litineng_score: "LIE", chem_score: "CHM", 
-
-            physics_score: "PHY", bio_score: "BIO", civic_score: "CIV", govt_score: "GOV", 
-
-            econs_score: "ECO", markt_score: "MKT", dp_score: "D.P", comme_score: "COM", 
-
-            finacc_score: "ACC", geo_score: "GEO", crs_score: "CRS"
-
+            history_score: "HIS", lit_score: "LIT", computer_score: "CMP", phe_score: "PHE", cca_score: "CCA",
+            litineng_score: "LIE", chem_score: "CHM", physics_score: "PHY", bio_score: "BIO", civic_score: "CIV", 
+            govt_score: "GOV", econs_score: "ECO", markt_score: "MKT", dp_score: "D.P", comme_score: "COM"
         };
 
+        // Columns to strictly hide
+        const blackList = ['is_paid', 'check_count', 'pin', 'year', 'term', 'created_at'];
 
-
-        // --- 2. AUTHENTICATION LOGIC ---
-
+        // --- 2. AUTHENTICATION ---
         async function unlockVault() {
-
             const name = document.getElementById('adminName').value;
-
             const pin = document.getElementById('adminPin').value;
-
             const table = document.getElementById('targetSection').value;
-
             const msg = document.getElementById('authMsg');
 
-
-
-            if(!name || !pin) { msg.innerText = "Credentials Required"; return; }
-
-
-
-            // Validate against your custom admin_portal table
-
             const { data, error } = await _client.from('admin_portal')
-
                 .select('*').eq('admin_name', name).eq('admin_pin', pin).single();
 
-
-
             if(data) {
-
                 document.getElementById('authOverlay').style.display = 'none';
-
                 document.getElementById('mainDashboard').style.display = 'block';
-
-                document.getElementById('headerTitle').innerText = `LEDGER: ${table.replace('_',' ').toUpperCase()}`;
-
+                // Pulls Year and Term from Supabase Admin Table
+                document.getElementById('dynamicSubtitle').innerText = `${data.year || '2025/2026'} ${data.term || 'Second Term'} Result Data`;
                 loadData(table);
-
             } else {
-
-                msg.innerText = "ACCESS DENIED: Credentials not recognized.";
-
+                msg.innerText = "ACCESS DENIED: Invalid Credentials.";
             }
-
         }
-
-
 
         // --- 3. DATA RENDERING ---
-
         async function loadData(tableName) {
-
-            // Fetch and sort by Class then Full Name
-
             const { data, error } = await _client.from(tableName)
-
-                .select('*')
-
-                .order('class', {ascending: true})
-
-                .order('full_name', {ascending: true});
-
+                .select('*').order('class', {ascending: true}).order('full_name', {ascending: true});
             
-
-            if(error || !data.length) { alert("Database error or empty table."); return; }
-
-
-
-            // Filter out columns that are 100% NULL for the entire dataset
+            if(error || !data.length) return;
 
             const allKeys = Object.keys(data[0]);
+            // Logic: Hide blacklisted columns and columns that have no data (NULL)
+            const activeKeys = allKeys.filter(k => !blackList.includes(k) && data.some(row => row[k] !== null && row[k] !== ""));
 
-            const activeKeys = allKeys.filter(k => data.some(row => row[k] !== null && row[k] !== ""));
-
-
-
-            // Header Generation
-
+            // Build Header Row
             let headHtml = "<tr>";
-
             activeKeys.forEach(k => {
-
-                let label = codes[k] || k.toUpperCase().replace('_',' ');
-
+                let label = codes[k] || k.toUpperCase().replace('_SCORE','').replace('_',' ');
                 headHtml += `<th>${label}</th>`;
-
             });
-
             headHtml += `<th class="calc-col">TOTAL</th><th class="calc-col">AVG %</th><th class="calc-col">GRD</th></tr>`;
-
             document.getElementById('dataHead').innerHTML = headHtml;
 
-
-
-            // Body Generation & Dynamic Math
-
+            // Build Student Data Rows
             let bodyHtml = "";
-
             data.forEach(row => {
-
                 let total = 0, count = 0, rowHtml = "<tr>";
-
                 activeKeys.forEach(k => {
-
                     let val = (row[k] === null || row[k] === "") ? "---" : row[k];
-
                     
-
+                    // Calculation logic for score columns
                     if(k.includes('_score') && typeof row[k] === 'number'){
-
                         total += row[k];
-
                         count++;
-
                     }
-
-                    
-
-                    if(k === 'is_paid') {
-
-                        rowHtml += `<td>${val === true ? 'PAID' : 'PENDING'}</td>`;
-
-                    } else {
-
-                        rowHtml += `<td class="${k === 'full_name' ? 'name-cell' : ''}">${val}</td>`;
-
-                    }
-
+                    rowHtml += `<td class="${k === 'full_name' ? 'name-cell' : ''}">${val}</td>`;
                 });
-
-
-
                 const avg = count > 0 ? (total / count).toFixed(1) : 0;
-
-                rowHtml += `<td class="calc-col">${total}</td>`;
-
-                rowHtml += `<td class="calc-col">${avg}%</td>`;
-
-                rowHtml += `<td class="calc-col">${calculateGrade(avg)}</td></tr>`;
-
+                rowHtml += `<td class="calc-col">${total}</td><td class="calc-col">${avg}%</td><td class="calc-col">${calculateGrade(avg)}</td></tr>`;
                 bodyHtml += rowHtml;
-
             });
-
             document.getElementById('dataBody').innerHTML = bodyHtml;
-
         }
-
-
 
         function calculateGrade(avg) {
-
             const n = parseFloat(avg);
-
             if(n >= 75) return "A1"; if(n >= 70) return "B2"; if(n >= 65) return "B3";
-
-            if(n >= 60) return "C4"; if(n >= 55) return "C5"; if(n >= 50) return "C6";
-
-            if(n >= 45) return "D7"; if(n >= 40) return "E8"; return "F9";
-
+            if(n >= 60) return "C4"; if(n >= 50) return "C6"; if(n >= 40) return "E8"; return "F9";
         }
 
-
-
-        // --- 4. EXPORT ENGINE (A3 LANDSCAPE) ---
-
+        // --- 4. EXPORT SYSTEM ---
         async function downloadWidePDF() {
-
             const element = document.getElementById('exportArea');
-
             const btn = document.querySelector('.btn-dl');
-
             btn.innerText = "⏳ GENERATING PDF...";
-
-            
-
             try {
-
-                // High resolution scaling for clear small text
-
-                const canvas = await html2canvas(element, { scale: 1.5, useCORS: true });
-
+                const canvas = await html2canvas(element, { scale: 2, useCORS: true });
                 const imgData = canvas.toDataURL('image/png');
-
-                
-
-                // Using A3 Landscape (Wide format) to prevent squashing
-
-                const pdf = new jspdf.jsPDF('l', 'mm', 'a3');
-
+                const pdf = new jspdf.jsPDF('l', 'mm', 'a3'); // A3 Landscape for maximum clarity
                 const pageWidth = pdf.internal.pageSize.getWidth();
-
                 const pageHeight = pdf.internal.pageSize.getHeight();
-
-                
-
-                // Calculate fit
-
                 const ratio = Math.min((pageWidth - 20) / canvas.width, (pageHeight - 20) / canvas.height);
-
-                const finalWidth = canvas.width * ratio;
-
-                const finalHeight = canvas.height * ratio;
-
-
-
-                pdf.addImage(imgData, 'PNG', 10, 10, finalWidth, finalHeight);
-
-                pdf.save(`Go-Tegs_Ledger_Export.pdf`);
-
-            } catch (e) {
-
-                alert("PDF Error: " + e.message);
-
-            } finally {
-
-                btn.innerText = "📥 DOWNLOAD FULL LEDGER (A3 LANDSCAPE)";
-
-            }
-
+                pdf.addImage(imgData, 'PNG', 10, 10, canvas.width * ratio, canvas.height * ratio);
+                pdf.save(`GoTegs_Master_Ledger.pdf`);
+            } catch (e) { alert("PDF Error: " + e.message); }
+            finally { btn.innerText = "📥 DOWNLOAD FULL LEDGER (A3 LANDSCAPE)"; }
         }
-
     </script>
-
 </body>
-
 </html>
