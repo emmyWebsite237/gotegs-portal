@@ -63,8 +63,8 @@
         td { padding: 4px 3px; border: 1px solid #000; white-space: nowrap; text-align: center; color: #000; }
         
         .sn-col { width: 30px; font-weight: bold; background: #f9f9f9; }
-        .name-cell { text-align: left !important; padding-left: 8px; font-weight: bold; width: 250px; }
-        .comment-cell { white-space: normal; text-align: left !important; padding-left: 8px; line-height: 1.1; font-size: 11px; }
+        .name-cell { text-align: left !important; padding-left: 8px; font-weight: bold; min-width: 250px; }
+        .comment-cell { white-space: normal; text-align: left !important; padding-left: 8px; line-height: 1.1; font-size: 11px; min-width: 250px; }
         .calc-col { background: #fff9e6; font-weight: bold; border-left: 2px solid #000; }
         
         .footer-actions { margin: 20px 0; display: flex; justify-content: flex-end; }
@@ -78,8 +78,8 @@
             <h2>VAULT LOGIN</h2>
             <input type="text" id="adminName" placeholder="Admin Username">
             <select id="targetSection">
-                <option value="jss_students">JUNIOR SECONDARY (JSS)</option>
-                <option value="sss_students">SENIOR SECONDARY (SSS)</option>
+                <option value="jss_students">JUNIOR SECTION (JSS)</option>
+                <option value="sss_students">SENIOR SECTION (SSS)</option>
             </select>
             <input type="password" id="adminPin" placeholder="Security PIN">
             <button class="auth-btn" onclick="startLoading()">OPEN VAULT</button>
@@ -120,6 +120,7 @@
 
         let sessionYear = "";
         let sessionTerm = "";
+        let currentSectionLabel = "";
 
         const codes = {
             english_score: "ENG", maths_score: "MTH", basic_science_score: "BSC", basic_tech_score: "BTH",
@@ -135,10 +136,13 @@
         function startLoading() {
             const name = document.getElementById('adminName').value;
             const pin = document.getElementById('adminPin').value;
+            const selectEl = document.getElementById('targetSection');
+            currentSectionLabel = selectEl.options[selectEl.selectedIndex].text.split(' ')[0]; // Gets "JUNIOR" or "SENIOR"
+
             if(!name || !pin) { document.getElementById('authMsg').innerText = "CREDENTIALS REQUIRED"; return; }
             document.getElementById('authOverlay').style.display = 'none';
             document.getElementById('loadingScreen').style.display = 'flex';
-            setTimeout(unlockVault, 4000); // 4-second simulated loading
+            setTimeout(unlockVault, 4000); 
         }
 
         async function unlockVault() {
@@ -162,7 +166,6 @@
             const { data } = await _client.from(tableName).select('*').order('class', {ascending: true}).order('full_name', {ascending: true});
             if(!data || !data.length) return;
 
-            // Group data by class
             const grouped = data.reduce((acc, obj) => {
                 const key = obj.class;
                 if (!acc[key]) acc[key] = [];
@@ -173,7 +176,6 @@
             const container = document.getElementById('tablesContainer');
             container.innerHTML = "";
 
-            // Determine active columns (ignoring blacklist)
             const allKeys = Object.keys(data[0]);
             const activeKeys = allKeys.filter(k => !blackList.includes(k) && data.some(row => row[k] !== null && row[k] !== ""));
 
@@ -226,13 +228,15 @@
             try {
                 const canvas = await html2canvas(element, { scale: 2 });
                 const imgData = canvas.toDataURL('image/png');
-                // Set to A4 Landscape for better fit now that space is optimized
                 const pdf = new jspdf.jsPDF('l', 'mm', 'a4'); 
                 const pageWidth = pdf.internal.pageSize.getWidth();
                 const pageHeight = pdf.internal.pageSize.getHeight();
                 const ratio = Math.min((pageWidth - 10) / canvas.width, (pageHeight - 10) / canvas.height);
                 pdf.addImage(imgData, 'PNG', 5, 5, canvas.width * ratio, canvas.height * ratio);
-                pdf.save(`${sessionYear}_${sessionTerm}_Ledger.pdf`);
+                
+                // Filename Format: 2025-2026_Second_Term_JUNIOR_Ledger.pdf
+                const fileName = `${sessionYear}_${sessionTerm}_${currentSectionLabel}_Ledger.pdf`.replace(/\s+/g, '_');
+                pdf.save(fileName);
             } catch (e) { alert("Error: " + e.message); }
             finally { btn.innerText = "📥 DOWNLOAD FULL LEDGER (PDF)"; }
         }
