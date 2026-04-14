@@ -10,7 +10,7 @@
 
     <style>
         :root { --vault-blue: #001f3f; --gold: #d4af37; --bg: #ffffff; }
-        body { font-family: 'Arial Narrow', sans-serif; background: #eef1f4; margin: 0; padding: 20px; }
+        body { font-family: 'Arial Narrow', sans-serif; background: #eef1f4; margin: 0; padding: 10px; overflow-x: hidden; }
         
         /* AUTH OVERLAY */
         #authOverlay {
@@ -20,54 +20,59 @@
         }
         .auth-card {
             background: rgba(255,255,255,0.05); backdrop-filter: blur(15px); padding: 40px;
-            border-radius: 12px; border: 1px solid var(--gold); text-align: center; width: 340px;
+            border-radius: 8px; border: 1px solid var(--gold); text-align: center; width: 360px;
         }
-        .auth-card input, .auth-card select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 4px; border: none; outline: none; }
-        .auth-btn { background: var(--gold); color: var(--vault-blue); width: 100%; padding: 14px; font-weight: bold; border: none; cursor: pointer; border-radius: 4px; transition: 0.3s; width: 100%; }
+        /* Unified Input Sizes */
+        .auth-card input, .auth-card select { 
+            width: 100%; height: 45px; padding: 0 15px; margin: 12px 0; 
+            border-radius: 4px; border: none; outline: none; font-size: 14px; box-sizing: border-box;
+        }
+        .auth-btn { 
+            background: var(--gold); color: var(--vault-blue); width: 100%; height: 50px; 
+            font-weight: bold; border: none; cursor: pointer; border-radius: 4px; 
+            text-transform: uppercase; letter-spacing: 1px; margin-top: 10px;
+        }
 
         /* LOADING SCREEN */
         #loadingScreen {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--vault-blue); color: white; z-index: 9999;
-            flex-direction: column; justify-content: center; align-items: center; text-align: center;
+            flex-direction: column; justify-content: center; align-items: center;
         }
         .spinner { border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--gold); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* MAIN DASHBOARD */
-        #mainDashboard { display: none; background: var(--bg); padding: 30px; border-radius: 4px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); max-width: 1400px; margin: auto; border: 1px solid #ddd; }
+        #mainDashboard { display: none; background: var(--bg); padding: 20px; box-shadow: 0 0 30px rgba(0,0,0,0.2); width: 98vw; margin: auto; box-sizing: border-box; }
         
-        .nav-bar { display: flex; justify-content: space-between; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
-        .btn-nav { text-decoration: none; color: var(--vault-blue); font-weight: bold; border: 1.5px solid var(--vault-blue); padding: 8px 20px; border-radius: 4px; font-size: 13px; transition: 0.2s; }
-        .btn-nav:hover { background: var(--vault-blue); color: white; }
+        .nav-bar { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .btn-nav { text-decoration: none; color: var(--vault-blue); font-weight: bold; border: 1.5px solid var(--vault-blue); padding: 6px 15px; border-radius: 4px; font-size: 12px; }
 
-        .report-header { text-align: center; margin-bottom: 30px; border-bottom: 5px double var(--vault-blue); padding-bottom: 20px; }
-        .report-header h1 { margin: 0; color: var(--vault-blue); font-size: 30px; text-transform: uppercase; letter-spacing: 3px; font-weight: 900; }
-        .report-header p { margin: 10px 0 0; font-size: 20px; font-weight: bold; color: #444; }
+        .report-header { text-align: center; margin-bottom: 20px; border-bottom: 4px double var(--vault-blue); padding-bottom: 15px; }
+        .report-header h1 { margin: 0; color: var(--vault-blue); font-size: 24px; text-transform: uppercase; letter-spacing: 2px; }
+        .report-header p { margin: 5px 0 0; font-size: 18px; font-weight: bold; color: #444; }
 
-        /* TABLE STYLES */
-        .table-wrapper { width: 100%; overflow-x: auto; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; background: #fff; border: 2px solid var(--vault-blue); }
-        th { background: var(--vault-blue); color: white; padding: 12px 5px; border: 1px solid #444; text-transform: uppercase; text-align: center; letter-spacing: 1px; }
-        td { padding: 8px 6px; border: 1px solid #ccc; white-space: nowrap; text-align: center; color: #111; }
+        /* FIT-TO-SCREEN TABLE */
+        .table-wrapper { width: 100%; overflow: hidden; background: #fff; }
+        table { width: 100%; border-collapse: collapse; font-size: 10px; table-layout: auto; border: 1.5px solid var(--vault-blue); }
+        th { background: var(--vault-blue); color: white; padding: 8px 2px; border: 1px solid #444; text-transform: uppercase; }
+        td { padding: 6px 4px; border: 1px solid #ccc; white-space: nowrap; text-align: center; color: #111; }
         
-        /* ALIGNMENT */
-        .text-left { text-align: left !important; padding-left: 12px; }
-        .name-cell { font-weight: bold; min-width: 200px; color: var(--vault-blue); border-right: 2px solid #eee; }
-        .comment-cell { min-width: 280px; white-space: normal; line-height: 1.4; font-size: 10.5px; color: #444; }
+        .text-left { text-align: left !important; padding-left: 8px; }
+        .name-cell { font-weight: bold; color: var(--vault-blue); width: 180px; }
+        .comment-cell { white-space: normal; line-height: 1.2; font-size: 9.5px; width: 220px; }
         
-        .calc-col { background: #fffbe6; font-weight: bold; color: #000; border-left: 2px solid var(--vault-blue); }
+        .calc-col { background: #fff9e6; font-weight: bold; color: #000; border-left: 1.5px solid var(--vault-blue); }
         
-        .footer-actions { margin-top: 35px; border-top: 2px solid var(--vault-blue); padding-top: 25px; display: flex; justify-content: flex-end; }
-        .btn-dl { background: var(--vault-blue); color: white; padding: 18px 40px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase; box-shadow: 0 4px 10px rgba(0,31,63,0.3); }
-        .btn-dl:hover { background: #003366; transform: translateY(-1px); }
+        .footer-actions { margin-top: 20px; display: flex; justify-content: flex-end; }
+        .btn-dl { background: var(--vault-blue); color: white; padding: 12px 30px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
     <div id="authOverlay">
         <div class="auth-card">
-            <h2 style="color:var(--gold); font-size: 22px;">ADMINISTRATOR LOGIN</h2>
+            <h2 style="color:var(--gold)">ADMINISTRATOR LOGIN</h2>
             <input type="text" id="adminName" placeholder="Admin Username">
             <select id="targetSection">
                 <option value="jss_students">JUNIOR SECONDARY (JSS)</option>
@@ -81,17 +86,16 @@
 
     <div id="loadingScreen">
         <div class="spinner"></div>
-        <h3 id="loadMsg" style="letter-spacing: 2px; font-weight: 300;">ESTABLISHING ENCRYPTED LINK...</h3>
-        <p style="font-size: 11px; opacity: 0.6; text-transform: uppercase;">Go-Tegs Security Protocol Active</p>
+        <h3 id="loadMsg" style="letter-spacing: 2px;">ESTABLISHING ENCRYPTED LINK...</h3>
     </div>
 
     <div id="mainDashboard">
         <div class="nav-bar">
-            <a href="index.html" class="btn-nav">← RETURN TO MAIN PORTAL</a>
-            <button onclick="location.reload()" style="background:none; border:none; color:#cc0000; cursor:pointer; font-weight:bold; font-size: 12px;">TERMINATE SESSION [×]</button>
+            <a href="index.html" class="btn-nav">← RETURN TO PORTAL</a>
+            <button onclick="location.reload()" style="background:none; border:none; color:red; cursor:pointer; font-weight:bold; font-size: 11px;">LOGOUT [×]</button>
         </div>
 
-        <div id="captureArea" style="background: #fff; padding: 15px;">
+        <div id="captureArea" style="background: #fff; padding: 10px;">
             <div class="report-header">
                 <h1>GO-TEGS CONSOLIDATED MASTER LEDGER</h1>
                 <p id="dynamicSubtitle">Result Data</p>
@@ -106,7 +110,7 @@
         </div>
 
         <div class="footer-actions">
-            <button class="btn-dl" onclick="downloadWidePDF()">📥 EXPORT AUDIT LEDGER (A3 LANDSCAPE)</button>
+            <button class="btn-dl" onclick="downloadWidePDF()">📥 DOWNLOAD LEDGER (A3 LANDSCAPE)</button>
         </div>
     </div>
 
@@ -127,7 +131,8 @@
             govt_score: "GOV", econs_score: "ECO", markt_score: "MKT", dp_score: "D.P", comme_score: "COM"
         };
 
-        const blackList = ['is_paid', 'check_count', 'pin', 'year', 'term', 'created_at'];
+        // REMOVED: opened, present, dob, teacher_remark
+        const blackList = ['is_paid', 'check_count', 'pin', 'year', 'term', 'created_at', 'opened', 'present', 'dob', 'teacher_remark'];
 
         function startLoading() {
             const name = document.getElementById('adminName').value;
@@ -137,23 +142,11 @@
             document.getElementById('authOverlay').style.display = 'none';
             document.getElementById('loadingScreen').style.display = 'flex';
 
-            const messages = [
-                "Authenticating Administrator...",
-                "Pulling Database Schema...",
-                "Retrieving Session Variables (Year/Term)...",
-                "Sorting Records by Class & Entry ID...",
-                "Finalizing Ledger View..."
-            ];
-            
+            const messages = ["Verifying Admin...", "Scanning Database...", "Filtering Records...", "Generating View..."];
             let i = 0;
             const interval = setInterval(() => {
-                if(i < messages.length) {
-                    document.getElementById('loadMsg').innerText = messages[i];
-                    i++;
-                } else {
-                    clearInterval(interval);
-                    unlockVault();
-                }
+                if(i < messages.length) { document.getElementById('loadMsg').innerText = messages[i]; i++; }
+                else { clearInterval(interval); unlockVault(); }
             }, 1000);
         }
 
@@ -162,40 +155,30 @@
             const pin = document.getElementById('adminPin').value;
             const table = document.getElementById('targetSection').value;
 
-            const { data, error } = await _client.from('admin_portal')
-                .select('*').eq('admin_name', name).eq('admin_pin', pin).single();
+            const { data } = await _client.from('admin_portal').select('*').eq('admin_name', name).eq('admin_pin', pin).single();
 
             if(data) {
-                sessionYear = data.year || "Undefined Year";
-                sessionTerm = data.term || "Undefined Term";
+                sessionYear = data.year || "2025-2026";
+                sessionTerm = data.term || "Term";
                 document.getElementById('loadingScreen').style.display = 'none';
                 document.getElementById('mainDashboard').style.display = 'block';
                 document.getElementById('dynamicSubtitle').innerText = `(${sessionYear} ${sessionTerm} Result Data)`;
                 loadData(table);
-            } else {
-                location.reload(); 
-                alert("ACCESS DENIED: Unauthorized Credentials.");
-            }
+            } else { location.reload(); alert("UNAUTHORIZED"); }
         }
 
         async function loadData(tableName) {
-            // Updated Sorting: Primarily by Class, Secondarily by ID
-            const { data, error } = await _client.from(tableName)
-                .select('*')
-                .order('class', {ascending: true})
-                .order('id', {ascending: true}); 
-            
-            if(error || !data.length) return;
+            const { data } = await _client.from(tableName).select('*').order('class', {ascending: true}).order('id', {ascending: true});
+            if(!data || !data.length) return;
 
             const allKeys = Object.keys(data[0]);
             const activeKeys = allKeys.filter(k => !blackList.includes(k) && data.some(row => row[k] !== null && row[k] !== ""));
 
             let headHtml = "<tr>";
             activeKeys.forEach(k => {
-                let label = codes[k] || k.toUpperCase().replace('_SCORE','').replace('_',' ');
-                headHtml += `<th>${label}</th>`;
+                headHtml += `<th>${codes[k] || k.toUpperCase().replace('_SCORE','').replace('_',' ')}</th>`;
             });
-            headHtml += `<th class="calc-col">TOTAL</th><th class="calc-col">AVG %</th><th class="calc-col">GRD</th></tr>`;
+            headHtml += `<th class="calc-col">TOT</th><th class="calc-col">AVG</th><th class="calc-col">GRD</th></tr>`;
             document.getElementById('dataHead').innerHTML = headHtml;
 
             let bodyHtml = "";
@@ -204,10 +187,8 @@
                 activeKeys.forEach(k => {
                     let val = (row[k] === null || row[k] === "") ? "---" : row[k];
                     if(k.includes('_score') && typeof row[k] === 'number'){ total += row[k]; count++; }
-                    
                     let alignClass = (k === 'full_name' || k.includes('comment')) ? 'text-left' : '';
                     let specificClass = k === 'full_name' ? 'name-cell' : (k.includes('comment') ? 'comment-cell' : '');
-                    
                     rowHtml += `<td class="${alignClass} ${specificClass}">${val}</td>`;
                 });
                 const avg = count > 0 ? (total / count).toFixed(1) : 0;
@@ -226,23 +207,16 @@
         async function downloadWidePDF() {
             const element = document.getElementById('captureArea');
             const btn = document.querySelector('.btn-dl');
-            btn.innerText = "⏳ COMPILING LEDGER PDF...";
-            
+            btn.innerText = "⏳ COMPILING PDF...";
             try {
-                const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+                const canvas = await html2canvas(element, { scale: 2 });
                 const imgData = canvas.toDataURL('image/png');
                 const pdf = new jspdf.jsPDF('l', 'mm', 'a3'); 
-                
-                const pageWidth = pdf.internal.pageSize.getWidth();
-                const pageHeight = pdf.internal.pageSize.getHeight();
-                const ratio = Math.min((pageWidth - 20) / canvas.width, (pageHeight - 20) / canvas.height);
-                
+                const ratio = Math.min((pdf.internal.pageSize.getWidth() - 20) / canvas.width, (pdf.internal.pageSize.getHeight() - 20) / canvas.height);
                 pdf.addImage(imgData, 'PNG', 10, 10, canvas.width * ratio, canvas.height * ratio);
-                
-                const fileName = `${sessionYear}_${sessionTerm}_Go-Tegs_Ledger.pdf`.replace(/\s+/g, '_');
-                pdf.save(fileName);
+                pdf.save(`${sessionYear}_${sessionTerm}_Go-Tegs_Ledger.pdf`.replace(/\s+/g, '_'));
             } catch (e) { alert("Error: " + e.message); }
-            finally { btn.innerText = "📥 EXPORT AUDIT LEDGER (A3 LANDSCAPE)"; }
+            finally { btn.innerText = "📥 DOWNLOAD LEDGER (A3 LANDSCAPE)"; }
         }
     </script>
 </body>
