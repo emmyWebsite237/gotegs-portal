@@ -128,7 +128,8 @@
             sec_edu_score: "SEC", french_score: "FRE", music_score: "MUS", diction_score: "DIC", 
             history_score: "HIS", lit_score: "LIT", computer_score: "CMP", phe_score: "PHE", cca_score: "CCA",
             litineng_score: "LIE", chem_score: "CHM", physics_score: "PHY", bio_score: "BIO", civic_score: "CIV", 
-            govt_score: "GOV", econs_score: "ECO", markt_score: "MKT", dp_score: "D.P", comme_score: "COM", catering_c_p_score: "CCP", dic_score: "DIC"
+            govt_score: "GOV", econs_score: "ECO", markt_score: "MKT", dp_score: "D.P", comme_score: "COM",
+            dept: "DEPT"
         };
 
         const blackList = ['is_paid', 'check_count', 'pin', 'year', 'term', 'created_at', 'opened', 'present', 'dob', 'teacher_remark', 'id', 'class'];
@@ -137,7 +138,7 @@
             const name = document.getElementById('adminName').value;
             const pin = document.getElementById('adminPin').value;
             const selectEl = document.getElementById('targetSection');
-            currentSectionLabel = selectEl.options[selectEl.selectedIndex].text.split(' ')[0]; // Gets "JUNIOR" or "SENIOR"
+            currentSectionLabel = selectEl.options[selectEl.selectedIndex].text.split(' ')[0]; 
 
             if(!name || !pin) { document.getElementById('authMsg').innerText = "CREDENTIALS REQUIRED"; return; }
             document.getElementById('authOverlay').style.display = 'none';
@@ -176,8 +177,15 @@
             const container = document.getElementById('tablesContainer');
             container.innerHTML = "";
 
-            const allKeys = Object.keys(data[0]);
-            const activeKeys = allKeys.filter(k => !blackList.includes(k) && data.some(row => row[k] !== null && row[k] !== ""));
+            let activeKeys = [];
+            if (tableName === 'sss_students') {
+                // For SSS: Dept + ALL subjects even if empty
+                activeKeys = ['full_name', 'dept', ...Object.keys(codes).filter(k => k.includes('_score'))];
+            } else {
+                // For JSS: Dynamic columns based on data existence
+                const allKeys = Object.keys(data[0]);
+                activeKeys = allKeys.filter(k => !blackList.includes(k) && data.some(row => row[k] !== null && row[k] !== ""));
+            }
 
             for (const className in grouped) {
                 const classData = grouped[className];
@@ -199,10 +207,22 @@
                     tableHtml += `<tr><td class="sn-col">${serial++}</td>`;
                     
                     activeKeys.forEach(k => {
-                        let val = (row[k] === null || row[k] === "") ? "-" : row[k];
-                        if(k.includes('_score') && typeof row[k] === 'number'){ total += row[k]; count++; }
+                        let val = row[k];
+                        let displayVal = "-";
+                        
+                        if (val !== null && val !== "") {
+                            displayVal = val;
+                            if (k.includes('_score')) {
+                                let num = parseFloat(val);
+                                if (!isNaN(num)) {
+                                    total += num;
+                                    count++;
+                                }
+                            }
+                        }
+
                         let cellClass = k === 'full_name' ? 'name-cell' : (k.includes('comment') ? 'comment-cell' : '');
-                        tableHtml += `<td class="${cellClass}">${val}</td>`;
+                        tableHtml += `<td class="${cellClass}">${displayVal}</td>`;
                     });
 
                     const avg = count > 0 ? (total / count).toFixed(1) : 0;
@@ -234,7 +254,6 @@
                 const ratio = Math.min((pageWidth - 10) / canvas.width, (pageHeight - 10) / canvas.height);
                 pdf.addImage(imgData, 'PNG', 5, 5, canvas.width * ratio, canvas.height * ratio);
                 
-                // Filename Format: 2025-2026_Second_Term_JUNIOR_Ledger.pdf
                 const fileName = `${sessionYear}_${sessionTerm}_${currentSectionLabel}_Ledger.pdf`.replace(/\s+/g, '_');
                 pdf.save(fileName);
             } catch (e) { alert("Error: " + e.message); }
