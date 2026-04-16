@@ -20,8 +20,9 @@
             background: url('assets/background.jpg') no-repeat;
             background-size: cover;
             background-position: center;
-            animation: animateBg 5s linear infinite;
-            transition: opacity 1.5s ease-in-out; /* For the fade-in effect */
+            /* SLOWED DOWN: Changed from 5s to 20s */
+            animation: animateBg 20s linear infinite;
+            transition: opacity 1.5s ease-in-out;
         }
 
         @keyframes animateBg {
@@ -30,12 +31,12 @@
             }
         }
 
-        /* FULL PAGE LOADER (3 SECONDS) */
+        /* FULL PAGE LOADER */
         #preloader {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #ffffff; display: flex; flex-direction: column;
             justify-content: center; align-items: center; z-index: 9999;
-            transition: opacity 1s ease-out, visibility 1s; /* Smooth fade out */
+            transition: opacity 1s ease-out, visibility 1s;
         }
         .pulse-loader {
             width: 80px; height: 80px; background: #004a99;
@@ -46,44 +47,53 @@
             100% { transform: scale(1.5); opacity: 0; }
         }
 
-        /* General Page Styling */
+        /* GLASSMORPHISM CARD STYLING */
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
-        .card { background: rgba(255, 255, 255, 0.9); padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); width: 90%; max-width: 850px; position: relative; margin: 20px 0; }
+        
+        .card { 
+            /* TRANSPARENT & BLURRY EFFECT */
+            background: rgba(255, 255, 255, 0.25); 
+            backdrop-filter: blur(15px); 
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 30px; 
+            border-radius: 16px; 
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3); 
+            width: 90%; 
+            max-width: 850px; 
+            position: relative; 
+            margin: 20px 0; 
+        }
         
         #loginSection { max-width: 400px; margin: 0 auto; text-align: center; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid rgba(255,255,255,0.5); border-radius: 6px; font-size: 16px; box-sizing: border-box; background: rgba(255,255,255,0.8); }
         
         button { width: 100%; padding: 14px; background: #004a99; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 18px; margin-top: 10px; position: relative; display: flex; align-items: center; justify-content: center; min-height: 50px; transition: 0.3s; }
-        button:hover { background: #003366; }
+        button:hover { background: #003366; transform: translateY(-2px); }
+        
         .spinner { display: none; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .loading .btn-text { display: none; }
         .loading .spinner { display: block; }
-        .loading { pointer-events: none; opacity: 0.8; }
 
-        /* COMPACTED RESULT TEMPLATE */
+        /* LOADING MESSAGE STYLING */
+        #msg { text-align: center; font-weight: bold; margin: 20px 0 10px 0; font-size: 15px; min-height: 20px; }
+
+        /* RESULT TEMPLATE (KEEPING WHITE FOR PDF READABILITY) */
         #pdfArea { 
             padding: 25px; background: white !important; border: 5px double #004a99; 
             margin: 0 auto; position: relative; min-height: 950px; width: 100%;
             box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;
-            -webkit-user-select: none; user-select: none;
+            color: #333;
         }
 
         #pdfArea::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; height: 70%; background-image: url('./assets/logo.webp'); background-repeat: no-repeat; background-position: center; background-size: contain; opacity: 0.08; z-index: 0; pointer-events: none; }
-        .unofficial-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 70px; color: rgba(255, 0, 0, 0.12); font-weight: bold; z-index: 10; pointer-events: none; white-space: nowrap; display: none; }
-        .blurred { filter: blur(20px); pointer-events: none; }
-        
         .report-header { display: flex; align-items: center; border-bottom: 2px solid #004a99; padding-bottom: 10px; margin-bottom: 12px; position: relative; z-index: 1; }
         .school-logo { width: 100px; height: auto; flex-shrink: 0; }
         .header-text { flex-grow: 1; text-align: center; padding-right: 100px; }
-        
-        .school-name { font-family: 'Great Vibes', cursive; font-size: 42px; color: #004a99; margin: 0; font-weight: normal; }
-        
-        .motto { font-style: italic; font-weight: bold; font-size: 14px; margin: 0; color: #333; }
-        .address { font-size: 11px; font-weight: bold; color: #444; margin: 1px 0; }
+        .school-name { font-family: 'Great Vibes', cursive; font-size: 42px; color: #004a99; margin: 0; }
         
         .student-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; border: 1px solid #000; padding: 12px; background: #fafafa; position: relative; z-index: 1; }
-        .info-item { font-size: 13px; border-bottom: 1px solid #eee; padding: 3px 0; }
         .info-label { font-weight: bold; color: #004a99; }
 
         .result-table { width: 100%; border-collapse: collapse; margin-top: 5px; position: relative; z-index: 1; }
@@ -92,22 +102,18 @@
         
         .bottom-wrap { display: flex; margin-top: 15px; gap: 10px; position: relative; z-index: 1; }
         .comments-table { width: 55%; border-collapse: collapse; }
-        .comments-table td { border: 1px solid #000; padding: 8px; vertical-align: top; font-size: 12px; height: 55px; line-height: 1.3; }
+        .comments-table td { border: 1px solid #000; padding: 8px; vertical-align: top; font-size: 12px; height: 55px; }
         .summary-table { width: 45%; border-collapse: collapse; margin-left: auto; }
         .summary-table td { border: 1px solid #000; padding: 8px; font-weight: bold; font-size: 13px; }
 
         .footer { margin-top: auto; padding-top: 20px; display: flex; justify-content: space-between; align-items: flex-end; position: relative; z-index: 1; }
-        .sig-space { text-align: center; width: 180px; }
         .sig-line { border-top: 2px solid #000; margin-bottom: 3px; }
-        .timestamp { font-size: 10px; color: #777; font-style: italic; }
 
         .action-btns { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
-        #msg { text-align: center; font-weight: bold; margin-top: 20px; font-size: 16px; }
 
         @media screen and (max-width: 600px) {
             #pdfArea { width: 800px; transform: scale(0.45); transform-origin: top left; margin-bottom: -500px; }
-            body.is-sss #pdfArea { transform: scale(0.42); margin-bottom: -550px; }
-            .card { overflow-x: auto; padding: 15px; }
+            .card { padding: 15px; }
             .header-text { padding-right: 0; }
         }
     </style>
@@ -123,7 +129,8 @@
         <div class="card">
             <div id="loginSection">
                 <img src="./assets/logo.webp" style="width: 120px;" onerror="this.src='https://wordpress.com'">
-                <h3 style="color: #004a99;">Students Result Portal</h3>
+                <h2 style="color: #004a99; margin-top: 10px; text-shadow: 1px 1px 1px rgba(255,255,255,0.5);">Students Result Portal</h2>
+                
                 <input type="text" id="sid" placeholder="Student ID (GT/...)">
                 <select id="yearSelect">
                     <option value="">Select Session</option>
@@ -141,14 +148,17 @@
                     </select>
                 </div>
                 <input type="password" id="pin" placeholder="Access PIN">
+                
                 <button id="checkBtn" onclick="check()">
                     <span class="btn-text">Check Result</span>
                     <div class="spinner"></div>
                 </button>
 
-                <footer id="adminFooter" style="margin-top: 40px; text-align: center;">
-                    <p style="color: #666; font-size: 11px; margin-bottom: 5px; font-weight: bold;">Do not Tap</p>
-                    <a href="admin.html" style="color: #dc2626; font-size: 12px; text-decoration: none; font-weight: bold; border: 1px solid #dc2626; padding: 5px 10px; border-radius: 4px; display: inline-block; transition: 0.3s;" onmouseover="this.style.background='#dc2626'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='#dc2626';">
+                <p id="msg"></p>
+
+                <footer id="adminFooter" style="margin-top: 20px; text-align: center;">
+                    <p style="color: #444; font-size: 11px; margin-bottom: 5px; font-weight: bold;">Do not Tap</p>
+                    <a href="admin.html" style="color: #dc2626; font-size: 12px; text-decoration: none; font-weight: bold; border: 1.5px solid #dc2626; padding: 6px 12px; border-radius: 4px; display: inline-block; transition: 0.3s; background: rgba(255,255,255,0.2);">
                         ⚠️ ADMIN ACCESS ONLY
                     </a>
                 </footer>
@@ -218,23 +228,20 @@
                     <button onclick="location.reload()" style="background:#666;">Check Another</button>
                 </div>
             </div>
-            <p id="msg"></p>
         </div>
     </section>
 
     <script>
         const CURRENT_TERM = "Second Term Report"; 
 
-        // FADE OUT PRELOADER AND FADE IN CONTENT
         window.addEventListener('load', () => {
             setTimeout(() => {
                 const loader = document.getElementById('preloader');
                 const wrapper = document.getElementById('mainWrapper');
-                
                 loader.style.opacity = '0';
                 setTimeout(() => {
                     loader.style.display = 'none';
-                    wrapper.style.opacity = '1'; // Fade in the animated background section
+                    wrapper.style.opacity = '1';
                 }, 1000);
             }, 3000);
         });
@@ -255,13 +262,6 @@
             return { g: "F9", c: "Poor" };
         }
 
-        function getPrincipalComment(mean) {
-            if (mean >= 75) return "An outstanding result. Keep the flag flying high.";
-            if (mean >= 60) return "A very good performance. Keep it up.";
-            if (mean >= 45) return "A fair result, but there is room for much improvement.";
-            return "Poor performance. You need to be more focused and work harder.";
-        }
-
         async function check() {
             const sid = document.getElementById('sid').value;
             const yr = document.getElementById('yearSelect').value;
@@ -272,13 +272,13 @@
             const btn = document.getElementById('checkBtn');
 
             if(!sid || !yr || !cls || !pin || (cls.includes("SSS") && !dept)) { 
-                msg.style.color = "#d97706"; msg.innerText = "⚠️ Please fill all fields"; return; 
+                msg.style.color = "#854d0e"; msg.innerText = "⚠️ Please fill all fields"; return; 
             }
 
             btn.classList.add('loading');
             msg.style.color = "#004a99";
             
-            msg.innerText = "⏳ Connecting to Go-Tegs Database...";
+            msg.innerText = "⏳ Connecting to Database...";
             await new Promise(r => setTimeout(r, 1200));
             msg.innerText = "🔍 Verifying Credentials...";
             await new Promise(r => setTimeout(r, 1200));
@@ -291,13 +291,11 @@
 
                 if (res.status !== 200) {
                     btn.classList.remove('loading');
-                    msg.style.color = "red"; msg.innerText = "❌ " + data.error;
+                    msg.style.color = "#991b1b"; msg.innerText = "❌ " + data.error;
                 } else {
-                    window.isViewingResult = true; 
                     document.getElementById('loginSection').style.display = 'none';
                     document.getElementById('resultSection').style.display = 'block';
-                    document.querySelector('.unofficial-overlay').style.display = data.is_paid ? 'none' : 'block';
-
+                    
                     document.getElementById('dispTerm').innerText = `${yr} ${CURRENT_TERM}`;
                     document.getElementById('dispName').innerText = data.full_name;
                     document.getElementById('dispDob').innerText = data.dob || "---";
@@ -327,9 +325,7 @@
                     document.getElementById('resTotal').innerText = total;
                     document.getElementById('resMean').innerText = mean + "%";
                     document.getElementById('resGrade').innerText = getGradeInfo(mean).g;
-                    document.getElementById('dispPrincipal').innerText = getPrincipalComment(parseFloat(mean));
                     document.getElementById('dispTime').innerText = "Generated: " + new Date().toLocaleString();
-                    msg.innerText = "✅ Success";
                 }
             } catch (e) { 
                 btn.classList.remove('loading');
@@ -340,11 +336,6 @@
         async function downloadPDF() {
             const element = document.getElementById('pdfArea');
             const studentName = document.getElementById('dispName').innerText || "Student";
-            const btn = document.querySelector('.action-btns button');
-            const originalText = btn.innerText;
-            btn.innerText = "⏳ Resizing & Downloading...";
-            btn.disabled = true;
-
             try {
                 const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
                 const imgData = canvas.toDataURL('image/jpeg', 1.0);
@@ -357,14 +348,11 @@
                 pdf.addImage(imgData, 'JPEG', (pdfWidth - finalWidth) / 2, (pdfHeight - finalHeight) / 2, finalWidth, finalHeight);
                 pdf.save(`${studentName}_Result.pdf`);
             } catch (e) { alert("PDF Error"); } 
-            finally { btn.innerText = originalText; btn.disabled = false; }
         }
 
         function toggleDept() {
             const cls = document.getElementById('classSelect').value;
             document.getElementById('deptDiv').style.display = cls.includes("SSS") ? "block" : "none";
-            if(cls.includes("SSS")) document.body.classList.add('is-sss');
-            else document.body.classList.remove('is-sss');
         }
     </script>
 </body>
