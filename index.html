@@ -10,11 +10,32 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
+        /* ANIMATED BACKGROUND STYLING */
+        section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            min-height: 100vh;
+            background: url('assets/background.jpg') no-repeat;
+            background-size: cover;
+            background-position: center;
+            animation: animateBg 5s linear infinite;
+            transition: opacity 1.5s ease-in-out; /* For the fade-in effect */
+        }
+
+        @keyframes animateBg {
+            100% {
+                filter: hue-rotate(360deg);
+            }
+        }
+
         /* FULL PAGE LOADER (3 SECONDS) */
         #preloader {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #ffffff; display: flex; flex-direction: column;
             justify-content: center; align-items: center; z-index: 9999;
+            transition: opacity 1s ease-out, visibility 1s; /* Smooth fade out */
         }
         .pulse-loader {
             width: 80px; height: 80px; background: #004a99;
@@ -26,8 +47,8 @@
         }
 
         /* General Page Styling */
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 850px; position: relative; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
+        .card { background: rgba(255, 255, 255, 0.9); padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); width: 90%; max-width: 850px; position: relative; margin: 20px 0; }
         
         #loginSection { max-width: 400px; margin: 0 auto; text-align: center; }
         input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
@@ -56,7 +77,6 @@
         .school-logo { width: 100px; height: auto; flex-shrink: 0; }
         .header-text { flex-grow: 1; text-align: center; padding-right: 100px; }
         
-        /* THE STYLED CURSIVE HEADING */
         .school-name { font-family: 'Great Vibes', cursive; font-size: 42px; color: #004a99; margin: 0; font-weight: normal; }
         
         .motto { font-style: italic; font-weight: bold; font-size: 14px; margin: 0; color: #333; }
@@ -99,115 +119,123 @@
         <p style="color:#004a99; font-weight:bold; margin-top:20px; letter-spacing:2px;">SECURE ACCESS...</p>
     </div>
 
-    <div class="card">
-        <div id="loginSection">
-            <img src="./assets/logo.webp" style="width: 120px;" onerror="this.src='https://wordpress.com'">
-            <h3 style="color: #004a99;">Students Result Portal</h3>
-            <input type="text" id="sid" placeholder="Student ID (GT/...)">
-            <select id="yearSelect">
-                <option value="">Select Session</option>
-                <option value="2025/2026">2025/2026</option>
-            </select>
-            <select id="classSelect" onchange="toggleDept()">
-                <option value="">Select Class</option>
-                <option value="JSS 1">JSS 1</option><option value="JSS 2">JSS 2</option><option value="JSS 3">JSS 3</option>
-                <option value="SSS 1">SSS 1</option><option value="SSS 2">SSS 2</option><option value="SSS 3">SSS 3</option>
-            </select>
-            <div id="deptDiv" style="display:none;">
-                <select id="deptSelect">
-                    <option value="">Select Department</option>
-                    <option value="Science">Science</option><option value="Art">Art</option><option value="Commerce">Commerce</option>
+    <section id="mainWrapper" style="opacity: 0;">
+        <div class="card">
+            <div id="loginSection">
+                <img src="./assets/logo.webp" style="width: 120px;" onerror="this.src='https://wordpress.com'">
+                <h3 style="color: #004a99;">Students Result Portal</h3>
+                <input type="text" id="sid" placeholder="Student ID (GT/...)">
+                <select id="yearSelect">
+                    <option value="">Select Session</option>
+                    <option value="2025/2026">2025/2026</option>
                 </select>
-            </div>
-            <input type="password" id="pin" placeholder="Access PIN">
-            <button id="checkBtn" onclick="check()">
-                <span class="btn-text">Check Result</span>
-                <div class="spinner"></div>
-            </button>
-        </div>
+                <select id="classSelect" onchange="toggleDept()">
+                    <option value="">Select Class</option>
+                    <option value="JSS 1">JSS 1</option><option value="JSS 2">JSS 2</option><option value="JSS 3">JSS 3</option>
+                    <option value="SSS 1">SSS 1</option><option value="SSS 2">SSS 2</option><option value="SSS 3">SSS 3</option>
+                </select>
+                <div id="deptDiv" style="display:none;">
+                    <select id="deptSelect">
+                        <option value="">Select Department</option>
+                        <option value="Science">Science</option><option value="Art">Art</option><option value="Commerce">Commerce</option>
+                    </select>
+                </div>
+                <input type="password" id="pin" placeholder="Access PIN">
+                <button id="checkBtn" onclick="check()">
+                    <span class="btn-text">Check Result</span>
+                    <div class="spinner"></div>
+                </button>
 
-        <div id="resultSection" style="display:none;">
-            <div id="pdfArea">
-                <div class="unofficial-overlay">UNOFFICIAL COPY</div>
-                
-                <div class="report-header">
-                    <img class="school-logo" src="./assets/logo.webp" onerror="this.src='https://wordpress.com'">
-                    <div class="header-text">
-                        <h1 class="school-name">Go-Tegs International School</h1>
-                        <div class="motto">Motto: Training the Leaders of Tomorrow</div>
-                        <div class="address">15, Ayesanmi Street, Pipeline B/Stop, Isheri Olofin, Alimosho L.G.A Lagos, Nigeria</div>
-                        <div class="address">Tel: 08066525319, 08066680932</div>
+                <footer id="adminFooter" style="margin-top: 40px; text-align: center;">
+                    <p style="color: #666; font-size: 11px; margin-bottom: 5px; font-weight: bold;">Do not Tap</p>
+                    <a href="admin.html" style="color: #dc2626; font-size: 12px; text-decoration: none; font-weight: bold; border: 1px solid #dc2626; padding: 5px 10px; border-radius: 4px; display: inline-block; transition: 0.3s;" onmouseover="this.style.background='#dc2626'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='#dc2626';">
+                        ⚠️ ADMIN ACCESS ONLY
+                    </a>
+                </footer>
+            </div>
+
+            <div id="resultSection" style="display:none;">
+                <div id="pdfArea">
+                    <div class="unofficial-overlay">UNOFFICIAL COPY</div>
+                    
+                    <div class="report-header">
+                        <img class="school-logo" src="./assets/logo.webp" onerror="this.src='https://wordpress.com'">
+                        <div class="header-text">
+                            <h1 class="school-name">Go-Tegs International School</h1>
+                            <div class="motto">Motto: Training the Leaders of Tomorrow</div>
+                            <div class="address">15, Ayesanmi Street, Pipeline B/Stop, Isheri Olofin, Alimosho L.G.A Lagos, Nigeria</div>
+                            <div class="address">Tel: 08066525319, 08066680932</div>
+                        </div>
+                    </div>
+
+                    <div id="dispTerm" style="font-weight:bold; font-style:italic; text-align:center; margin-bottom: 10px; color:#004a99; text-transform: uppercase; font-size: 14px;"></div>
+
+                    <div class="student-info-grid">
+                        <div class="info-item"><span class="info-label">Name:</span> <span id="dispName"></span></div>
+                        <div class="info-item"><span class="info-label">School Opened:</span> <span id="dispOpened"></span></div>
+                        <div class="info-item"><span class="info-label">Date of Birth:</span> <span id="dispDob"></span></div>
+                        <div class="info-item"><span class="info-label">Times Present:</span> <span id="dispPresent"></span></div>
+                        <div class="info-item"><span class="info-label">Class:</span> <span id="dispClass"></span></div>
+                        <div class="info-item"><span class="info-label">Times Absent:</span> <span id="dispAbsent"></span></div>
+                    </div>
+
+                    <table class="result-table">
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th style="text-align:center;">Score (%)</th>
+                                <th style="text-align:center;">Grade</th>
+                                <th style="text-align:center;">Comments</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resBody"></tbody>
+                    </table>
+
+                    <div class="bottom-wrap">
+                        <table class="comments-table">
+                            <tr><td><strong>Class Teacher's Remark:</strong><br><span id="dispTeacher"></span></td></tr>
+                            <tr><td><strong>Principal's Remark:</strong><br><span id="dispPrincipal"></span></td></tr>
+                        </table>
+                        <table class="summary-table">
+                            <tr><td>Total Mark Obtainable</td><td id="resObtainable" style="text-align:center;"></td></tr>
+                            <tr><td>Total Mark Obtained</td><td id="resTotal" style="text-align:center;"></td></tr>
+                            <tr><td>Mean Percentage</td><td id="resMean" style="text-align:center;"></td></tr>
+                            <tr><td>Overall Grade</td><td id="resGrade" style="text-align:center;"></td></tr>
+                        </table>
+                    </div>
+
+                    <div class="footer">
+                        <div class="timestamp" id="dispTime"></div>
+                        <div class="sig-space">
+                            <img id="sigImg" src="./assets/signature.png" style="width: 120px; display: block; margin-left: 30px; margin-bottom: 2px; position: relative; z-index: 1;" onerror="this.style.display='none'">
+                            <div class="sig-line"></div>
+                            <strong style="text-transform: uppercase; font-size: 12px;">School Principal</strong>
+                        </div>
                     </div>
                 </div>
-
-                <div id="dispTerm" style="font-weight:bold; font-style:italic; text-align:center; margin-bottom: 10px; color:#004a99; text-transform: uppercase; font-size: 14px;"></div>
-
-                <div class="student-info-grid">
-                    <div class="info-item"><span class="info-label">Name:</span> <span id="dispName"></span></div>
-                    <div class="info-item"><span class="info-label">School Opened:</span> <span id="dispOpened"></span></div>
-                    <div class="info-item"><span class="info-label">Date of Birth:</span> <span id="dispDob"></span></div>
-                    <div class="info-item"><span class="info-label">Times Present:</span> <span id="dispPresent"></span></div>
-                    <div class="info-item"><span class="info-label">Class:</span> <span id="dispClass"></span></div>
-                    <div class="info-item"><span class="info-label">Times Absent:</span> <span id="dispAbsent"></span></div>
-                </div>
-
-                <table class="result-table">
-                    <thead>
-                        <tr>
-                            <th>Subject</th>
-                            <th style="text-align:center;">Score (%)</th>
-                            <th style="text-align:center;">Grade</th>
-                            <th style="text-align:center;">Comments</th>
-                        </tr>
-                    </thead>
-                    <tbody id="resBody"></tbody>
-                </table>
-
-                <div class="bottom-wrap">
-                    <table class="comments-table">
-                        <tr><td><strong>Class Teacher's Remark:</strong><br><span id="dispTeacher"></span></td></tr>
-                        <tr><td><strong>Principal's Remark:</strong><br><span id="dispPrincipal"></span></td></tr>
-                    </table>
-                    <table class="summary-table">
-                        <tr><td>Total Mark Obtainable</td><td id="resObtainable" style="text-align:center;"></td></tr>
-                        <tr><td>Total Mark Obtained</td><td id="resTotal" style="text-align:center;"></td></tr>
-                        <tr><td>Mean Percentage</td><td id="resMean" style="text-align:center;"></td></tr>
-                        <tr><td>Overall Grade</td><td id="resGrade" style="text-align:center;"></td></tr>
-                    </table>
-                </div>
-
-                <div class="footer">
-                    <div class="timestamp" id="dispTime"></div>
-                    <div class="sig-space">
-                        <img id="sigImg" src="./assets/signature.png" style="width: 120px; display: block; margin-left: 30px; margin-bottom: 2px; position: relative; z-index: 1;" onerror="this.style.display='none'">
-                        <div class="sig-line"></div>
-                        <strong style="text-transform: uppercase; font-size: 12px;">School Principal</strong>
-                    </div>
+                <div class="action-btns">
+                    <button onclick="downloadPDF()">📥 Download Result PDF</button>
+                    <button onclick="location.reload()" style="background:#666;">Check Another</button>
                 </div>
             </div>
-            <div class="action-btns">
-                <button onclick="downloadPDF()">📥 Download Result PDF</button>
-                <button onclick="location.reload()" style="background:#666;">Check Another</button>
-            </div>
+            <p id="msg"></p>
         </div>
-        <p id="msg"></p>
-    </div>
-
-    <footer id="adminFooter" style="margin-top: 40px; text-align: center;">
-        <p style="color: #666; font-size: 11px; margin-bottom: 5px; font-weight: bold;">Do not Tap</p>
-        <a href="admin.html" style="color: #dc2626; font-size: 12px; text-decoration: none; font-weight: bold; border: 1px solid #dc2626; padding: 5px 10px; border-radius: 4px; display: inline-block; transition: 0.3s;" onmouseover="this.style.background='#dc2626'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='#dc2626';">
-            ⚠️ ADMIN ACCESS ONLY
-        </a>
-    </footer>
+    </section>
 
     <script>
-        // --- EDIT THIS LINE TO CHANGE THE TERM ---
         const CURRENT_TERM = "Second Term Report"; 
 
-        // 3-SECOND INITIAL PRELOADER
+        // FADE OUT PRELOADER AND FADE IN CONTENT
         window.addEventListener('load', () => {
             setTimeout(() => {
-                document.getElementById('preloader').style.display = 'none';
+                const loader = document.getElementById('preloader');
+                const wrapper = document.getElementById('mainWrapper');
+                
+                loader.style.opacity = '0';
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                    wrapper.style.opacity = '1'; // Fade in the animated background section
+                }, 1000);
             }, 3000);
         });
 
@@ -250,7 +278,6 @@
             btn.classList.add('loading');
             msg.style.color = "#004a99";
             
-            // LOADING MESSAGES
             msg.innerText = "⏳ Connecting to Go-Tegs Database...";
             await new Promise(r => setTimeout(r, 1200));
             msg.innerText = "🔍 Verifying Credentials...";
@@ -269,7 +296,6 @@
                     window.isViewingResult = true; 
                     document.getElementById('loginSection').style.display = 'none';
                     document.getElementById('resultSection').style.display = 'block';
-                    document.getElementById('adminFooter').style.display = 'none';
                     document.querySelector('.unofficial-overlay').style.display = data.is_paid ? 'none' : 'block';
 
                     document.getElementById('dispTerm').innerText = `${yr} ${CURRENT_TERM}`;
