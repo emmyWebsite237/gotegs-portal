@@ -20,15 +20,12 @@
             background: url('assets/background.jpg') no-repeat;
             background-size: cover;
             background-position: center;
-            /* SLOWED DOWN: Changed from 5s to 20s */
             animation: animateBg 20s linear infinite;
             transition: opacity 1.5s ease-in-out;
         }
 
         @keyframes animateBg {
-            100% {
-                filter: hue-rotate(360deg);
-            }
+            100% { filter: hue-rotate(360deg); }
         }
 
         /* FULL PAGE LOADER */
@@ -51,7 +48,6 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
         
         .card { 
-            /* TRANSPARENT & BLURRY EFFECT */
             background: rgba(255, 255, 255, 0.25); 
             backdrop-filter: blur(15px); 
             -webkit-backdrop-filter: blur(15px);
@@ -76,15 +72,21 @@
         .loading .btn-text { display: none; }
         .loading .spinner { display: block; }
 
-        /* LOADING MESSAGE STYLING */
         #msg { text-align: center; font-weight: bold; margin: 20px 0 10px 0; font-size: 15px; min-height: 20px; }
 
-        /* RESULT TEMPLATE (KEEPING WHITE FOR PDF READABILITY) */
+        /* RESULT TEMPLATE */
         #pdfArea { 
             padding: 25px; background: white !important; border: 5px double #004a99; 
             margin: 0 auto; position: relative; min-height: 950px; width: 100%;
             box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;
             color: #333;
+        }
+
+        /* WATERMARK STYLING */
+        .watermark-overlay {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 80px; font-weight: bold; color: rgba(0, 74, 153, 0.1);
+            white-space: nowrap; pointer-events: none; z-index: 10; text-transform: uppercase;
         }
 
         #pdfArea::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; height: 70%; background-image: url('./assets/logo.webp'); background-repeat: no-repeat; background-position: center; background-size: contain; opacity: 0.08; z-index: 0; pointer-events: none; }
@@ -111,8 +113,9 @@
 
         .action-btns { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
 
+        /* MOBILE PREVIEW FIX */
         @media screen and (max-width: 600px) {
-            #pdfArea { width: 800px; transform: scale(0.45); transform-origin: top left; margin-bottom: -500px; }
+            #pdfArea { width: 850px; transform: scale(0.4); transform-origin: top left; margin-bottom: -550px; }
             .card { padding: 15px; }
             .header-text { padding-right: 0; }
         }
@@ -129,7 +132,7 @@
         <div class="card">
             <div id="loginSection">
                 <img src="./assets/logo.webp" style="width: 120px;" onerror="this.src='https://wordpress.com'">
-                <h2 style="color: #004a99; margin-top: 10px; text-shadow: 1px 1px 1px rgba(255,255,255,0.5);">Students Result Portal</h2>
+                <h2 style="color: #004a99; margin-top: 10px;">Students Result Portal</h2>
                 
                 <input type="text" id="sid" placeholder="Student ID (GT/...)">
                 <select id="yearSelect">
@@ -155,18 +158,11 @@
                 </button>
 
                 <p id="msg"></p>
-
-                <footer id="adminFooter" style="margin-top: 20px; text-align: center;">
-                    <p style="color: #444; font-size: 11px; margin-bottom: 5px; font-weight: bold;">Do not Tap</p>
-                    <a href="admin.html" style="color: #dc2626; font-size: 12px; text-decoration: none; font-weight: bold; border: 1.5px solid #dc2626; padding: 6px 12px; border-radius: 4px; display: inline-block; transition: 0.3s; background: rgba(255,255,255,0.2);">
-                        ⚠️ ADMIN ACCESS ONLY
-                    </a>
-                </footer>
             </div>
 
             <div id="resultSection" style="display:none;">
                 <div id="pdfArea">
-                    <div class="official-overlay">OFFICIAL COPY</div>
+                    <div id="statusWatermark" class="watermark-overlay">UNOFFICIAL COPY</div>
                     
                     <div class="report-header">
                         <img class="school-logo" src="./assets/logo.webp" onerror="this.src='https://wordpress.com'">
@@ -178,7 +174,7 @@
                         </div>
                     </div>
 
-                    <div id="dispTerm" style="font-weight:bold; font-style:italic; text-align:center; margin-bottom: 10px; color:#004a99; text-transform: uppercase; font-size: 14px;"></div>
+                    <div id="dispTerm" style="font-weight:bold; font-style:italic; text-align:center; margin-bottom: 10px; color:#004a99; text-transform: uppercase;"></div>
 
                     <div class="student-info-grid">
                         <div class="info-item"><span class="info-label">Name:</span> <span id="dispName"></span></div>
@@ -217,14 +213,15 @@
                     <div class="footer">
                         <div class="timestamp" id="dispTime"></div>
                         <div class="sig-space">
-                            <img id="sigImg" src="./assets/signature.png" style="width: 120px; display: block; margin-left: 30px; margin-bottom: 2px; position: relative; z-index: 1;" onerror="this.style.display='none'">
+                            <img id="sigImg" src="./assets/signature.png" style="width: 120px; display: block; margin-left: 30px;" onerror="this.style.display='none'">
                             <div class="sig-line"></div>
                             <strong style="text-transform: uppercase; font-size: 12px;">School Principal</strong>
                         </div>
                     </div>
                 </div>
+                
                 <div class="action-btns">
-                    <button onclick="downloadPDF()">📥 Download Result PDF</button>
+                    <button id="dlBtn" onclick="downloadPDF()">📥 Download Result PDF</button>
                     <button onclick="location.reload()" style="background:#666;">Check Another</button>
                 </div>
             </div>
@@ -236,18 +233,13 @@
 
         window.addEventListener('load', () => {
             setTimeout(() => {
-                const loader = document.getElementById('preloader');
-                const wrapper = document.getElementById('mainWrapper');
-                loader.style.opacity = '0';
-                setTimeout(() => {
-                    loader.style.display = 'none';
-                    wrapper.style.opacity = '1';
-                }, 1000);
-            }, 3000);
+                document.getElementById('preloader').style.display = 'none';
+                document.getElementById('mainWrapper').style.opacity = '1';
+            }, 2000);
         });
 
         const subjectNames = {
-            maths_score: "Mathematics", english_score: "English Language", physics_score: "Physics", chem_score: "Chemistry", bio_score: "Biology", fmath_score: "Further Mathematics", civic_score: "Civic Education", govt_score: "Government", econs_score: "Economics", markt_score: "Marketing", dp_score: "Data Processing", comme_score: "Commerce", agric_score: "Agricultural Science", crs_score: "C.R.S", finacc_score: "Financial Accounting", litineng_score: "Literature in English", philo_score: "Philosophy", geo_score: "Geography", basic_science_score: "Basic Science", basic_tech_score: "Basic Technology", bus_stud_score: "Business Studies", cmp_score: "Computer Studies", phe_score: "P.H.E", cca_score: "C.C.A", social_stud_score: "Social Studies", home_econs_score: "Home Economics", yoruba_score: "Yoruba", french_score: "French", sec_edu_score: "Security Education", lit_score: "Literature", music_score: "Music", diction_score: "Diction", history_score: "History", catering_c_p_score: "Catering and Craft Practice", dic_score: "Diction"
+            maths_score: "Mathematics", english_score: "English Language", physics_score: "Physics", chem_score: "Chemistry", bio_score: "Biology", fmath_score: "Further Mathematics", civic_score: "Civic Education", govt_score: "Government", econs_score: "Economics", markt_score: "Marketing", dp_score: "Data Processing", comme_score: "Commerce", agric_score: "Agricultural Science", crs_score: "C.R.S", finacc_score: "Financial Accounting", litineng_score: "Literature in English", basic_science_score: "Basic Science", basic_tech_score: "Basic Technology", bus_stud_score: "Business Studies", cmp_score: "Computer Studies", phe_score: "P.H.E", cca_score: "C.C.A", social_stud_score: "Social Studies", yoruba_score: "Yoruba", french_score: "French", diction_score: "Diction"
         };
 
         function getGradeInfo(score) {
@@ -271,19 +263,9 @@
             const msg = document.getElementById('msg');
             const btn = document.getElementById('checkBtn');
 
-            if(!sid || !yr || !cls || !pin || (cls.includes("SSS") && !dept)) { 
-                msg.style.color = "#854d0e"; msg.innerText = "⚠️ Please fill all fields"; return; 
-            }
+            if(!sid || !pin) { msg.innerText = "⚠️ Fill ID and PIN"; return; }
 
             btn.classList.add('loading');
-            msg.style.color = "#004a99";
-            
-            msg.innerText = "⏳ Connecting to Database...";
-            await new Promise(r => setTimeout(r, 1200));
-            msg.innerText = "🔍 Verifying Credentials...";
-            await new Promise(r => setTimeout(r, 1200));
-            msg.innerText = "📋 Generating Report Card...";
-            await new Promise(r => setTimeout(r, 1000));
             
             try {
                 const res = await fetch(`/api/verify?student_id=${sid}&year=${yr}&class=${cls}&dept=${dept}&pin=${pin}`);
@@ -291,11 +273,20 @@
 
                 if (res.status !== 200) {
                     btn.classList.remove('loading');
-                    msg.style.color = "#991b1b"; msg.innerText = "❌ " + data.error;
+                    msg.innerText = "❌ " + data.error;
                 } else {
                     document.getElementById('loginSection').style.display = 'none';
                     document.getElementById('resultSection').style.display = 'block';
                     
+                    // TOGGLE OFFICIAL STATUS BASED ON PAYMENT
+                    const watermark = document.getElementById('statusWatermark');
+                    if (data.is_paid === true || data.is_paid === "true") {
+                        watermark.innerText = "OFFICIAL COPY";
+                        watermark.style.color = "rgba(0, 153, 74, 0.1)"; // Greenish tint
+                    } else {
+                        watermark.innerText = "UNOFFICIAL COPY";
+                    }
+
                     document.getElementById('dispTerm').innerText = `${yr} ${CURRENT_TERM}`;
                     document.getElementById('dispName').innerText = data.full_name;
                     document.getElementById('dispDob').innerText = data.dob || "---";
@@ -303,23 +294,18 @@
                     document.getElementById('dispOpened').innerText = data.opened || "0";
                     document.getElementById('dispPresent').innerText = data.present || "0";
                     document.getElementById('dispAbsent').innerText = (data.opened || 0) - (data.present || 0);
-                    document.getElementById('dispTeacher').innerText = data.teacher_remark || "---";
+                    document.getElementById('dispTeacher').innerText = data.teacher_remark || "Satisfactory.";
+                    document.getElementById('dispPrincipal').innerText = data.principal_remark || "Promoted.";
 
                     let rows = ""; let total = 0;
                     data.scores.forEach(s => {
                         total += s.score;
                         const info = getGradeInfo(s.score);
-                        rows += `<tr>
-                            <td>${subjectNames[s.subject] || s.subject}</td>
-                            <td style="text-align:center;">${s.score}</td>
-                            <td style="text-align:center; font-weight:bold;">${info.g}</td>
-                            <td style="text-align:center; font-style:italic; font-size:11px;">${info.c}</td>
-                        </tr>`;
+                        rows += `<tr><td>${subjectNames[s.subject] || s.subject}</td><td style="text-align:center;">${s.score}</td><td style="text-align:center; font-weight:bold;">${info.g}</td><td style="text-align:center; font-style:italic; font-size:11px;">${info.c}</td></tr>`;
                     });
                     
                     const count = data.scores.length;
                     const mean = (total / count).toFixed(1);
-                    
                     document.getElementById('resBody').innerHTML = rows;
                     document.getElementById('resObtainable').innerText = count * 100;
                     document.getElementById('resTotal').innerText = total;
@@ -329,25 +315,54 @@
                 }
             } catch (e) { 
                 btn.classList.remove('loading');
-                msg.innerText = "❌ Connection Error."; 
+                msg.innerText = "❌ Error."; 
             }
         }
 
         async function downloadPDF() {
-            const element = document.getElementById('pdfArea');
+            const originalArea = document.getElementById('pdfArea');
             const studentName = document.getElementById('dispName').innerText || "Student";
+            const btn = document.getElementById('dlBtn');
+            
+            btn.innerHTML = "⌛ Preparing File...";
+            btn.disabled = true;
+
+            // PC-STYLE DOWNLOAD LOGIC
+            // We clone the element so we can style it like a PC screen without the user seeing the jump
+            const clone = originalArea.cloneNode(true);
+            clone.style.width = "850px"; // Force PC width
+            clone.style.transform = "none"; // Remove mobile scaling
+            clone.style.position = "fixed";
+            clone.style.top = "-10000px"; // Hide from view
+            document.body.appendChild(clone);
+
             try {
-                const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
+                const canvas = await html2canvas(clone, { 
+                    scale: 3, // High Resolution
+                    useCORS: true, 
+                    backgroundColor: "#ffffff" 
+                });
+                
+                document.body.removeChild(clone); // Cleanup clone
+
                 const imgData = canvas.toDataURL('image/jpeg', 1.0);
-                const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
                 const pdfWidth = pdf.internal.pageSize.getWidth();
                 const pdfHeight = pdf.internal.pageSize.getHeight();
+                
+                // Fit to A4
                 const ratio = Math.min(pdfWidth / canvas.width, pdfHeight / canvas.height);
                 const finalWidth = canvas.width * ratio;
                 const finalHeight = canvas.height * ratio;
-                pdf.addImage(imgData, 'JPEG', (pdfWidth - finalWidth) / 2, (pdfHeight - finalHeight) / 2, finalWidth, finalHeight);
+
+                pdf.addImage(imgData, 'JPEG', (pdfWidth - finalWidth) / 2, 0, finalWidth, finalHeight);
                 pdf.save(`${studentName}_Result.pdf`);
-            } catch (e) { alert("PDF Error"); } 
+
+            } catch (e) { alert("Download failed"); }
+            
+            btn.innerHTML = "📥 Download Result PDF";
+            btn.disabled = false;
         }
 
         function toggleDept() {
