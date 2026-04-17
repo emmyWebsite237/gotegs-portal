@@ -10,138 +10,86 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
-        /* MOBILE-FIRST ANIMATED BACKGROUND */
-        body, html { margin: 0; padding: 0; width: 100%; min-height: 100vh; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-
-        section#mainWrapper {
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            min-height: 100vh;
-            overflow-x: hidden;
-            background: #001f3f; 
-            transition: opacity 0.8s ease;
-        }
-
-        .bg-animate {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(45deg, #001f3f, #004a99);
-            background-size: cover;
-            animation: animateBg 10s linear infinite alternate;
-            z-index: 1;
-        }
-
-        @keyframes animateBg {
-            0% { filter: hue-rotate(0deg); }
-            100% { filter: hue-rotate(45deg); }
-        }
-
-        /* PRELOADER */
+        /* FULL PAGE LOADER (3 SECONDS) */
         #preloader {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #ffffff; display: flex; flex-direction: column;
             justify-content: center; align-items: center; z-index: 9999;
         }
         .pulse-loader {
-            width: 60px; height: 60px; background: #004a99;
+            width: 80px; height: 80px; background: #004a99;
             border-radius: 50%; animation: pulse 1.2s infinite ease-in-out;
         }
-        @keyframes pulse { 0% { transform: scale(0); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
-
-        /* GLASSMORPHISM CARD */
-        .card { 
-            position: relative;
-            z-index: 10;
-            background: rgba(255, 255, 255, 0.95); 
-            backdrop-filter: blur(15px); 
-            border-radius: 20px; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.3); 
-            width: 95%; 
-            max-width: 850px; 
-            margin: 20px auto;
-            padding: 25px;
-            box-sizing: border-box;
+        @keyframes pulse {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
         }
+
+        /* General Page Styling */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 850px; position: relative; }
         
         #loginSection { max-width: 400px; margin: 0 auto; text-align: center; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
         
-        input, select { 
-            width: 100%; padding: 12px; margin: 10px 0; 
-            border: 1px solid #ccc; border-radius: 8px; font-size: 16px; 
-            box-sizing: border-box;
-        }
-        
-        button { 
-            width: 100%; padding: 14px; background: #004a99; color: white; 
-            border: none; border-radius: 8px; cursor: pointer; font-weight: bold; 
-            font-size: 18px; margin-top: 15px; transition: 0.3s; 
-        }
+        button { width: 100%; padding: 14px; background: #004a99; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 18px; margin-top: 10px; position: relative; display: flex; align-items: center; justify-content: center; min-height: 50px; transition: 0.3s; }
         button:hover { background: #003366; }
+        .spinner { display: none; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading .btn-text { display: none; }
+        .loading .spinner { display: block; }
+        .loading { pointer-events: none; opacity: 0.8; }
 
-        /* RESULT AREA STYLE */
+        /* COMPACTED RESULT TEMPLATE */
         #pdfArea { 
-            padding: 30px; background: white !important; border: 5px double #004a99; 
-            position: relative; color: #333; overflow: hidden;
+            padding: 25px; background: white !important; border: 5px double #004a99; 
+            margin: 0 auto; position: relative; min-height: 950px; width: 100%;
+            box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;
+            -webkit-user-select: none; user-select: none;
         }
 
-        .watermark-overlay {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg);
-            font-size: 60px; font-weight: bold; color: rgba(0, 0, 0, 0.04);
-            white-space: nowrap; pointer-events: none; z-index: 0;
-        }
-
-        .report-header { 
-            display: flex; align-items: center; gap: 20px; 
-            border-bottom: 2px solid #004a99; padding-bottom: 10px; margin-bottom: 15px;
-        }
-        .school-logo { width: 100px; height: 100px; object-fit: contain; }
-        .header-text { flex: 1; text-align: center; }
-        .school-name { font-family: 'Great Vibes', cursive; font-size: 36px; color: #004a99; margin: 0; }
-        .motto { font-weight: bold; font-size: 14px; }
-        .address { font-size: 11px; color: #555; }
-
-        .student-info-grid { 
-            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; 
-            margin: 15px 0; border: 1px solid #333; padding: 10px; background: #f9f9f9;
-        }
-        .info-item { font-size: 13px; }
+        #pdfArea::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; height: 70%; background-image: url('./assets/logo.webp'); background-repeat: no-repeat; background-position: center; background-size: contain; opacity: 0.08; z-index: 0; pointer-events: none; }
+        .unofficial-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 70px; color: rgba(255, 0, 0, 0.12); font-weight: bold; z-index: 10; pointer-events: none; white-space: nowrap; display: none; }
+        .blurred { filter: blur(20px); pointer-events: none; }
+        
+        .report-header { display: flex; align-items: center; border-bottom: 2px solid #004a99; padding-bottom: 10px; margin-bottom: 12px; position: relative; z-index: 1; }
+        .school-logo { width: 100px; height: auto; flex-shrink: 0; }
+        .header-text { flex-grow: 1; text-align: center; padding-right: 100px; }
+        
+        /* THE STYLED CURSIVE HEADING */
+        .school-name { font-family: 'Great Vibes', cursive; font-size: 42px; color: #004a99; margin: 0; font-weight: normal; }
+        
+        .motto { font-style: italic; font-weight: bold; font-size: 14px; margin: 0; color: #333; }
+        .address { font-size: 11px; font-weight: bold; color: #444; margin: 1px 0; }
+        
+        .student-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; border: 1px solid #000; padding: 12px; background: #fafafa; position: relative; z-index: 1; }
+        .info-item { font-size: 13px; border-bottom: 1px solid #eee; padding: 3px 0; }
         .info-label { font-weight: bold; color: #004a99; }
 
-        .result-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .result-table th { background: #004a99; color: white; padding: 10px; font-size: 13px; }
-        .result-table td { border: 1px solid #333; padding: 8px; font-size: 13px; text-align: center; }
-        .result-table td:first-child { text-align: left; font-weight: bold; }
+        .result-table { width: 100%; border-collapse: collapse; margin-top: 5px; position: relative; z-index: 1; }
+        .result-table th, .result-table td { border: 1px solid #000; padding: 8px; text-align: left; font-size: 13px; }
+        .result-table th { background: #eef2f7; color: #004a99; }
+        
+        .bottom-wrap { display: flex; margin-top: 15px; gap: 10px; position: relative; z-index: 1; }
+        .comments-table { width: 55%; border-collapse: collapse; }
+        .comments-table td { border: 1px solid #000; padding: 8px; vertical-align: top; font-size: 12px; height: 55px; line-height: 1.3; }
+        .summary-table { width: 45%; border-collapse: collapse; margin-left: auto; }
+        .summary-table td { border: 1px solid #000; padding: 8px; font-weight: bold; font-size: 13px; }
 
-        .bottom-wrap { display: flex; gap: 15px; margin-top: 15px; }
-        .comments-table, .summary-table { width: 100%; border-collapse: collapse; }
-        .comments-table td, .summary-table td { border: 1px solid #333; padding: 10px; font-size: 12px; }
-        .summary-table td:last-child { font-weight: bold; text-align: center; background: #f0f0f0; }
+        .footer { margin-top: auto; padding-top: 20px; display: flex; justify-content: space-between; align-items: flex-end; position: relative; z-index: 1; }
+        .sig-space { text-align: center; width: 180px; }
+        .sig-line { border-top: 2px solid #000; margin-bottom: 3px; }
+        .timestamp { font-size: 10px; color: #777; font-style: italic; }
 
-        .footer { margin-top: 30px; display: flex; justify-content: space-between; align-items: flex-end; }
-        .timestamp { font-size: 10px; color: #888; }
-        .sig-line { border-top: 2px solid #333; width: 180px; margin-top: 5px; }
+        .action-btns { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
+        #msg { text-align: center; font-weight: bold; margin-top: 20px; font-size: 16px; }
 
-        .action-btns { display: flex; gap: 10px; margin-top: 20px; }
-
-        /* Responsive scaling for mobile view */
         @media screen and (max-width: 600px) {
-            #pdfArea { 
-                transform: scale(0.6); 
-                transform-origin: top left; 
-                width: 850px; 
-            }
-            #resultSection { height: 600px; overflow-x: auto; }
-            .action-btns { flex-direction: column; }
+            #pdfArea { width: 800px; transform: scale(0.45); transform-origin: top left; margin-bottom: -500px; }
+            body.is-sss #pdfArea { transform: scale(0.42); margin-bottom: -550px; }
+            .card { overflow-x: auto; padding: 15px; }
+            .header-text { padding-right: 0; }
         }
-
-        /* Loading Spinner */
-        .spinner { display: none; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s linear infinite; margin-left: 10px; vertical-align: middle; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .loading .spinner { display: inline-block; }
-        .loading .btn-text { display: none; }
     </style>
 </head>
 <body>
@@ -151,124 +99,121 @@
         <p style="color:#004a99; font-weight:bold; margin-top:20px; letter-spacing:2px;">SECURE ACCESS...</p>
     </div>
 
-    <section id="mainWrapper" style="opacity: 0;">
-        <div class="bg-animate"></div>
-        
-        <div class="card">
-            <div id="loginSection">
-                <img src="./assets/logo.webp" style="width: 120px;" onerror="this.src='https://via.placeholder.com/120?text=LOGO'">
-                <h2 style="color: #004a99; margin: 10px 0;">Students Result Portal</h2>
-                
-                <input type="text" id="sid" placeholder="Student ID (GT/...)">
-                <select id="yearSelect">
-                    <option value="">Select Session</option>
-                    <option value="2025/2026">2025/2026</option>
+    <div class="card">
+        <div id="loginSection">
+            <img src="./assets/logo.webp" style="width: 120px;" onerror="this.src='https://wordpress.com'">
+            <h3 style="color: #004a99;">Students Result Portal</h3>
+            <input type="text" id="sid" placeholder="Student ID (GT/...)">
+            <select id="yearSelect">
+                <option value="">Select Session</option>
+                <option value="2025/2026">2025/2026</option>
+            </select>
+            <select id="classSelect" onchange="toggleDept()">
+                <option value="">Select Class</option>
+                <option value="JSS 1">JSS 1</option><option value="JSS 2">JSS 2</option><option value="JSS 3">JSS 3</option>
+                <option value="SSS 1">SSS 1</option><option value="SSS 2">SSS 2</option><option value="SSS 3">SSS 3</option>
+            </select>
+            <div id="deptDiv" style="display:none;">
+                <select id="deptSelect">
+                    <option value="">Select Department</option>
+                    <option value="Science">Science</option><option value="Art">Art</option><option value="Commerce">Commerce</option>
                 </select>
-                <select id="classSelect" onchange="toggleDept()">
-                    <option value="">Select Class</option>
-                    <option>JSS 1</option><option>JSS 2</option><option>JSS 3</option>
-                    <option>SSS 1</option><option>SSS 2</option><option>SSS 3</option>
-                </select>
-                <div id="deptDiv" style="display:none;">
-                    <select id="deptSelect">
-                        <option value="">Select Department</option>
-                        <option>Science</option><option>Art</option><option>Commerce</option>
-                    </select>
-                </div>
-                <input type="password" id="pin" placeholder="Access PIN">
-                
-                <button id="checkBtn" onclick="check()">
-                    <span class="btn-text">Check Result</span>
-                    <div class="spinner"></div>
-                </button>
-                <p id="msg" style="color: red; font-weight: bold; margin-top: 10px;"></p>
             </div>
+            <input type="password" id="pin" placeholder="Access PIN">
+            <button id="checkBtn" onclick="check()">
+                <span class="btn-text">Check Result</span>
+                <div class="spinner"></div>
+            </button>
+        </div>
 
-            <div id="resultSection" style="display:none;">
-                <div id="pdfArea">
-                    <div id="statusWatermark" class="watermark-overlay">UNOFFICIAL COPY</div>
-                    
-                    <div class="report-header">
-                        <img class="school-logo" src="./assets/logo.webp" onerror="this.src='https://via.placeholder.com/100?text=LOGO'">
-                        <div class="header-text">
-                            <h1 class="school-name">Go-Tegs International School</h1>
-                            <div class="motto">Motto: Training the Leaders of Tomorrow</div>
-                            <div class="address">15, Ayesanmi Street, Pipeline B/Stop, Isheri Olofin, Alimosho L.G.A Lagos</div>
-                            <div class="address">Tel: 08066525319, 08066680932</div>
-                        </div>
-                    </div>
-
-                    <div id="dispTerm" style="font-weight:bold; text-align:center; margin: 10px 0; color:#004a99; text-transform: uppercase;"></div>
-
-                    <div class="student-info-grid">
-                        <div class="info-item"><span class="info-label">Name:</span> <span id="dispName"></span></div>
-                        <div class="info-item"><span class="info-label">School Opened:</span> <span id="dispOpened"></span></div>
-                        <div class="info-item"><span class="info-label">Date of Birth:</span> <span id="dispDob"></span></div>
-                        <div class="info-item"><span class="info-label">Times Present:</span> <span id="dispPresent"></span></div>
-                        <div class="info-item"><span class="info-label">Class:</span> <span id="dispClass"></span></div>
-                        <div class="info-item"><span class="info-label">Times Absent:</span> <span id="dispAbsent"></span></div>
-                    </div>
-
-                    <table class="result-table">
-                        <thead>
-                            <tr>
-                                <th>Subject</th>
-                                <th>Score (%)</th>
-                                <th>Grade</th>
-                                <th>Remark</th>
-                            </tr>
-                        </thead>
-                        <tbody id="resBody"></tbody>
-                    </table>
-
-                    <div class="bottom-wrap">
-                        <table class="comments-table">
-                            <tr><td><strong>Class Teacher:</strong><br><span id="dispTeacher"></span></td></tr>
-                            <tr><td><strong>Principal:</strong><br><span id="dispPrincipal"></span></td></tr>
-                        </table>
-                        <table class="summary-table">
-                            <tr><td>Obtainable</td><td id="resObtainable"></td></tr>
-                            <tr><td>Obtained</td><td id="resTotal"></td></tr>
-                            <tr><td>Mean %</td><td id="resMean"></td></tr>
-                            <tr><td>Overall</td><td id="resGrade"></td></tr>
-                        </table>
-                    </div>
-
-                    <div class="footer">
-                        <div class="timestamp" id="dispTime"></div>
-                        <div style="text-align: center;">
-                            <img src="./assets/signature.png" style="width: 100px;" onerror="this.style.display='none'">
-                            <div class="sig-line"></div>
-                            <strong style="font-size: 11px;">SCHOOL PRINCIPAL</strong>
-                        </div>
-                    </div>
-                </div>
+        <div id="resultSection" style="display:none;">
+            <div id="pdfArea">
+                <div class="unofficial-overlay">UNOFFICIAL COPY</div>
                 
-                <div class="action-btns">
-                    <button id="dlBtn" onclick="downloadPDF()">📥 Download Result PDF</button>
-                    <button onclick="location.reload()" style="background:#666;">Check Another</button>
+                <div class="report-header">
+                    <img class="school-logo" src="./assets/logo.webp" onerror="this.src='https://wordpress.com'">
+                    <div class="header-text">
+                        <h1 class="school-name">Go-Tegs International School</h1>
+                        <div class="motto">Motto: Training the Leaders of Tomorrow</div>
+                        <div class="address">15, Ayesanmi Street, Pipeline B/Stop, Isheri Olofin, Alimosho L.G.A Lagos, Nigeria</div>
+                        <div class="address">Tel: 08066525319, 08066680932</div>
+                    </div>
                 </div>
+
+                <div id="dispTerm" style="font-weight:bold; font-style:italic; text-align:center; margin-bottom: 10px; color:#004a99; text-transform: uppercase; font-size: 14px;"></div>
+
+                <div class="student-info-grid">
+                    <div class="info-item"><span class="info-label">Name:</span> <span id="dispName"></span></div>
+                    <div class="info-item"><span class="info-label">School Opened:</span> <span id="dispOpened"></span></div>
+                    <div class="info-item"><span class="info-label">Date of Birth:</span> <span id="dispDob"></span></div>
+                    <div class="info-item"><span class="info-label">Times Present:</span> <span id="dispPresent"></span></div>
+                    <div class="info-item"><span class="info-label">Class:</span> <span id="dispClass"></span></div>
+                    <div class="info-item"><span class="info-label">Times Absent:</span> <span id="dispAbsent"></span></div>
+                </div>
+
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th style="text-align:center;">Score (%)</th>
+                            <th style="text-align:center;">Grade</th>
+                            <th style="text-align:center;">Comments</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resBody"></tbody>
+                </table>
+
+                <div class="bottom-wrap">
+                    <table class="comments-table">
+                        <tr><td><strong>Class Teacher's Remark:</strong><br><span id="dispTeacher"></span></td></tr>
+                        <tr><td><strong>Principal's Remark:</strong><br><span id="dispPrincipal"></span></td></tr>
+                    </table>
+                    <table class="summary-table">
+                        <tr><td>Total Mark Obtainable</td><td id="resObtainable" style="text-align:center;"></td></tr>
+                        <tr><td>Total Mark Obtained</td><td id="resTotal" style="text-align:center;"></td></tr>
+                        <tr><td>Mean Percentage</td><td id="resMean" style="text-align:center;"></td></tr>
+                        <tr><td>Overall Grade</td><td id="resGrade" style="text-align:center;"></td></tr>
+                    </table>
+                </div>
+
+                <div class="footer">
+                    <div class="timestamp" id="dispTime"></div>
+                    <div class="sig-space">
+                        <img id="sigImg" src="./assets/signature.png" style="width: 120px; display: block; margin-left: 30px; margin-bottom: 2px; position: relative; z-index: 1;" onerror="this.style.display='none'">
+                        <div class="sig-line"></div>
+                        <strong style="text-transform: uppercase; font-size: 12px;">School Principal</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="action-btns">
+                <button onclick="downloadPDF()">📥 Download Result PDF</button>
+                <button onclick="location.reload()" style="background:#666;">Check Another</button>
             </div>
         </div>
-    </section>
+        <p id="msg"></p>
+    </div>
+
+    <footer id="adminFooter" style="margin-top: 40px; text-align: center;">
+        <p style="color: #666; font-size: 11px; margin-bottom: 5px; font-weight: bold;">Do not Tap</p>
+        <a href="admin.html" style="color: #dc2626; font-size: 12px; text-decoration: none; font-weight: bold; border: 1px solid #dc2626; padding: 5px 10px; border-radius: 4px; display: inline-block; transition: 0.3s;" onmouseover="this.style.background='#dc2626'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='#dc2626';">
+            ⚠️ ADMIN ACCESS ONLY
+        </a>
+    </footer>
 
     <script>
-        const CURRENT_TERM_TITLE = "Second Term Report";
-        const subjectNames = {
-            maths_score: "Mathematics", english_score: "English Language", physics_score: "Physics", chem_score: "Chemistry", bio_score: "Biology", fmath_score: "Further Mathematics", civic_score: "Civic Education", govt_score: "Government", econs_score: "Economics", markt_score: "Marketing", dp_score: "Data Processing", comme_score: "Commerce", agric_score: "Agricultural Science", crs_score: "C.R.S", finacc_score: "Financial Accounting", litineng_score: "Literature in English", basic_science_score: "Basic Science", basic_tech_score: "Basic Technology", bus_stud_score: "Business Studies", cmp_score: "Computer Studies", phe_score: "P.H.E", cca_score: "C.C.A", social_stud_score: "Social Studies", yoruba_score: "Yoruba", french_score: "French", diction_score: "Diction"
-        };
+        // --- EDIT THIS LINE TO CHANGE THE TERM ---
+        const CURRENT_TERM = "Second Term Report"; 
 
+        // 3-SECOND INITIAL PRELOADER
         window.addEventListener('load', () => {
             setTimeout(() => {
                 document.getElementById('preloader').style.display = 'none';
-                document.getElementById('mainWrapper').style.opacity = '1';
-            }, 1500);
+            }, 3000);
         });
 
-        function toggleDept() {
-            const cls = document.getElementById('classSelect').value;
-            document.getElementById('deptDiv').style.display = cls.includes("SSS") ? "block" : "none";
-        }
+        const subjectNames = {
+            maths_score: "Mathematics", english_score: "English Language", physics_score: "Physics", chem_score: "Chemistry", bio_score: "Biology", fmath_score: "Further Mathematics", civic_score: "Civic Education", govt_score: "Government", econs_score: "Economics", markt_score: "Marketing", dp_score: "Data Processing", comme_score: "Commerce", agric_score: "Agricultural Science", crs_score: "C.R.S", finacc_score: "Financial Accounting", litineng_score: "Literature in English", philo_score: "Philosophy", geo_score: "Geography", basic_science_score: "Basic Science", basic_tech_score: "Basic Technology", bus_stud_score: "Business Studies", cmp_score: "Computer Studies", phe_score: "P.H.E", cca_score: "C.C.A", social_stud_score: "Social Studies", home_econs_score: "Home Economics", yoruba_score: "Yoruba", french_score: "French", sec_edu_score: "Security Education", lit_score: "Literature", music_score: "Music", dic_score: "Diction", history_score: "History", catering_c_p_score: "Catering and Craft Practice"
+        };
 
         function getGradeInfo(score) {
             if (score >= 75) return { g: "A1", c: "Excellent" };
@@ -282,113 +227,118 @@
             return { g: "F9", c: "Poor" };
         }
 
+        function getPrincipalComment(mean) {
+            if (mean >= 75) return "An outstanding result. Keep the flag flying high.";
+            if (mean >= 60) return "A very good performance. Keep it up.";
+            if (mean >= 45) return "A fair result, but there is room for much improvement.";
+            return "Poor performance. You need to be more focused and work harder.";
+        }
+
         async function check() {
             const sid = document.getElementById('sid').value;
+            const yr = document.getElementById('yearSelect').value;
+            const cls = document.getElementById('classSelect').value;
+            const dept = document.getElementById('deptSelect').value;
             const pin = document.getElementById('pin').value;
-            const btn = document.getElementById('checkBtn');
             const msg = document.getElementById('msg');
+            const btn = document.getElementById('checkBtn');
 
-            if(!sid || !pin) { msg.innerText = "⚠️ ID and PIN required"; return; }
-            msg.innerText = "";
+            if(!sid || !yr || !cls || !pin || (cls.includes("SSS") && !dept)) { 
+                msg.style.color = "#d97706"; msg.innerText = "⚠️ Please fill all fields"; return; 
+            }
+
             btn.classList.add('loading');
-
+            msg.style.color = "#004a99";
+            
+            // LOADING MESSAGES
+            msg.innerText = "⏳ Connecting to Go-Tegs Database...";
+            await new Promise(r => setTimeout(r, 1200));
+            msg.innerText = "🔍 Verifying Credentials...";
+            await new Promise(r => setTimeout(r, 1200));
+            msg.innerText = "📋 Generating Report Card...";
+            await new Promise(r => setTimeout(r, 1000));
+            
             try {
-                const yr = document.getElementById('yearSelect').value;
-                const cls = document.getElementById('classSelect').value;
-                const dept = document.getElementById('deptSelect').value;
-
-                // API Call (Adjust path as needed)
                 const res = await fetch(`/api/verify?student_id=${sid}&year=${yr}&class=${cls}&dept=${dept}&pin=${pin}`);
                 const data = await res.json();
 
-                if (res.ok) {
-                    renderResult(data, yr, cls, dept);
+                if (res.status !== 200) {
+                    btn.classList.remove('loading');
+                    msg.style.color = "red"; msg.innerText = "❌ " + data.error;
                 } else {
-                    msg.innerText = "❌ " + (data.error || "Login Failed");
+                    window.isViewingResult = true; 
+                    document.getElementById('loginSection').style.display = 'none';
+                    document.getElementById('resultSection').style.display = 'block';
+                    document.getElementById('adminFooter').style.display = 'none';
+                    document.querySelector('.unofficial-overlay').style.display = data.is_paid ? 'none' : 'block';
+
+                    document.getElementById('dispTerm').innerText = `${yr} ${CURRENT_TERM}`;
+                    document.getElementById('dispName').innerText = data.full_name;
+                    document.getElementById('dispDob').innerText = data.dob || "---";
+                    document.getElementById('dispClass').innerText = cls + (dept ? ` (${dept})` : "");
+                    document.getElementById('dispOpened').innerText = data.opened || "0";
+                    document.getElementById('dispPresent').innerText = data.present || "0";
+                    document.getElementById('dispAbsent').innerText = (data.opened || 0) - (data.present || 0);
+                    document.getElementById('dispTeacher').innerText = data.teacher_remark || "---";
+
+                    let rows = ""; let total = 0;
+                    data.scores.forEach(s => {
+                        total += s.score;
+                        const info = getGradeInfo(s.score);
+                        rows += `<tr>
+                            <td>${subjectNames[s.subject] || s.subject}</td>
+                            <td style="text-align:center;">${s.score}</td>
+                            <td style="text-align:center; font-weight:bold;">${info.g}</td>
+                            <td style="text-align:center; font-style:italic; font-size:11px;">${info.c}</td>
+                        </tr>`;
+                    });
+                    
+                    const count = data.scores.length;
+                    const mean = (total / count).toFixed(1);
+                    
+                    document.getElementById('resBody').innerHTML = rows;
+                    document.getElementById('resObtainable').innerText = count * 100;
+                    document.getElementById('resTotal').innerText = total;
+                    document.getElementById('resMean').innerText = mean + "%";
+                    document.getElementById('resGrade').innerText = getGradeInfo(mean).g;
+                    document.getElementById('dispPrincipal').innerText = getPrincipalComment(parseFloat(mean));
+                    document.getElementById('dispTime').innerText = "Generated: " + new Date().toLocaleString();
+                    msg.innerText = "✅ Success";
                 }
-            } catch (e) {
-                msg.innerText = "❌ Connection Error";
-            } finally {
+            } catch (e) { 
                 btn.classList.remove('loading');
+                msg.innerText = "❌ Connection Error."; 
             }
-        }
-
-        function renderResult(data, yr, cls, dept) {
-            document.getElementById('loginSection').style.display = 'none';
-            document.getElementById('resultSection').style.display = 'block';
-
-            // Watermark Logic
-            const watermark = document.getElementById('statusWatermark');
-            if (data.is_paid === true || data.is_paid === "true") {
-                watermark.innerText = "OFFICIAL COPY";
-                watermark.style.color = "rgba(0, 153, 74, 0.08)";
-            }
-
-            document.getElementById('dispTerm').innerText = `${yr} ${CURRENT_TERM_TITLE}`;
-            document.getElementById('dispName').innerText = data.full_name;
-            document.getElementById('dispDob').innerText = data.dob || "---";
-            document.getElementById('dispClass').innerText = cls + (dept ? ` (${dept})` : "");
-            document.getElementById('dispOpened').innerText = data.opened || "0";
-            document.getElementById('dispPresent').innerText = data.present || "0";
-            document.getElementById('dispAbsent').innerText = (data.opened || 0) - (data.present || 0);
-            document.getElementById('dispTeacher').innerText = data.teacher_remark || "Satisfactory.";
-            document.getElementById('dispPrincipal').innerText = data.principal_remark || "Good result.";
-
-            let rows = ""; let total = 0;
-            data.scores.forEach(s => {
-                total += s.score;
-                const info = getGradeInfo(s.score);
-                rows += `<tr>
-                    <td>${subjectNames[s.subject] || s.subject}</td>
-                    <td>${s.score}</td>
-                    <td>${info.g}</td>
-                    <td style="font-size:11px; font-style:italic;">${info.c}</td>
-                </tr>`;
-            });
-
-            const count = data.scores.length;
-            const mean = (total / count).toFixed(1);
-            document.getElementById('resBody').innerHTML = rows;
-            document.getElementById('resObtainable').innerText = count * 100;
-            document.getElementById('resTotal').innerText = total;
-            document.getElementById('resMean').innerText = mean + "%";
-            document.getElementById('resGrade').innerText = getGradeInfo(mean).g;
-            document.getElementById('dispTime').innerText = "Date: " + new Date().toLocaleString();
         }
 
         async function downloadPDF() {
-            const btn = document.getElementById('dlBtn');
-            const studentName = document.getElementById('dispName').innerText || "Result";
-            btn.innerText = "⌛ Generating...";
+            const element = document.getElementById('pdfArea');
+            const studentName = document.getElementById('dispName').innerText || "Student";
+            const btn = document.querySelector('.action-btns button');
+            const originalText = btn.innerText;
+            btn.innerText = "⏳ Resizing & Downloading...";
             btn.disabled = true;
 
-            // Clone for PC formatting
-            const original = document.getElementById('pdfArea');
-            const clone = original.cloneNode(true);
-            clone.style.width = "850px"; 
-            clone.style.transform = "none";
-            clone.style.position = "fixed";
-            clone.style.top = "-10000px";
-            document.body.appendChild(clone);
-
             try {
-                const canvas = await html2canvas(clone, { scale: 2, useCORS: true });
+                const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
                 const imgData = canvas.toDataURL('image/jpeg', 1.0);
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                
+                const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
                 const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                const ratio = Math.min(pdfWidth / canvas.width, pdfHeight / canvas.height);
+                const finalWidth = canvas.width * ratio;
+                const finalHeight = canvas.height * ratio;
+                pdf.addImage(imgData, 'JPEG', (pdfWidth - finalWidth) / 2, (pdfHeight - finalHeight) / 2, finalWidth, finalHeight);
                 pdf.save(`${studentName}_Result.pdf`);
-            } catch (e) {
-                alert("Download error");
-            } finally {
-                document.body.removeChild(clone);
-                btn.innerText = "📥 Download Result PDF";
-                btn.disabled = false;
-            }
+            } catch (e) { alert("PDF Error"); } 
+            finally { btn.innerText = originalText; btn.disabled = false; }
+        }
+
+        function toggleDept() {
+            const cls = document.getElementById('classSelect').value;
+            document.getElementById('deptDiv').style.display = cls.includes("SSS") ? "block" : "none";
+            if(cls.includes("SSS")) document.body.classList.add('is-sss');
+            else document.body.classList.remove('is-sss');
         }
     </script>
 </body>
