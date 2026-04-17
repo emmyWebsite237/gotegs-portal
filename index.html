@@ -311,29 +311,39 @@
             }
         }
 
-        async function downloadPDF() {
-            const element = document.getElementById('pdfArea');
-            const studentName = document.getElementById('dispName').innerText || "Student";
-            const btn = document.querySelector('.action-btns button');
-            const originalText = btn.innerText;
-            btn.innerText = "⏳ Resizing & Downloading...";
-            btn.disabled = true;
+async function downloadPDF(){
+    const btn = document.getElementById('dlBtn');
+    btn.innerText = "Generating...";
+    
+    const original = document.getElementById('pdfArea');
+    
+    // Create a clone to force PC format (850px width) regardless of screen size
+    const clone = original.cloneNode(true);
+    clone.style.width = "850px";
+    clone.style.position = "absolute";
+    clone.style.left = "-9999px";
+    clone.style.top = "0";
+    clone.style.transform = "none";
+    document.body.appendChild(clone);
 
-            try {
-                const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
-                const imgData = canvas.toDataURL('image/jpeg', 1.0);
-                const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = pdf.internal.pageSize.getHeight();
-                const ratio = Math.min(pdfWidth / canvas.width, pdfHeight / canvas.height);
-                const finalWidth = canvas.width * ratio;
-                const finalHeight = canvas.height * ratio;
-                pdf.addImage(imgData, 'JPEG', (pdfWidth - finalWidth) / 2, (pdfHeight - finalHeight) / 2, finalWidth, finalHeight);
-                pdf.save(`${studentName}_Result.pdf`);
-            } catch (e) { alert("PDF Error"); } 
-            finally { btn.innerText = originalText; btn.disabled = false; }
-        }
-
+    try {
+        const canvas = await html2canvas(clone, { scale: 2 });
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+        
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save("Student_Result.pdf");
+    } catch (e) {
+        console.error(e);
+    } finally {
+        document.body.removeChild(clone);
+        btn.innerText = "Download PDF";
+    }
+}
         function toggleDept() {
             const cls = document.getElementById('classSelect').value;
             document.getElementById('deptDiv').style.display = cls.includes("SSS") ? "block" : "none";
