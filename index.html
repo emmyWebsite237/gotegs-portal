@@ -357,10 +357,6 @@ async function downloadPDF() {
         function toggleDept() {
             const cls = document.getElementById('classSelect').value;
             document.getElementById('deptDiv').style.display = cls.includes("SSS") ? "block" : "none";
-        }
-        function toggleDept() {
-            const cls = document.getElementById('classSelect').value;
-            document.getElementById('deptDiv').style.display = cls.includes("SSS") ? "block" : "none";
             if(cls.includes("SSS")) document.body.classList.add('is-sss');
             else document.body.classList.remove('is-sss');
         }
