@@ -1,345 +1,365 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Go-Tegs Student Portal</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Go-Tegs Student Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-    <style>
-        /* FULL PAGE LOADER (3 SECONDS) */
-        #preloader {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #ffffff; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; z-index: 9999;
-        }
-        .pulse-loader {
-            width: 80px; height: 80px; background: #004a99;
-            border-radius: 50%; animation: pulse 1.2s infinite ease-in-out;
-        }
-        @keyframes pulse {
-            0% { transform: scale(0); opacity: 1; }
-            100% { transform: scale(1.5); opacity: 0; }
-        }
+<style>
+/* FULL PAGE LOADER (3 SECONDS) */
+#preloader {
+position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+background: #ffffff; display: flex; flex-direction: column;
+justify-content: center; align-items: center; z-index: 9999;
+}
+.pulse-loader {
+width: 80px; height: 80px; background: #004a99;
+border-radius: 50%; animation: pulse 1.2s infinite ease-in-out;
+}
+@keyframes pulse {
+0% { transform: scale(0); opacity: 1; }
+100% { transform: scale(1.5); opacity: 0; }
+}
 
-        /* General Page Styling */
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 850px; position: relative; }
-        
-        #loginSection { max-width: 400px; margin: 0 auto; text-align: center; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
-        
-        button { width: 100%; padding: 14px; background: #004a99; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 18px; margin-top: 10px; position: relative; display: flex; align-items: center; justify-content: center; min-height: 50px; transition: 0.3s; }
-        button:hover { background: #003366; }
-        .spinner { display: none; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .loading .btn-text { display: none; }
-        .loading .spinner { display: block; }
-        .loading { pointer-events: none; opacity: 0.8; }
+/* General Page Styling */
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+.card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 850px; position: relative; }
 
-        /* COMPACTED RESULT TEMPLATE */
-        #pdfArea { 
-            padding: 25px; background: white !important; border: 5px double #004a99; 
-            margin: 0 auto; position: relative; min-height: 950px; width: 100%;
-            box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;
-            -webkit-user-select: none; user-select: none;
-        }
+#loginSection { max-width: 400px; margin: 0 auto; text-align: center; }
+input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
+button { width: 100%; padding: 14px; background: #004a99; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 18px; margin-top: 10px; position: relative; display: flex; align-items: center; justify-content: center; min-height: 50px; transition: 0.3s; }
+button:hover { background: #003366; }
+.spinner { display: none; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading .btn-text { display: none; }
+.loading .spinner { display: block; }
+.loading { pointer-events: none; opacity: 0.8; }
 
-        #pdfArea::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; height: 70%; background-image: url('./assets/logo.webp'); background-repeat: no-repeat; background-position: center; background-size: contain; opacity: 0.08; z-index: 0; pointer-events: none; }
-        .unofficial-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 70px; color: rgba(255, 0, 0, 0.12); font-weight: bold; z-index: 10; pointer-events: none; white-space: nowrap; display: none; }
-        .blurred { filter: blur(20px); pointer-events: none; }
-        
-        .report-header { display: flex; align-items: center; border-bottom: 2px solid #004a99; padding-bottom: 10px; margin-bottom: 12px; position: relative; z-index: 1; }
-        .school-logo { width: 100px; height: auto; flex-shrink: 0; }
-        .header-text { flex-grow: 1; text-align: center; padding-right: 100px; }
-        
-        /* THE STYLED CURSIVE HEADING */
-        .school-name { font-family: 'Great Vibes', cursive; font-size: 42px; color: #004a99; margin: 0; font-weight: normal; }
-        
-        .motto { font-style: italic; font-weight: bold; font-size: 14px; margin: 0; color: #333; }
-        .address { font-size: 11px; font-weight: bold; color: #444; margin: 1px 0; }
-        
-        .student-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; border: 1px solid #000; padding: 12px; background: #fafafa; position: relative; z-index: 1; }
-        .info-item { font-size: 13px; border-bottom: 1px solid #eee; padding: 3px 0; }
-        .info-label { font-weight: bold; color: #004a99; }
+/* COMPACTED RESULT TEMPLATE */
+#pdfArea {
+padding: 25px; background: white !important; border: 5px double #004a99;
+margin: 0 auto; position: relative; min-height: 950px; width: 100%;
+box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden;
+-webkit-user-select: none; user-select: none;
+}
 
-        .result-table { width: 100%; border-collapse: collapse; margin-top: 5px; position: relative; z-index: 1; }
-        .result-table th, .result-table td { border: 1px solid #000; padding: 8px; text-align: left; font-size: 13px; }
-        .result-table th { background: #eef2f7; color: #004a99; }
-        
-        .bottom-wrap { display: flex; margin-top: 15px; gap: 10px; position: relative; z-index: 1; }
-        .comments-table { width: 55%; border-collapse: collapse; }
-        .comments-table td { border: 1px solid #000; padding: 8px; vertical-align: top; font-size: 12px; height: 55px; line-height: 1.3; }
-        .summary-table { width: 45%; border-collapse: collapse; margin-left: auto; }
-        .summary-table td { border: 1px solid #000; padding: 8px; font-weight: bold; font-size: 13px; }
+#pdfArea::before { content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; height: 70%; background-image: url('./assets/logo.webp'); background-repeat: no-repeat; background-position: center; background-size: contain; opacity: 0.08; z-index: 0; pointer-events: none; }
 
-        .footer { margin-top: auto; padding-top: 20px; display: flex; justify-content: space-between; align-items: flex-end; position: relative; z-index: 1; }
-        .sig-space { text-align: center; width: 180px; }
-        .sig-line { border-top: 2px solid #000; margin-bottom: 3px; }
-        .timestamp { font-size: 10px; color: #777; font-style: italic; }
+.unofficial-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); font-size: 70px; color: rgba(255, 0, 0, 0.12); font-weight: bold; z-index: 10; pointer-events: none; white-space: nowrap; display: none; }
+.blurred { filter: blur(20px); pointer-events: none; }
+.report-header { display: flex; align-items: center; border-bottom: 2px solid #004a99; padding-bottom: 10px; margin-bottom: 12px; position: relative; z-index: 1; }
+.school-logo { width: 100px; height: auto; flex-shrink: 0; }
+.header-text { flex-grow: 1; text-align: center; padding-right: 100px; }
+.school-name { font-family: 'Great Vibes', cursive; font-size: 42px; color: #004a99; margin: 0; font-weight: normal; }
+.motto { font-style: italic; font-weight: bold; font-size: 14px; margin: 0; color: #333; }
+.address { font-size: 11px; font-weight: bold; color: #444; margin: 1px 0; }
+.student-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; border: 1px solid #000; padding: 12px; background: #fafafa; position: relative; z-index: 1; }
+.info-item { font-size: 13px; border-bottom: 1px solid #eee; padding: 3px 0; }
+.info-label { font-weight: bold; color: #004a99; }
 
-        .action-btns { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
-        #msg { text-align: center; font-weight: bold; margin-top: 20px; font-size: 16px; }
+.result-table { width: 100%; border-collapse: collapse; margin-top: 5px; position: relative; z-index: 1; }
+.result-table th, .result-table td { border: 1px solid #000; padding: 8px; text-align: left; font-size: 13px; }
+.result-table th { background: #eef2f7; color: #004a99; }
+.bottom-wrap { display: flex; margin-top: 15px; gap: 10px; position: relative; z-index: 1; }
+.comments-table { width: 55%; border-collapse: collapse; }
+.comments-table td { border: 1px solid #000; padding: 8px; vertical-align: top; font-size: 12px; height: 55px; line-height: 1.3; }
+.summary-table { width: 45%; border-collapse: collapse; margin-left: auto; }
+.summary-table td { border: 1px solid #000; padding: 8px; font-weight: bold; font-size: 13px; }
 
-        @media screen and (max-width: 600px) {
-            #pdfArea { width: 800px; transform: scale(0.45); transform-origin: top left; margin-bottom: -500px; }
-            body.is-sss #pdfArea { transform: scale(0.42); margin-bottom: -550px; }
-            .card { overflow-x: auto; padding: 15px; }
-            .header-text { padding-right: 0; }
-        }
-    </style>
+.footer { margin-top: auto; padding-top: 20px; display: flex; justify-content: space-between; align-items: flex-end; position: relative; z-index: 1; }
+.sig-space { text-align: center; width: 180px; }
+.sig-line { border-top: 2px solid #000; margin-bottom: 3px; }
+.timestamp { font-size: 10px; color: #777; font-style: italic; }
+
+.action-btns { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
+#msg { text-align: center; font-weight: bold; margin-top: 20px; font-size: 16px; }
+
+/* FIX FOR PC FORMAT DOWNLOAD ON MOBILE */
+.canvas-clone {
+    position: absolute !important;
+    left: -9999px !important;
+    top: 0 !important;
+    width: 850px !important; 
+    transform: none !important;
+    margin: 0 !important;
+}
+
+@media screen and (max-width: 600px) {
+#pdfArea { width: 800px; transform: scale(0.45); transform-origin: top left; margin-bottom: -500px; }
+body.is-sss #pdfArea { transform: scale(0.42); margin-bottom: -550px; }
+.card { overflow-x: auto; padding: 15px; }
+.header-text { padding-right: 0; }
+}
+</style>
 </head>
 <body>
 
-    <div id="preloader">
-        <div class="pulse-loader"></div>
-        <p style="color:#004a99; font-weight:bold; margin-top:20px; letter-spacing:2px;">SECURE ACCESS...</p>
-    </div>
+<div id="preloader">
+<div class="pulse-loader"></div>
+<p style="color:#004a99; font-weight:bold; margin-top:20px; letter-spacing:2px;">SECURE ACCESS...</p>
+</div>
 
-    <div class="card">
-        <div id="loginSection">
-            <img src="./assets/logo.webp" style="width: 120px;" onerror="this.src='https://wordpress.com'">
-            <h3 style="color: #004a99;">Students Result Portal</h3>
-            <input type="text" id="sid" placeholder="Student ID (GT/...)">
-            <select id="yearSelect">
-                <option value="">Select Session</option>
-                <option value="2025/2026">2025/2026</option>
-            </select>
-            <select id="classSelect" onchange="toggleDept()">
-                <option value="">Select Class</option>
-                <option value="JSS 1">JSS 1</option><option value="JSS 2">JSS 2</option><option value="JSS 3">JSS 3</option>
-                <option value="SSS 1">SSS 1</option><option value="SSS 2">SSS 2</option><option value="SSS 3">SSS 3</option>
-            </select>
-            <div id="deptDiv" style="display:none;">
-                <select id="deptSelect">
-                    <option value="">Select Department</option>
-                    <option value="Science">Science</option><option value="Art">Art</option><option value="Commerce">Commerce</option>
-                </select>
-            </div>
-            <input type="password" id="pin" placeholder="Access PIN">
-            <button id="checkBtn" onclick="check()">
-                <span class="btn-text">Check Result</span>
-                <div class="spinner"></div>
-            </button>
-        </div>
+<div class="card">
+<div id="loginSection">
+<img src="./assets/logo.webp" style="width: 120px;" onerror="this.src='https://wordpress.com'">
+<h3 style="color: #004a99;">Students Result Portal</h3>
+<input type="text" id="sid" placeholder="Student ID (GT/...)">
+<select id="yearSelect">
+<option value="">Select Session</option>
+<option value="2025/2026">2025/2026</option>
+</select>
+<select id="classSelect" onchange="toggleDept()">
+<option value="">Select Class</option>
+<option value="JSS 1">JSS 1</option><option value="JSS 2">JSS 2</option><option value="JSS 3">JSS 3</option>
+<option value="SSS 1">SSS 1</option><option value="SSS 2">SSS 2</option><option value="SSS 3">SSS 3</option>
+</select>
+<div id="deptDiv" style="display:none;">
+<select id="deptSelect">
+<option value="">Select Department</option>
+<option value="Science">Science</option><option value="Art">Art</option><option value="Commerce">Commerce</option>
+</select>
+</div>
+<input type="password" id="pin" placeholder="Access PIN">
+<button id="checkBtn" onclick="check()">
+<span class="btn-text">Check Result</span>
+<div class="spinner"></div>
+</button>
+</div>
 
-        <div id="resultSection" style="display:none;">
-            <div id="pdfArea">
-                <div class="unofficial-overlay">UNOFFICIAL COPY</div>
-                
-                <div class="report-header">
-                    <img class="school-logo" src="./assets/logo.webp" onerror="this.src='https://wordpress.com'">
-                    <div class="header-text">
-                        <h1 class="school-name">Go-Tegs International School</h1>
-                        <div class="motto">Motto: Training the Leaders of Tomorrow</div>
-                        <div class="address">15, Ayesanmi Street, Pipeline B/Stop, Isheri Olofin, Alimosho L.G.A Lagos, Nigeria</div>
-                        <div class="address">Tel: 08066525319, 08066680932</div>
-                    </div>
-                </div>
+<div id="resultSection" style="display:none;">
+<div id="pdfArea">
+<div class="unofficial-overlay">UNOFFICIAL COPY</div>
+<div class="report-header">
+<img class="school-logo" src="./assets/logo.webp" onerror="this.src='https://wordpress.com'">
+<div class="header-text">
+<h1 class="school-name">Go-Tegs International School</h1>
+<div class="motto">Motto: Training the Leaders of Tomorrow</div>
+<div class="address">15, Ayesanmi Street, Pipeline B/Stop, Isheri Olofin, Alimosho L.G.A Lagos, Nigeria</div>
+<div class="address">Tel: 08066525319, 08066680932</div>
+</div>
+</div>
 
-                <div id="dispTerm" style="font-weight:bold; font-style:italic; text-align:center; margin-bottom: 10px; color:#004a99; text-transform: uppercase; font-size: 14px;"></div>
+<div id="dispTerm" style="font-weight:bold; font-style:italic; text-align:center; margin-bottom: 10px; color:#004a99; text-transform: uppercase; font-size: 14px;"></div>
 
-                <div class="student-info-grid">
-                    <div class="info-item"><span class="info-label">Name:</span> <span id="dispName"></span></div>
-                    <div class="info-item"><span class="info-label">School Opened:</span> <span id="dispOpened"></span></div>
-                    <div class="info-item"><span class="info-label">Date of Birth:</span> <span id="dispDob"></span></div>
-                    <div class="info-item"><span class="info-label">Times Present:</span> <span id="dispPresent"></span></div>
-                    <div class="info-item"><span class="info-label">Class:</span> <span id="dispClass"></span></div>
-                    <div class="info-item"><span class="info-label">Times Absent:</span> <span id="dispAbsent"></span></div>
-                </div>
+<div class="student-info-grid">
+<div class="info-item"><span class="info-label">Name:</span> <span id="dispName"></span></div>
+<div class="info-item"><span class="info-label">School Opened:</span> <span id="dispOpened"></span></div>
+<div class="info-item"><span class="info-label">Date of Birth:</span> <span id="dispDob"></span></div>
+<div class="info-item"><span class="info-label">Times Present:</span> <span id="dispPresent"></span></div>
+<div class="info-item"><span class="info-label">Class:</span> <span id="dispClass"></span></div>
+<div class="info-item"><span class="info-label">Times Absent:</span> <span id="dispAbsent"></span></div>
+</div>
 
-                <table class="result-table">
-                    <thead>
-                        <tr>
-                            <th>Subject</th>
-                            <th style="text-align:center;">Score (%)</th>
-                            <th style="text-align:center;">Grade</th>
-                            <th style="text-align:center;">Comments</th>
-                        </tr>
-                    </thead>
-                    <tbody id="resBody"></tbody>
-                </table>
+<table class="result-table">
+<thead>
+<tr>
+<th>Subject</th>
+<th style="text-align:center;">Score (%)</th>
+<th style="text-align:center;">Grade</th>
+<th style="text-align:center;">Comments</th>
+</tr>
+</thead>
+<tbody id="resBody"></tbody>
+</table>
 
-                <div class="bottom-wrap">
-                    <table class="comments-table">
-                        <tr><td><strong>Class Teacher's Remark:</strong><br><span id="dispTeacher"></span></td></tr>
-                        <tr><td><strong>Principal's Remark:</strong><br><span id="dispPrincipal"></span></td></tr>
-                    </table>
-                    <table class="summary-table">
-                        <tr><td>Total Mark Obtainable</td><td id="resObtainable" style="text-align:center;"></td></tr>
-                        <tr><td>Total Mark Obtained</td><td id="resTotal" style="text-align:center;"></td></tr>
-                        <tr><td>Mean Percentage</td><td id="resMean" style="text-align:center;"></td></tr>
-                        <tr><td>Overall Grade</td><td id="resGrade" style="text-align:center;"></td></tr>
-                    </table>
-                </div>
+<div class="bottom-wrap">
+<table class="comments-table">
+<tr><td><strong>Class Teacher's Remark:</strong><br><span id="dispTeacher"></span></td></tr>
+<tr><td><strong>Principal's Remark:</strong><br><span id="dispPrincipal"></span></td></tr>
+</table>
+<table class="summary-table">
+<tr><td>Total Mark Obtainable</td><td id="resObtainable" style="text-align:center;"></td></tr>
+<tr><td>Total Mark Obtained</td><td id="resTotal" style="text-align:center;"></td></tr>
+<tr><td>Mean Percentage</td><td id="resMean" style="text-align:center;"></td></tr>
+<tr><td>Overall Grade</td><td id="resGrade" style="text-align:center;"></td></tr>
+</table>
+</div>
 
-                <div class="footer">
-                    <div class="timestamp" id="dispTime"></div>
-                    <div class="sig-space">
-                        <img id="sigImg" src="./assets/signature.png" style="width: 120px; display: block; margin-left: 30px; margin-bottom: 2px; position: relative; z-index: 1;" onerror="this.style.display='none'">
-                        <div class="sig-line"></div>
-                        <strong style="text-transform: uppercase; font-size: 12px;">School Principal</strong>
-                    </div>
-                </div>
-            </div>
-            <div class="action-btns">
-                <button onclick="downloadPDF()">📥 Download Result PDF</button>
-                <button onclick="location.reload()" style="background:#666;">Check Another</button>
-            </div>
-        </div>
-        <p id="msg"></p>
-    </div>
+<div class="footer">
+<div class="timestamp" id="dispTime"></div>
+<div class="sig-space">
+<img id="sigImg" src="./assets/signature.png" style="width: 120px; display: block; margin-left: 30px; margin-bottom: 2px; position: relative; z-index: 1;" onerror="this.style.display='none'">
+<div class="sig-line"></div>
+<strong style="text-transform: uppercase; font-size: 12px;">School Principal</strong>
+</div>
+</div>
+</div>
+<div class="action-btns">
+<button onclick="downloadPDF()">📥 Download Result PDF</button>
+<button onclick="location.reload()" style="background:#666;">Check Another</button>
+</div>
+</div>
 
-    <footer id="adminFooter" style="margin-top: 40px; text-align: center;">
-        <p style="color: #666; font-size: 11px; margin-bottom: 5px; font-weight: bold;">Do not Tap</p>
-        <a href="admin.html" style="color: #dc2626; font-size: 12px; text-decoration: none; font-weight: bold; border: 1px solid #dc2626; padding: 5px 10px; border-radius: 4px; display: inline-block; transition: 0.3s;" onmouseover="this.style.background='#dc2626'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='#dc2626';">
-            ⚠️ ADMIN ACCESS ONLY
-        </a>
-    </footer>
+<p id="msg"></p>
+</div>
 
-    <script>
-        // --- EDIT THIS LINE TO CHANGE THE TERM ---
-        const CURRENT_TERM = "Second Term Report"; 
+<footer id="adminFooter" style="margin-top: 40px; text-align: center;">
+<p style="color: #666; font-size: 11px; margin-bottom: 5px; font-weight: bold;">Do not Tap</p>
+<a href="admin.html" style="color: #dc2626; font-size: 12px; text-decoration: none; font-weight: bold; border: 1px solid #dc2626; padding: 5px 10px; border-radius: 4px; display: inline-block; transition: 0.3s;" onmouseover="this.style.background='#dc2626'; this.style.color='white';" onmouseout="this.style.background='transparent'; this.style.color='#dc2626';">
+⚠️ ADMIN ACCESS ONLY
+</a>
+</footer>
 
-        // 3-SECOND INITIAL PRELOADER
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                document.getElementById('preloader').style.display = 'none';
-            }, 3000);
+<script>
+const CURRENT_TERM = "Second Term Report";
+
+window.addEventListener('load', () => {
+setTimeout(() => {
+document.getElementById('preloader').style.display = 'none';
+}, 3000);
+});
+
+const subjectNames = {
+maths_score: "Mathematics", english_score: "English Language", physics_score: "Physics", chem_score: "Chemistry", bio_score: "Biology", fmath_score: "Further Mathematics", civic_score: "Civic Education", govt_score: "Government", econs_score: "Economics", markt_score: "Marketing", dp_score: "Data Processing", comme_score: "Commerce", agric_score: "Agricultural Science", crs_score: "C.R.S", finacc_score: "Financial Accounting", litineng_score: "Literature in English", philo_score: "Philosophy", geo_score: "Geography", basic_science_score: "Basic Science", basic_tech_score: "Basic Technology", bus_stud_score: "Business Studies", cmp_score: "Computer Studies", phe_score: "P.H.E", cca_score: "C.C.A", social_stud_score: "Social Studies", home_econs_score: "Home Economics", yoruba_score: "Yoruba", french_score: "French", sec_edu_score: "Security Education", lit_score: "Literature", music_score: "Music", dic_score: "Diction", history_score: "History", catering_c_p_score: "Catering and Craft Practice"
+};
+
+function getGradeInfo(score) {
+if (score >= 75) return { g: "A1", c: "Excellent" };
+if (score >= 70) return { g: "B2", c: "V.Good" };
+if (score >= 65) return { g: "B3", c: "Good" };
+if (score >= 60) return { g: "C4", c: "Credit" };
+if (score >= 55) return { g: "C5", c: "Credit" };
+if (score >= 50) return { g: "C6", c: "Pass" };
+if (score >= 45) return { g: "D7", c: "Pass" };
+if (score >= 40) return { g: "E8", c: "Weak" };
+return { g: "F9", c: "Poor" };
+}
+
+function getPrincipalComment(mean) {
+if (mean >= 75) return "An outstanding result. Keep the flag flying high.";
+if (mean >= 60) return "A very good performance. Keep it up.";
+if (mean >= 45) return "A fair result, but there is room for much improvement.";
+return "Poor performance. You need to be more focused and work harder.";
+}
+
+async function check() {
+const sid = document.getElementById('sid').value;
+const yr = document.getElementById('yearSelect').value;
+const cls = document.getElementById('classSelect').value;
+const dept = document.getElementById('deptSelect').value;
+const pin = document.getElementById('pin').value;
+const msg = document.getElementById('msg');
+const btn = document.getElementById('checkBtn');
+
+if(!sid || !yr || !cls || !pin || (cls.includes("SSS") && !dept)) {
+msg.style.color = "#d97706"; msg.innerText = "⚠️ Please fill all fields"; return;
+}
+
+btn.classList.add('loading');
+msg.style.color = "#004a99";
+msg.innerText = "⏳ Connecting to Go-Tegs Database...";
+await new Promise(r => setTimeout(r, 1200));
+msg.innerText = "🔍 Verifying Credentials...";
+await new Promise(r => setTimeout(r, 1200));
+msg.innerText = "📋 Generating Report Card...";
+await new Promise(r => setTimeout(r, 1000));
+
+try {
+const res = await fetch(`/api/verify?student_id=${sid}&year=${yr}&class=${cls}&dept=${dept}&pin=${pin}`);
+const data = await res.json();
+
+if (res.status !== 200) {
+btn.classList.remove('loading');
+msg.style.color = "red"; msg.innerText = "❌ " + data.error;
+} else {
+window.isViewingResult = true;
+document.getElementById('loginSection').style.display = 'none';
+document.getElementById('resultSection').style.display = 'block';
+document.getElementById('adminFooter').style.display = 'none';
+document.querySelector('.unofficial-overlay').style.display = data.is_paid ? 'none' : 'block';
+
+document.getElementById('dispTerm').innerText = `${yr} ${CURRENT_TERM}`;
+document.getElementById('dispName').innerText = data.full_name;
+document.getElementById('dispDob').innerText = data.dob || "---";
+document.getElementById('dispClass').innerText = cls + (dept ? ` (${dept})` : "");
+document.getElementById('dispOpened').innerText = data.opened || "0";
+document.getElementById('dispPresent').innerText = data.present || "0";
+document.getElementById('dispAbsent').innerText = (data.opened || 0) - (data.present || 0);
+document.getElementById('dispTeacher').innerText = data.teacher_remark || "---";
+
+let rows = ""; let total = 0;
+data.scores.forEach(s => {
+total += s.score;
+const info = getGradeInfo(s.score);
+rows += `<tr>
+<td>${subjectNames[s.subject] || s.subject}</td>
+<td style="text-align:center;">${s.score}</td>
+<td style="text-align:center; font-weight:bold;">${info.g}</td>
+<td style="text-align:center; font-style:italic; font-size:11px;">${info.c}</td>
+</tr>`;
+});
+const count = data.scores.length;
+const mean = (total / count).toFixed(1);
+
+document.getElementById('resBody').innerHTML = rows;
+document.getElementById('resObtainable').innerText = count * 100;
+document.getElementById('resTotal').innerText = total;
+document.getElementById('resMean').innerText = mean + "%";
+document.getElementById('resGrade').innerText = getGradeInfo(mean).g;
+document.getElementById('dispPrincipal').innerText = getPrincipalComment(parseFloat(mean));
+document.getElementById('dispTime').innerText = "Generated: " + new Date().toLocaleString();
+msg.innerText = "✅ Success";
+}
+} catch (e) {
+btn.classList.remove('loading');
+msg.innerText = "❌ Connection Error.";
+}
+}
+
+async function downloadPDF() {
+    const originalArea = document.getElementById('pdfArea');
+    const studentName = document.getElementById('dispName').innerText || "Student";
+    const btn = document.querySelector('.action-btns button');
+
+    const originalText = btn.innerText;
+    btn.innerText = "⏳ Preparing PC Format...";
+    btn.disabled = true;
+
+    // Create a hidden clone to render at Desktop size
+    const clone = originalArea.cloneNode(true);
+    clone.classList.add('canvas-clone');
+    clone.style.display = "flex"; 
+    document.body.appendChild(clone);
+
+    try {
+        const canvas = await html2canvas(clone, { 
+            scale: 2, 
+            useCORS: true, 
+            backgroundColor: "#ffffff",
+            logging: false,
+            width: 850 
         });
 
-        const subjectNames = {
-            maths_score: "Mathematics", english_score: "English Language", physics_score: "Physics", chem_score: "Chemistry", bio_score: "Biology", fmath_score: "Further Mathematics", civic_score: "Civic Education", govt_score: "Government", econs_score: "Economics", markt_score: "Marketing", dp_score: "Data Processing", comme_score: "Commerce", agric_score: "Agricultural Science", crs_score: "C.R.S", finacc_score: "Financial Accounting", litineng_score: "Literature in English", philo_score: "Philosophy", geo_score: "Geography", basic_science_score: "Basic Science", basic_tech_score: "Basic Technology", bus_stud_score: "Business Studies", cmp_score: "Computer Studies", phe_score: "P.H.E", cca_score: "C.C.A", social_stud_score: "Social Studies", home_econs_score: "Home Economics", yoruba_score: "Yoruba", french_score: "French", sec_edu_score: "Security Education", lit_score: "Literature", music_score: "Music", dic_score: "Diction", history_score: "History", catering_c_p_score: "Catering and Craft Practice"
-        };
+        const imgData = canvas.toDataURL('image/jpeg', 1.0);
+        const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        
+        const ratio = Math.min(pdfWidth / canvas.width, pdfHeight / canvas.height);
+        const finalWidth = canvas.width * ratio;
+        const finalHeight = canvas.height * ratio;
 
-        function getGradeInfo(score) {
-            if (score >= 75) return { g: "A1", c: "Excellent" };
-            if (score >= 70) return { g: "B2", c: "V.Good" };
-            if (score >= 65) return { g: "B3", c: "Good" };
-            if (score >= 60) return { g: "C4", c: "Credit" };
-            if (score >= 55) return { g: "C5", c: "Credit" };
-            if (score >= 50) return { g: "C6", c: "Pass" };
-            if (score >= 45) return { g: "D7", c: "Pass" };
-            if (score >= 40) return { g: "E8", c: "Weak" };
-            return { g: "F9", c: "Poor" };
-        }
+        pdf.addImage(imgData, 'JPEG', (pdfWidth - finalWidth) / 2, 5, finalWidth, finalHeight);
+        pdf.save(`${studentName}_GoTegs_Result.pdf`);
+    } catch (e) { 
+        alert("PDF Generation Error"); 
+    } finally { 
+        document.body.removeChild(clone);
+        btn.innerText = originalText; 
+        btn.disabled = false; 
+    }
+}
 
-        function getPrincipalComment(mean) {
-            if (mean >= 75) return "An outstanding result. Keep the flag flying high.";
-            if (mean >= 60) return "A very good performance. Keep it up.";
-            if (mean >= 45) return "A fair result, but there is room for much improvement.";
-            return "Poor performance. You need to be more focused and work harder.";
-        }
+function toggleDept() {
+const cls = document.getElementById('classSelect').value;
+document.getElementById('deptDiv').style.display = cls.includes("SSS") ? "block" : "none";
+if(cls.includes("SSS")) document.body.classList.add('is-sss');
+else document.body.classList.remove('is-sss');
+}
+</script>
 
-        async function check() {
-            const sid = document.getElementById('sid').value;
-            const yr = document.getElementById('yearSelect').value;
-            const cls = document.getElementById('classSelect').value;
-            const dept = document.getElementById('deptSelect').value;
-            const pin = document.getElementById('pin').value;
-            const msg = document.getElementById('msg');
-            const btn = document.getElementById('checkBtn');
-
-            if(!sid || !yr || !cls || !pin || (cls.includes("SSS") && !dept)) { 
-                msg.style.color = "#d97706"; msg.innerText = "⚠️ Please fill all fields"; return; 
-            }
-
-            btn.classList.add('loading');
-            msg.style.color = "#004a99";
-            
-            // LOADING MESSAGES
-            msg.innerText = "⏳ Connecting to Go-Tegs Database...";
-            await new Promise(r => setTimeout(r, 1200));
-            msg.innerText = "🔍 Verifying Credentials...";
-            await new Promise(r => setTimeout(r, 1200));
-            msg.innerText = "📋 Generating Report Card...";
-            await new Promise(r => setTimeout(r, 1000));
-            
-            try {
-                const res = await fetch(`/api/verify?student_id=${sid}&year=${yr}&class=${cls}&dept=${dept}&pin=${pin}`);
-                const data = await res.json();
-
-                if (res.status !== 200) {
-                    btn.classList.remove('loading');
-                    msg.style.color = "red"; msg.innerText = "❌ " + data.error;
-                } else {
-                    window.isViewingResult = true; 
-                    document.getElementById('loginSection').style.display = 'none';
-                    document.getElementById('resultSection').style.display = 'block';
-                    document.getElementById('adminFooter').style.display = 'none';
-                    document.querySelector('.unofficial-overlay').style.display = data.is_paid ? 'none' : 'block';
-
-                    document.getElementById('dispTerm').innerText = `${yr} ${CURRENT_TERM}`;
-                    document.getElementById('dispName').innerText = data.full_name;
-                    document.getElementById('dispDob').innerText = data.dob || "---";
-                    document.getElementById('dispClass').innerText = cls + (dept ? ` (${dept})` : "");
-                    document.getElementById('dispOpened').innerText = data.opened || "0";
-                    document.getElementById('dispPresent').innerText = data.present || "0";
-                    document.getElementById('dispAbsent').innerText = (data.opened || 0) - (data.present || 0);
-                    document.getElementById('dispTeacher').innerText = data.teacher_remark || "---";
-
-                    let rows = ""; let total = 0;
-                    data.scores.forEach(s => {
-                        total += s.score;
-                        const info = getGradeInfo(s.score);
-                        rows += `<tr>
-                            <td>${subjectNames[s.subject] || s.subject}</td>
-                            <td style="text-align:center;">${s.score}</td>
-                            <td style="text-align:center; font-weight:bold;">${info.g}</td>
-                            <td style="text-align:center; font-style:italic; font-size:11px;">${info.c}</td>
-                        </tr>`;
-                    });
-                    
-                    const count = data.scores.length;
-                    const mean = (total / count).toFixed(1);
-                    
-                    document.getElementById('resBody').innerHTML = rows;
-                    document.getElementById('resObtainable').innerText = count * 100;
-                    document.getElementById('resTotal').innerText = total;
-                    document.getElementById('resMean').innerText = mean + "%";
-                    document.getElementById('resGrade').innerText = getGradeInfo(mean).g;
-                    document.getElementById('dispPrincipal').innerText = getPrincipalComment(parseFloat(mean));
-                    document.getElementById('dispTime').innerText = "Generated: " + new Date().toLocaleString();
-                    msg.innerText = "✅ Success";
-                }
-            } catch (e) { 
-                btn.classList.remove('loading');
-                msg.innerText = "❌ Connection Error."; 
-            }
-        }
-
-        async function downloadPDF() {
-            const element = document.getElementById('pdfArea');
-            const studentName = document.getElementById('dispName').innerText || "Student";
-            const btn = document.querySelector('.action-btns button');
-            const originalText = btn.innerText;
-            btn.innerText = "⏳ Resizing & Downloading...";
-            btn.disabled = true;
-
-            try {
-                const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
-                const imgData = canvas.toDataURL('image/jpeg', 1.0);
-                const pdf = new jspdf.jsPDF('p', 'mm', 'a4');
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = pdf.internal.pageSize.getHeight();
-                const ratio = Math.min(pdfWidth / canvas.width, pdfHeight / canvas.height);
-                const finalWidth = canvas.width * ratio;
-                const finalHeight = canvas.height * ratio;
-                pdf.addImage(imgData, 'JPEG', (pdfWidth - finalWidth) / 2, (pdfHeight - finalHeight) / 2, finalWidth, finalHeight);
-                pdf.save(`${studentName}_Result.pdf`);
-            } catch (e) { alert("PDF Error"); } 
-            finally { btn.innerText = originalText; btn.disabled = false; }
-        }
-
-        function toggleDept() {
-            const cls = document.getElementById('classSelect').value;
-            document.getElementById('deptDiv').style.display = cls.includes("SSS") ? "block" : "none";
-            if(cls.includes("SSS")) document.body.classList.add('is-sss');
-            else document.body.classList.remove('is-sss');
-        }
-    </script>
 </body>
 </html>
