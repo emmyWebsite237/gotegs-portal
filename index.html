@@ -200,166 +200,173 @@
         </a>
     </footer>
 
-    <script>
-        // --- EDIT THIS LINE TO CHANGE THE TERM ---
-        const CURRENT_TERM = "Second Term Report"; 
+<script>
+    const CURRENT_TERM = "Second Term Report"; 
 
-        // 3-SECOND INITIAL PRELOADER
-        window.addEventListener('load', () => {
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            const loader = document.getElementById('preloader');
+            const wrapper = document.getElementById('mainWrapper');
+            loader.style.opacity = '0';
             setTimeout(() => {
-                document.getElementById('preloader').style.display = 'none';
-            }, 3000);
-        });
+                loader.style.display = 'none';
+                wrapper.style.opacity = '1';
+            }, 1000);
+        }, 3000);
+    });
 
-        const subjectNames = {
-            maths_score: "Mathematics", english_score: "English Language", physics_score: "Physics", chem_score: "Chemistry", bio_score: "Biology", fmath_score: "Further Mathematics", civic_score: "Civic Education", govt_score: "Government", econs_score: "Economics", markt_score: "Marketing", dp_score: "Data Processing", comme_score: "Commerce", agric_score: "Agricultural Science", crs_score: "C.R.S", finacc_score: "Financial Accounting", litineng_score: "Literature in English", philo_score: "Philosophy", geo_score: "Geography", basic_science_score: "Basic Science", basic_tech_score: "Basic Technology", bus_stud_score: "Business Studies", cmp_score: "Computer Studies", phe_score: "P.H.E", cca_score: "C.C.A", social_stud_score: "Social Studies", home_econs_score: "Home Economics", yoruba_score: "Yoruba", french_score: "French", sec_edu_score: "Security Education", lit_score: "Literature", music_score: "Music", dic_score: "Diction", history_score: "History", catering_c_p_score: "Catering and Craft Practice"
-        };
+    const subjectNames = {
+        maths_score: "Mathematics", english_score: "English Language", physics_score: "Physics", chem_score: "Chemistry", bio_score: "Biology", fmath_score: "Further Mathematics", civic_score: "Civic Education", govt_score: "Government", econs_score: "Economics", markt_score: "Marketing", dp_score: "Data Processing", comme_score: "Commerce", agric_score: "Agricultural Science", crs_score: "C.R.S", finacc_score: "Financial Accounting", litineng_score: "Literature in English", philo_score: "Philosophy", geo_score: "Geography", basic_science_score: "Basic Science", basic_tech_score: "Basic Technology", bus_stud_score: "Business Studies", cmp_score: "Computer Studies", phe_score: "P.H.E", cca_score: "C.C.A", social_stud_score: "Social Studies", home_econs_score: "Home Economics", yoruba_score: "Yoruba", french_score: "French", sec_edu_score: "Security Education", lit_score: "Literature", music_score: "Music", diction_score: "Diction", history_score: "History", catering_c_p_score: "Catering and Craft Practice", dic_score: "Diction"
+    };
 
-        function getGradeInfo(score) {
-            if (score >= 75) return { g: "A1", c: "Excellent" };
-            if (score >= 70) return { g: "B2", c: "V.Good" };
-            if (score >= 65) return { g: "B3", c: "Good" };
-            if (score >= 60) return { g: "C4", c: "Credit" };
-            if (score >= 55) return { g: "C5", c: "Credit" };
-            if (score >= 50) return { g: "C6", c: "Pass" };
-            if (score >= 45) return { g: "D7", c: "Pass" };
-            if (score >= 40) return { g: "E8", c: "Weak" };
-            return { g: "F9", c: "Poor" };
+    function getGradeInfo(score) {
+        if (score >= 75) return { g: "A1", c: "Excellent" };
+        if (score >= 70) return { g: "B2", c: "V.Good" };
+        if (score >= 65) return { g: "B3", c: "Good" };
+        if (score >= 60) return { g: "C4", c: "Credit" };
+        if (score >= 55) return { g: "C5", c: "Credit" };
+        if (score >= 50) return { g: "C6", c: "Pass" };
+        if (score >= 45) return { g: "D7", c: "Pass" };
+        if (score >= 40) return { g: "E8", c: "Weak" };
+        return { g: "F9", c: "Poor" };
+    }
+
+    async function check() {
+        const sid = document.getElementById('sid').value;
+        const yr = document.getElementById('yearSelect').value;
+        const cls = document.getElementById('classSelect').value;
+        const dept = document.getElementById('deptSelect').value;
+        const pin = document.getElementById('pin').value;
+        const msg = document.getElementById('msg');
+        const btn = document.getElementById('checkBtn');
+
+        if(!sid || !yr || !cls || !pin || (cls.includes("SSS") && !dept)) { 
+            msg.style.color = "#854d0e"; msg.innerText = "⚠️ Please fill all fields"; return; 
         }
 
-        function getPrincipalComment(mean) {
-            if (mean >= 75) return "An outstanding result. Keep the flag flying high.";
-            if (mean >= 60) return "A very good performance. Keep it up.";
-            if (mean >= 45) return "A fair result, but there is room for much improvement.";
-            return "Poor performance. You need to be more focused and work harder.";
-        }
+        btn.classList.add('loading');
+        msg.style.color = "#004a99";
+        
+        msg.innerText = "⏳ Connecting to Database...";
+        await new Promise(r => setTimeout(r, 1200));
+        msg.innerText = "🔍 Verifying Credentials...";
+        await new Promise(r => setTimeout(r, 1200));
+        msg.innerText = "📋 Generating Report Card...";
+        await new Promise(r => setTimeout(r, 1000));
+        
+        try {
+            const res = await fetch(`/api/verify?student_id=${sid}&year=${yr}&class=${cls}&dept=${dept}&pin=${pin}`);
+            const data = await res.json();
 
-        async function check() {
-            const sid = document.getElementById('sid').value;
-            const yr = document.getElementById('yearSelect').value;
-            const cls = document.getElementById('classSelect').value;
-            const dept = document.getElementById('deptSelect').value;
-            const pin = document.getElementById('pin').value;
-            const msg = document.getElementById('msg');
-            const btn = document.getElementById('checkBtn');
-
-            if(!sid || !yr || !cls || !pin || (cls.includes("SSS") && !dept)) { 
-                msg.style.color = "#d97706"; msg.innerText = "⚠️ Please fill all fields"; return; 
-            }
-
-            btn.classList.add('loading');
-            msg.style.color = "#004a99";
-            
-            // LOADING MESSAGES
-            msg.innerText = "⏳ Connecting to Go-Tegs Database...";
-            await new Promise(r => setTimeout(r, 1200));
-            msg.innerText = "🔍 Verifying Credentials...";
-            await new Promise(r => setTimeout(r, 1200));
-            msg.innerText = "📋 Generating Report Card...";
-            await new Promise(r => setTimeout(r, 1000));
-            
-            try {
-                const res = await fetch(`/api/verify?student_id=${sid}&year=${yr}&class=${cls}&dept=${dept}&pin=${pin}`);
-                const data = await res.json();
-
-                if (res.status !== 200) {
-                    btn.classList.remove('loading');
-                    msg.style.color = "red"; msg.innerText = "❌ " + data.error;
-                } else {
-                    window.isViewingResult = true; 
-                    document.getElementById('loginSection').style.display = 'none';
-                    document.getElementById('resultSection').style.display = 'block';
-                    document.getElementById('adminFooter').style.display = 'none';
-                    document.querySelector('.unofficial-overlay').style.display = data.is_paid ? 'none' : 'block';
-
-                    document.getElementById('dispTerm').innerText = `${yr} ${CURRENT_TERM}`;
-                    document.getElementById('dispName').innerText = data.full_name;
-                    document.getElementById('dispDob').innerText = data.dob || "---";
-                    document.getElementById('dispClass').innerText = cls + (dept ? ` (${dept})` : "");
-                    document.getElementById('dispOpened').innerText = data.opened || "0";
-                    document.getElementById('dispPresent').innerText = data.present || "0";
-                    document.getElementById('dispAbsent').innerText = (data.opened || 0) - (data.present || 0);
-                    document.getElementById('dispTeacher').innerText = data.teacher_remark || "---";
-
-                    let rows = ""; let total = 0;
-                    data.scores.forEach(s => {
-                        total += s.score;
-                        const info = getGradeInfo(s.score);
-                        rows += `<tr>
-                            <td>${subjectNames[s.subject] || s.subject}</td>
-                            <td style="text-align:center;">${s.score}</td>
-                            <td style="text-align:center; font-weight:bold;">${info.g}</td>
-                            <td style="text-align:center; font-style:italic; font-size:11px;">${info.c}</td>
-                        </tr>`;
-                    });
-                    
-                    const count = data.scores.length;
-                    const mean = (total / count).toFixed(1);
-                    
-                    document.getElementById('resBody').innerHTML = rows;
-                    document.getElementById('resObtainable').innerText = count * 100;
-                    document.getElementById('resTotal').innerText = total;
-                    document.getElementById('resMean').innerText = mean + "%";
-                    document.getElementById('resGrade').innerText = getGradeInfo(mean).g;
-                    document.getElementById('dispPrincipal').innerText = getPrincipalComment(parseFloat(mean));
-                    document.getElementById('dispTime').innerText = "Generated: " + new Date().toLocaleString();
-                    msg.innerText = "✅ Success";
-                }
-            } catch (e) { 
+            if (res.status !== 200) {
                 btn.classList.remove('loading');
-                msg.innerText = "❌ Connection Error."; 
-            }
-        }
+                msg.style.color = "#991b1b"; msg.innerText = "❌ " + data.error;
+            } else {
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('resultSection').style.display = 'block';
+                
+                document.getElementById('dispTerm').innerText = `${yr} ${CURRENT_TERM}`;
+                document.getElementById('dispName').innerText = data.full_name;
+                document.getElementById('dispDob').innerText = data.dob || "---";
+                document.getElementById('dispClass').innerText = cls + (dept ? ` (${dept})` : "");
+                document.getElementById('dispOpened').innerText = data.opened || "0";
+                document.getElementById('dispPresent').innerText = data.present || "0";
+                document.getElementById('dispAbsent').innerText = (data.opened || 0) - (data.present || 0);
+                document.getElementById('dispTeacher').innerText = data.teacher_remark || "---";
+                document.getElementById('dispPrincipal').innerText = data.principal_remark || "An encouraging performance. Keep it up.";
 
-async function downloadPDF() {
-            const originalArea = document.getElementById('pdfArea');
-            const studentName = document.getElementById('dispName').innerText || "Student";
-            const btn = document.getElementById('dlBtn');
-            
-            btn.innerHTML = "⌛ Preparing File...";
-            btn.disabled = true;
-
-            const clone = originalArea.cloneNode(true);
-            clone.style.width = "850px"; 
-            clone.style.transform = "none"; 
-            clone.style.position = "fixed";
-            clone.style.top = "-10000px"; 
-            document.body.appendChild(clone);
-
-            try {
-                const canvas = await html2canvas(clone, { 
-                    scale: 3, 
-                    useCORS: true, 
-                    backgroundColor: "#ffffff" 
+                let rows = ""; let total = 0;
+                data.scores.forEach(s => {
+                    total += s.score;
+                    const info = getGradeInfo(s.score);
+                    rows += `<tr>
+                        <td>${subjectNames[s.subject] || s.subject}</td>
+                        <td style="text-align:center;">${s.score}</td>
+                        <td style="text-align:center; font-weight:bold;">${info.g}</td>
+                        <td style="text-align:center; font-style:italic; font-size:11px;">${info.c}</td>
+                    </tr>`;
                 });
                 
-                document.body.removeChild(clone); 
-
-                const imgData = canvas.toDataURL('image/jpeg', 1.0);
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = pdf.internal.pageSize.getHeight();
+                const count = data.scores.length;
+                const mean = (total / count).toFixed(1);
                 
-                const ratio = Math.min(pdfWidth / canvas.width, pdfHeight / canvas.height);
-                const finalWidth = canvas.width * ratio;
-                const finalHeight = canvas.height * ratio;
+                document.getElementById('resBody').innerHTML = rows;
+                document.getElementById('resObtainable').innerText = count * 100;
+                document.getElementById('resTotal').innerText = total;
+                document.getElementById('resMean').innerText = mean + "%";
+                document.getElementById('resGrade').innerText = getGradeInfo(mean).g;
+                document.getElementById('dispTime').innerText = "Generated: " + new Date().toLocaleString();
+            }
+        } catch (e) { 
+            btn.classList.remove('loading');
+            msg.innerText = "❌ Connection Error."; 
+        }
+    }
 
-                pdf.addImage(imgData, 'JPEG', (pdfWidth - finalWidth) / 2, 0, finalWidth, finalHeight);
-                pdf.save(`${studentName}_Result.pdf`);
+    // UPDATED PDF DOWNLOAD FUNCTION
+    async function downloadPDF() {
+        const element = document.getElementById('pdfArea');
+        const studentName = document.getElementById('dispName').innerText || "Student";
+        const downloadBtn = event.currentTarget;
+        
+        // Disable button while processing
+        downloadBtn.disabled = true;
+        downloadBtn.innerHTML = "⌛ Processing PDF...";
 
-            } catch (e) { alert("Download failed"); }
+        try {
+            // STEP 1: Capture the current style
+            const originalStyle = element.style.cssText;
             
-            btn.innerHTML = "📥 Download Result PDF";
-            btn.disabled = false;
-        }
+            // STEP 2: Force PC layout for capture (ignores mobile scaling)
+            element.style.transform = "none";
+            element.style.width = "850px"; // Standard PC width
+            element.style.position = "absolute";
+            element.style.left = "-10000px"; // Hide it from user view
+            element.style.top = "0";
+            document.body.appendChild(element);
 
-        function toggleDept() {
-            const cls = document.getElementById('classSelect').value;
-            document.getElementById('deptDiv').style.display = cls.includes("SSS") ? "block" : "none";
-            if(cls.includes("SSS")) document.body.classList.add('is-sss');
-            else document.body.classList.remove('is-sss');
-        }
-    </script>
+            // STEP 3: Generate Canvas
+            const canvas = await html2canvas(element, { 
+                scale: 3, // Higher scale for "PC quality" look
+                useCORS: true, 
+                backgroundColor: "#ffffff",
+                windowWidth: 850 // Force canvas to think it's a PC window
+            });
+
+            // STEP 4: Reset the element back to its mobile UI position
+            element.style.cssText = originalStyle;
+            document.querySelector('.card').insertBefore(element, document.querySelector('.action-btns'));
+
+            // STEP 5: Create PDF
+            const imgData = canvas.toDataURL('image/jpeg', 1.0);
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            
+            // Calculate height to maintain aspect ratio
+            const imgProps = pdf.getImageProperties(imgData);
+            const finalHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, finalHeight);
+            pdf.save(`${studentName}_Result.pdf`);
+
+            downloadBtn.innerHTML = "📥 Download Result PDF";
+            downloadBtn.disabled = false;
+
+        } catch (e) { 
+            console.error(e);
+            alert("PDF Generation failed. Please try again.");
+            downloadBtn.innerHTML = "📥 Download Result PDF";
+            downloadBtn.disabled = false;
+        } 
+    }
+
+    function toggleDept() {
+        const cls = document.getElementById('classSelect').value;
+        document.getElementById('deptDiv').style.display = cls.includes("SSS") ? "block" : "none";
+    }
+</script>
 </body>
 </html>
