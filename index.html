@@ -24,9 +24,35 @@ border-radius: 50%; animation: pulse 1.2s infinite ease-in-out;
 100% { transform: scale(1.5); opacity: 0; }
 }
 
-/* General Page Styling */
-body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-.card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 850px; position: relative; }
+/* General Page Styling with your requested Background & Hue Changes */
+body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background: url('./assets/background.jpg') no-repeat center center fixed;
+    background-size: cover;
+    margin: 0; 
+    padding: 20px; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    animation: hueRotateEffect 15s infinite alternate;
+}
+
+@keyframes hueRotateEffect {
+    0% { filter: hue-rotate(0deg); }
+    100% { filter: hue-rotate(40deg); }
+}
+
+.card { 
+    background: rgba(255, 255, 255, 0.85); /* Added transparency for glass effect */
+    backdrop-filter: blur(12px); /* Added blur effect */
+    -webkit-backdrop-filter: blur(12px);
+    padding: 30px; 
+    border-radius: 12px; 
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1); 
+    width: 100%; 
+    max-width: 850px; 
+    position: relative; 
+}
 
 #loginSection { max-width: 400px; margin: 0 auto; text-align: center; }
 input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
@@ -188,7 +214,7 @@ body.is-sss #pdfArea { transform: scale(0.42); margin-bottom: -550px; }
 </div>
 </div>
 <div class="action-btns">
-<button onclick="downloadPDF()">📥 Download Result PDF</button>
+<button id="mainDownloadBtn" onclick="downloadPDF()">📥 Download Result PDF</button>
 <button onclick="location.reload()" style="background:#666;">Check Another</button>
 </div>
 </div>
@@ -205,6 +231,7 @@ body.is-sss #pdfArea { transform: scale(0.42); margin-bottom: -550px; }
 
 <script>
 const CURRENT_TERM = "Second Term Report";
+let preRenderedPDF = null; // Variable to store the prepared PDF Blob
 
 window.addEventListener('load', () => {
 setTimeout(() => {
@@ -302,6 +329,9 @@ document.getElementById('resGrade').innerText = getGradeInfo(mean).g;
 document.getElementById('dispPrincipal').innerText = getPrincipalComment(parseFloat(mean));
 document.getElementById('dispTime').innerText = "Generated: " + new Date().toLocaleString();
 msg.innerText = "✅ Success";
+
+// TRIGGER AUTOMATIC PDF PRE-PREPARATION AS SOON AS DATA IS LOADED
+preparePDFFile();
 }
 } catch (e) {
 btn.classList.remove('loading');
@@ -309,16 +339,9 @@ msg.innerText = "❌ Connection Error.";
 }
 }
 
-async function downloadPDF() {
+// NEW FUNCTION: Prepares the PDF in the background before the user taps download
+async function preparePDFFile() {
     const originalArea = document.getElementById('pdfArea');
-    const studentName = document.getElementById('dispName').innerText || "Student";
-    const btn = document.querySelector('.action-btns button');
-
-    const originalText = btn.innerText;
-    btn.innerText = "⏳ Preparing PC Format...";
-    btn.disabled = true;
-
-    // Create a hidden clone to render at Desktop size
     const clone = originalArea.cloneNode(true);
     clone.classList.add('canvas-clone');
     clone.style.display = "flex"; 
@@ -343,14 +366,39 @@ async function downloadPDF() {
         const finalHeight = canvas.height * ratio;
 
         pdf.addImage(imgData, 'JPEG', (pdfWidth - finalWidth) / 2, 5, finalWidth, finalHeight);
-        pdf.save(`${studentName}_GoTegs_Result.pdf`);
+        
+        // Store the result as a Blob
+        preRenderedPDF = pdf.output('blob');
+        console.log("PDF Pre-prepared and ready for instant download.");
     } catch (e) { 
-        alert("PDF Generation Error"); 
+        console.error("PDF Pre-prep Error", e); 
     } finally { 
         document.body.removeChild(clone);
-        btn.innerText = originalText; 
-        btn.disabled = false; 
     }
+}
+
+async function downloadPDF() {
+    const studentName = document.getElementById('dispName').innerText || "Student";
+    const btn = document.getElementById('mainDownloadBtn');
+    
+    // If it's already ready, download instantly
+    if (preRenderedPDF) {
+        const url = URL.createObjectURL(preRenderedPDF);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${studentName}_GoTegs_Result.pdf`;
+        link.click();
+        URL.revokeObjectURL(url);
+        return;
+    }
+
+    // Fallback if user taps too quickly before pre-render finishes
+    btn.innerText = "⏳ Preparing...";
+    btn.disabled = true;
+    await preparePDFFile(); 
+    btn.disabled = false;
+    btn.innerText = "📥 Download Result PDF";
+    downloadPDF(); // Recursive call once ready
 }
 
 function toggleDept() {
