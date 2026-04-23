@@ -24,40 +24,63 @@ border-radius: 50%; animation: pulse 1.2s infinite ease-in-out;
 100% { transform: scale(1.5); opacity: 0; }
 }
 
-/* General Page Styling with your requested Background & Hue Changes */
+/* BACKGROUND LOGIC: 
+   Hue rotation is applied ONLY to the ::before element 
+   so it doesn't affect the colors of the card or text.
+*/
 body { 
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-    background: url('./assets/background.jpg') no-repeat center center fixed;
-    background-size: cover;
     margin: 0; 
     padding: 20px; 
     display: flex; 
     flex-direction: column; 
     align-items: center; 
-    animation: hueRotateEffect 15s infinite alternate;
+    min-height: 100vh;
+    overflow-x: hidden;
 }
 
-@keyframes hueRotateEffect {
+body::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: url('./assets/background.jpg') no-repeat center center fixed;
+    background-size: cover;
+    z-index: -1;
+    animation: backgroundHueRotate 15s infinite alternate linear;
+}
+
+@keyframes backgroundHueRotate {
     0% { filter: hue-rotate(0deg); }
-    100% { filter: hue-rotate(40deg); }
+    100% { filter: hue-rotate(60deg); }
 }
 
+/* FROSTED GLASS CARD (FIELD SECTION) */
 .card { 
-    background: rgba(255, 255, 255, 0.85); /* Added transparency for glass effect */
-    backdrop-filter: blur(12px); /* Added blur effect */
-    -webkit-backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.45); /* High transparency */
+    backdrop-filter: blur(15px); /* Strong blur effect */
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     padding: 30px; 
-    border-radius: 12px; 
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1); 
+    border-radius: 16px; 
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15); 
     width: 100%; 
     max-width: 850px; 
     position: relative; 
 }
 
 #loginSection { max-width: 400px; margin: 0 auto; text-align: center; }
-input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; box-sizing: border-box; }
+
+/* INPUTS: Semi-transparent to match glass theme */
+input, select { 
+    width: 100%; padding: 12px; margin: 10px 0; 
+    border: 1px solid rgba(0, 0, 0, 0.1); 
+    border-radius: 6px; font-size: 16px; box-sizing: border-box; 
+    background: rgba(255, 255, 255, 0.7);
+}
+
 button { width: 100%; padding: 14px; background: #004a99; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 18px; margin-top: 10px; position: relative; display: flex; align-items: center; justify-content: center; min-height: 50px; transition: 0.3s; }
-button:hover { background: #003366; }
+button:hover { background: #003366; transform: translateY(-1px); }
+
 .spinner { display: none; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading .btn-text { display: none; }
@@ -231,7 +254,7 @@ body.is-sss #pdfArea { transform: scale(0.42); margin-bottom: -550px; }
 
 <script>
 const CURRENT_TERM = "Second Term Report";
-let preRenderedPDF = null; // Variable to store the prepared PDF Blob
+let preRenderedPDF = null;
 
 window.addEventListener('load', () => {
 setTimeout(() => {
@@ -330,7 +353,6 @@ document.getElementById('dispPrincipal').innerText = getPrincipalComment(parseFl
 document.getElementById('dispTime').innerText = "Generated: " + new Date().toLocaleString();
 msg.innerText = "✅ Success";
 
-// TRIGGER AUTOMATIC PDF PRE-PREPARATION AS SOON AS DATA IS LOADED
 preparePDFFile();
 }
 } catch (e) {
@@ -339,7 +361,6 @@ msg.innerText = "❌ Connection Error.";
 }
 }
 
-// NEW FUNCTION: Prepares the PDF in the background before the user taps download
 async function preparePDFFile() {
     const originalArea = document.getElementById('pdfArea');
     const clone = originalArea.cloneNode(true);
@@ -366,10 +387,7 @@ async function preparePDFFile() {
         const finalHeight = canvas.height * ratio;
 
         pdf.addImage(imgData, 'JPEG', (pdfWidth - finalWidth) / 2, 5, finalWidth, finalHeight);
-        
-        // Store the result as a Blob
         preRenderedPDF = pdf.output('blob');
-        console.log("PDF Pre-prepared and ready for instant download.");
     } catch (e) { 
         console.error("PDF Pre-prep Error", e); 
     } finally { 
@@ -381,7 +399,6 @@ async function downloadPDF() {
     const studentName = document.getElementById('dispName').innerText || "Student";
     const btn = document.getElementById('mainDownloadBtn');
     
-    // If it's already ready, download instantly
     if (preRenderedPDF) {
         const url = URL.createObjectURL(preRenderedPDF);
         const link = document.createElement('a');
@@ -392,13 +409,12 @@ async function downloadPDF() {
         return;
     }
 
-    // Fallback if user taps too quickly before pre-render finishes
     btn.innerText = "⏳ Preparing...";
     btn.disabled = true;
     await preparePDFFile(); 
     btn.disabled = false;
     btn.innerText = "📥 Download Result PDF";
-    downloadPDF(); // Recursive call once ready
+    downloadPDF();
 }
 
 function toggleDept() {
