@@ -10,80 +10,113 @@
     <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
 
     <style>
-        :root { --vault-blue: #001f3f; --gold: #d4af37; --bg: #ffffff; --cyan-light: #e0f7fa; }
-        body { font-family: 'Arial Narrow', sans-serif; background: #ffffff; margin: 0; padding: 0; overflow-x: hidden; }
+        :root { 
+            --vault-blue: #001f3f; 
+            --gold: #d4af37; 
+            --bg: #ffffff; 
+            --glass: rgba(0, 31, 63, 0.7);
+        }
         
-        /* Bouncing Shapes Background */
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: #ffffff; 
+            margin: 0; 
+            padding: 0; 
+            overflow-x: hidden; 
+        }
+        
+        /* Bouncing Shapes Canvas */
         #bgCanvas {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 1; background: linear-gradient(135deg, #ffffff 0%, #f0faff 100%);
+            z-index: -1; background: #fff;
+        }
+
+        /* Matrix Canvas */
+        #matrixCanvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 9998; background: #000; display: none;
         }
 
         #authOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; justify-content: center; align-items: center;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
             z-index: 10000;
         }
-        .auth-card {
-            background: var(--vault-blue); padding: 40px;
-            border-radius: 12px; border: 2px solid var(--gold); text-align: center; width: 360px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            position: relative; z-index: 10001;
+
+        /* Typewriter Warning */
+        #warningText {
+            color: #ff4444; font-weight: bold; margin-bottom: 20px;
+            font-size: 18px; min-height: 1.2em; text-align: center;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
         }
-        .auth-card h2 { color: var(--gold); margin-bottom: 20px; letter-spacing: 1px; }
+
+        /* Glassmorphism Auth Card */
+        .auth-card {
+            background: var(--glass); 
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            padding: 40px;
+            border-radius: 12px; 
+            border: 1px solid rgba(212, 175, 55, 0.4); 
+            text-align: center; width: 360px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .auth-card h2 { color: var(--gold); margin-bottom: 20px; letter-spacing: 2px; }
         .auth-card input, .auth-card select { 
             width: 100%; height: 45px; padding: 0 15px; margin: 10px 0; 
-            border-radius: 4px; border: 1px solid rgba(255,255,255,0.3); outline: none; font-size: 14px; box-sizing: border-box;
+            border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); 
+            outline: none; font-size: 14px; box-sizing: border-box;
+            background: rgba(255,255,255,0.1); color: white;
         }
+        .auth-card input::placeholder { color: rgba(255,255,255,0.6); }
+        .auth-card select option { background: var(--vault-blue); }
+
         .auth-btn { 
             background: var(--gold); color: var(--vault-blue); width: 100%; height: 50px; 
             font-weight: bold; border: none; cursor: pointer; border-radius: 4px; 
-            text-transform: uppercase; margin-top: 15px;
+            text-transform: uppercase; margin-top: 15px; transition: 0.3s;
         }
+        .auth-btn:hover { background: #eecb5c; transform: scale(1.02); }
 
         #loadingScreen {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--vault-blue); color: white; z-index: 9999;
             flex-direction: column; justify-content: center; align-items: center;
         }
+        .spinner { border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--gold); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        #mainDashboard { display: none; background: #fff; padding: 10px; width: 100%; box-sizing: border-box; position: relative; z-index: 5; }
-        .nav-bar { display: flex; justify-content: space-between; margin-bottom: 10px; padding: 5px; border-bottom: 1px solid #ddd; background: white; }
-
-        /* PDF AREA STYLING */
-        #captureArea { background: white !important; padding: 15px; min-width: 980px; }
-
-        .report-header { 
-            display: flex; align-items: center; justify-content: space-between; 
-            margin-bottom: 10px; border-bottom: 3px solid var(--vault-blue); padding-bottom: 8px; 
+        /* Transition Fragments */
+        .fragment {
+            position: fixed; background: white; z-index: 10001; pointer-events: none;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
         }
-        .header-logo { width: 65px; height: auto; }
-        .header-sig { width: 90px; height: auto; }
-        .header-text h1 { margin: 0; color: var(--vault-blue); font-family: 'Great Vibes', cursive; font-size: 36px; }
-        .header-text p { margin: 2px 0 0; font-size: 13px; font-weight: bold; color: #333; text-transform: uppercase; }
 
-        .class-section { margin-bottom: 20px; page-break-inside: avoid; }
-        .class-title { background: #f0f2f5; color: var(--vault-blue); padding: 5px; font-size: 15px; font-weight: bold; border-left: 6px solid var(--vault-blue); margin-bottom: 4px; }
+        #mainDashboard { display: none; background: #fff; padding: 10px; width: 100%; box-sizing: border-box; }
+        .nav-bar { display: flex; justify-content: space-between; margin-bottom: 10px; padding: 5px; border-bottom: 1px solid #ddd; }
+        .btn-nav { text-decoration: none; color: var(--vault-blue); font-weight: bold; border: 1px solid var(--vault-blue); padding: 5px 12px; border-radius: 4px; font-size: 12px; }
 
-        table { width: 100%; border-collapse: collapse; font-size: 11px; border: 1px solid #000; }
-        th { background: var(--vault-blue); color: white; padding: 4px 1px; border: 1px solid #000; font-size: 8px; }
+        /* Table Styling */
+        #captureArea { background: white !important; padding: 15px; min-width: 1000px; }
+        .report-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; border-bottom: 3px solid var(--vault-blue); padding-bottom: 8px; }
+        .header-logo { width: 70px; height: auto; }
+        .header-sig { width: 100px; height: auto; }
+        .header-text { text-align: center; flex-grow: 1; }
+        .header-text h1 { margin: 0; color: var(--vault-blue); font-family: 'Great Vibes', cursive; font-size: 38px; font-weight: 400; }
+        .header-text p { margin: 2px 0 0; font-size: 14px; font-weight: bold; color: #333; text-transform: uppercase; }
+
+        .class-section { margin-bottom: 25px; page-break-inside: avoid; }
+        .class-title { background: #f0f2f5; color: var(--vault-blue); padding: 6px; font-size: 16px; font-weight: bold; border-left: 8px solid var(--vault-blue); margin-bottom: 5px; text-transform: uppercase; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 11.5px; table-layout: auto; border: 1px solid #000; }
+        th { background: var(--vault-blue); color: white; padding: 5px 1px; border: 1px solid #000; text-transform: uppercase; font-size: 8.5px; }
         td { padding: 3px 2px; border: 1px solid #000; white-space: nowrap; text-align: center; color: #000; }
         
-        .sn-col { width: 20px; font-weight: bold; }
-        
-        /* STRICTLY REDUCED NAME COLUMN */
-        .name-cell { 
-            text-align: left !important; 
-            padding-left: 4px !important; 
-            font-weight: bold; 
-            width: 130px !important; /* Fixed narrow width */
-            max-width: 130px !important;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .calc-col { background: #fff9e6; font-weight: bold; border-left: 1px solid #000; }
-        .btn-dl { background: var(--vault-blue); color: white; padding: 10px 25px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .sn-col { width: 25px; font-weight: bold; background: #f9f9f9; }
+        .name-cell { text-align: left !important; padding-left: 5px !important; font-weight: bold; width: 150px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
+        .calc-col { background: #fff9e6; font-weight: bold; border-left: 1.5px solid #000; }
+        .btn-dl { background: var(--vault-blue); color: white; padding: 12px 30px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
 
         .canvas-clone { position: absolute !important; left: -9999px !important; width: 1000px !important; background: white !important; }
 
@@ -93,8 +126,10 @@
 <body>
 
     <canvas id="bgCanvas"></canvas>
+    <canvas id="matrixCanvas"></canvas>
 
     <div id="authOverlay">
+        <div id="warningText"></div>
         <div class="auth-card">
             <h2>VAULT LOGIN</h2>
             <input type="text" id="adminName" placeholder="Admin Username">
@@ -103,25 +138,26 @@
                 <option value="sss_students">SENIOR SECTION (SSS)</option>
             </select>
             <input type="password" id="adminPin" placeholder="Security PIN">
-            <button class="auth-btn" onclick="startLoading()">OPEN VAULT</button>
+            <button class="auth-btn" onclick="validateAuth()">OPEN VAULT</button>
             <p id="authMsg" style="color: #ffbaba; font-size: 12px; margin-top: 10px;"></p>
         </div>
     </div>
 
     <div id="loadingScreen">
+        <div class="spinner"></div>
         <h3 id="loadMsg">SECURE ACCESS INITIATED...</h3>
     </div>
 
     <div id="mainDashboard">
         <div class="nav-bar">
-            <a href="index.html" style="text-decoration:none; color:var(--vault-blue); font-weight:bold;">← EXIT</a>
+            <a href="index.html" class="btn-nav">← EXIT TO PORTAL</a>
             <button onclick="location.reload()" style="background:none; border:none; color:red; cursor:pointer; font-weight:bold;">LOGOUT</button>
         </div>
 
         <div id="captureArea">
             <div class="report-header">
                 <img src="assets/logo.webp" class="header-logo" alt="Logo">
-                <div class="header-text" style="text-align:center; flex-grow:1;">
+                <div class="header-text">
                     <h1>Go-Tegs International School</h1>
                     <p id="dynamicSubtitle">CONSOLIDATED MASTER LEDGER</p>
                 </div>
@@ -130,101 +166,178 @@
             <div id="tablesContainer"></div>
         </div>
 
-        <div style="margin: 20px 0; display: flex; justify-content: flex-end;">
-            <button id="mainDownloadBtn" class="btn-dl" onclick="downloadWidePDF()">📥 DOWNLOAD PDF</button>
+        <div class="footer-actions">
+            <button id="mainDownloadBtn" class="btn-dl" onclick="downloadWidePDF()">📥 DOWNLOAD FULL LEDGER (PDF)</button>
         </div>
     </div>
 
     <script>
-        // --- BOUNCING SHAPES ANIMATION ---
+        // --- TYPEWRITER WARNING ---
+        const warnElement = document.getElementById("warningText");
+        const warnMsg = "Warning: Access restricted. If you are not an administrator, please return immediately.";
+        let charIndex = 0;
+
+        function typeWarning() {
+            if (charIndex < warnMsg.length) {
+                warnElement.textContent += warnMsg.charAt(charIndex);
+                charIndex++;
+                setTimeout(typeWarning, 60);
+            }
+        }
+        window.onload = typeWarning;
+
+        // --- BOUNCING SHAPES (WHITE/CYAN) ---
         const canvas = document.getElementById('bgCanvas');
         const ctx = canvas.getContext('2d');
         let shapes = [];
 
-        function initCanvas() {
+        function initShapes() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             shapes = [];
-            for(let i = 0; i < 15; i++) {
+            for (let i = 0; i < 15; i++) {
                 shapes.push({
                     x: Math.random() * canvas.width,
                     y: Math.random() * canvas.height,
-                    size: Math.random() * 40 + 20,
-                    dx: (Math.random() - 0.5) * 1.5,
-                    dy: (Math.random() - 0.5) * 1.5,
-                    rot: Math.random() * Math.PI * 2,
-                    rotV: (Math.random() - 0.5) * 0.02,
-                    type: Math.floor(Math.random() * 3) // 0: Square, 1: Circle, 2: Triangle
+                    size: Math.random() * 30 + 20,
+                    dx: (Math.random() - 0.5) * 2,
+                    dy: (Math.random() - 0.5) * 2,
+                    color: Math.random() > 0.5 ? 'rgba(0, 255, 255, 0.15)' : 'rgba(200, 200, 200, 0.2)',
+                    type: Math.floor(Math.random() * 3)
                 });
             }
         }
 
-        function draw() {
+        function animateShapes() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.strokeStyle = "rgba(0, 188, 212, 0.2)"; // Cyan
-            ctx.lineWidth = 2;
-
             shapes.forEach(s => {
-                ctx.save();
-                ctx.translate(s.x, s.y);
-                ctx.rotate(s.rot);
+                ctx.fillStyle = s.color;
                 ctx.beginPath();
-                if(s.type === 0) ctx.rect(-s.size/2, -s.size/2, s.size, s.size);
-                else if(s.type === 1) ctx.arc(0, 0, s.size/2, 0, Math.PI*2);
-                else {
-                    ctx.moveTo(0, -s.size/2);
-                    ctx.lineTo(s.size/2, s.size/2);
-                    ctx.lineTo(-s.size/2, s.size/2);
-                    ctx.closePath();
-                }
-                ctx.stroke();
-                ctx.restore();
-
-                s.x += s.dx; s.y += s.dy; s.rot += s.rotV;
-                if(s.x < 0 || s.x > canvas.width) s.dx *= -1;
-                if(s.y < 0 || s.y > canvas.height) s.dy *= -1;
+                if (s.type === 0) ctx.rect(s.x, s.y, s.size, s.size);
+                else if (s.type === 1) ctx.arc(s.x, s.y, s.size / 2, 0, Math.PI * 2);
+                else { ctx.moveTo(s.x, s.y); ctx.lineTo(s.x + s.size, s.y); ctx.lineTo(s.x + s.size / 2, s.y - s.size); }
+                ctx.fill();
+                s.x += s.dx; s.y += s.dy;
+                if (s.x < 0 || s.x > canvas.width) s.dx *= -1;
+                if (s.y < 0 || s.y > canvas.height) s.dy *= -1;
             });
-            requestAnimationFrame(draw);
+            requestAnimationFrame(animateShapes);
         }
-        initCanvas(); draw();
-        window.onresize = initCanvas;
+        initShapes(); animateShapes();
 
-        // --- VAULT LOGIC ---
+        // --- MATRIX RAIN ---
+        const mCanvas = document.getElementById('matrixCanvas');
+        const mCtx = mCanvas.getContext('2d');
+        let columns;
+        let drops = [];
+
+        function initMatrix() {
+            mCanvas.width = window.innerWidth;
+            mCanvas.height = window.innerHeight;
+            columns = mCanvas.width / 20;
+            drops = Array(Math.floor(columns)).fill(1);
+        }
+
+        function drawMatrix() {
+            mCtx.fillStyle = "rgba(0, 0, 0, 0.05)";
+            mCtx.fillRect(0, 0, mCanvas.width, mCanvas.height);
+            mCtx.fillStyle = "#0F0";
+            mCtx.font = "20px monospace";
+            for (let i = 0; i < drops.length; i++) {
+                const text = Math.floor(Math.random() * 10);
+                mCtx.fillText(text, i * 20, drops[i] * 20);
+                if (drops[i] * 20 > mCanvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+
+        // --- AUTH & SUPABASE ---
         const SB_URL = 'https://lsyegaciprnerysmyesy.supabase.co';
         const SB_KEY = 'sb_publishable_sM0x3SdV4iy8GwYb5S5HUg_S9qLZLeJ';
         const _client = supabase.createClient(SB_URL, SB_KEY);
-        let sessionYear = "", sessionTerm = "", preRenderedPDF = null;
+        let sessionYear, sessionTerm, preRenderedPDF;
 
-        const jss_codes = { english_score:"ENG", maths_score:"MTH", basic_science_score:"BSC", basic_tech_score:"BTH", bus_stud_score:"BST", agric_score:"AGS", social_stud_score:"SOS", home_econs_score:"HEC", sec_edu_score:"SEC", french_score:"FRE", music_score:"MUS", diction_score:"DIC", history_score:"HIS", lit_score:"LIT", computer_score:"CMP", phe_score:"PHE", cca_score:"CCA" };
-        const sss_codes = { dept:"DEPT", maths_score:"MTH", english_score:"ENG", civic_score:"CIV", physics_score:"PHY", chem_score:"CHM", bio_score:"BIO", fmath_score:"FMT", dp_score:"D.P", econs_score:"ECO", agric_score:"AGS", crs_score:"CRS", catering_c_p_score:"CAT", dic_score:"DIC" };
-
-        function startLoading() {
-            if(!document.getElementById('adminName').value || !document.getElementById('adminPin').value) return;
-            document.getElementById('authOverlay').style.display = 'none';
-            document.getElementById('loadingScreen').style.display = 'flex';
-            setTimeout(unlockVault, 2000);
-        }
-
-        async function unlockVault() {
+        async function validateAuth() {
             const name = document.getElementById('adminName').value;
             const pin = document.getElementById('adminPin').value;
-            const table = document.getElementById('targetSection').value;
-            const { data } = await _client.from('admin_portal').select('*').eq('admin_name', name).eq('admin_pin', pin).single();
+            if(!name || !pin) return;
 
+            const { data } = await _client.from('admin_portal').select('*').eq('admin_name', name).eq('admin_pin', pin).single();
             if(data) {
-                sessionYear = data.year || "2025-2026";
-                sessionTerm = data.term || "Term";
-                document.getElementById('bgCanvas').style.display = 'none';
-                document.getElementById('loadingScreen').style.display = 'none';
-                document.getElementById('mainDashboard').style.display = 'block';
-                document.getElementById('dynamicSubtitle').innerText = `${sessionYear} ${sessionTerm} Result Ledger`;
-                loadData(table);
-            } else { location.reload(); }
+                sessionYear = data.year; sessionTerm = data.term;
+                startTransitionSequence(document.getElementById('targetSection').value);
+            } else { alert("INVALID ACCESS"); }
         }
 
+        function startTransitionSequence(table) {
+            document.getElementById('authOverlay').style.display = 'none';
+            document.getElementById('loadingScreen').style.display = 'flex';
+            
+            const messages = ["ACCESS GRANTED", "DECRYPTING VAULT...", "SYNCHRONIZING..."];
+            let i = 0;
+            const cycle = setInterval(() => {
+                if(i < messages.length) {
+                    document.getElementById('loadMsg').innerText = messages[i++];
+                } else {
+                    clearInterval(cycle);
+                    runMatrixEffect(table);
+                }
+            }, 1000);
+        }
+
+        function runMatrixEffect(table) {
+            document.getElementById('loadingScreen').style.display = 'none';
+            mCanvas.style.display = 'block';
+            initMatrix();
+            const matrixInterval = setInterval(drawMatrix, 50);
+            
+            setTimeout(() => {
+                clearInterval(matrixInterval);
+                mCanvas.style.display = 'none';
+                createFragmentTransition(table);
+            }, 3000);
+        }
+
+        function createFragmentTransition(table) {
+            loadData(table); // Load data first so the page is ready
+            document.getElementById('mainDashboard').style.display = 'block';
+            document.getElementById('mainDashboard').style.opacity = '0';
+
+            const fragCount = 40;
+            for(let i=0; i<fragCount; i++){
+                let f = document.createElement('div');
+                f.className = 'fragment';
+                f.style.width = (Math.random() * 100 + 50) + 'px';
+                f.style.height = (Math.random() * 100 + 50) + 'px';
+                f.style.left = (Math.random() * 100) + 'vw';
+                f.style.top = '-200px';
+                document.body.appendChild(f);
+
+                f.animate([
+                    { top: '-200px', opacity: 1, transform: 'rotate(0deg)' },
+                    { top: '100vh', opacity: 0, transform: 'rotate(360deg)' }
+                ], {
+                    duration: 1500 + (Math.random() * 1000),
+                    easing: 'ease-in'
+                }).onfinish = () => f.remove();
+            }
+
+            setTimeout(() => {
+                document.getElementById('mainDashboard').style.transition = "opacity 1.5s";
+                document.getElementById('mainDashboard').style.opacity = '1';
+            }, 500);
+        }
+
+        // --- DATA LOADING & PDF (Restored Logic) ---
         async function loadData(tableName) {
             const { data } = await _client.from(tableName).select('*').order('class').order('full_name');
-            if(!data) return;
+            const container = document.getElementById('tablesContainer');
+            container.innerHTML = "";
+            
+            const mapping = tableName === 'sss_students' ? 
+                { dept: "DEPT", maths_score: "MTH", english_score: "ENG", civic_score: "CIV", physics_score: "PHY", chem_score: "CHM", bio_score: "BIO", fmath_score: "FMT", dp_score: "D.P", econs_score: "ECO", agric_score: "AGS", crs_score: "CRS", catering_c_p_score: "CAT", dic_score: "DIC" } :
+                { english_score: "ENG", maths_score: "MTH", basic_science_score: "BSC", basic_tech_score: "BTH", bus_stud_score: "BST", agric_score: "AGS", social_stud_score: "SOS", home_econs_score: "HEC", sec_edu_score: "SEC", french_score: "FRE", music_score: "MUS", diction_score: "DIC", history_score: "HIS", lit_score: "LIT", computer_score: "CMP", phe_score: "PHE", cca_score: "CCA" };
+
             const grouped = data.reduce((acc, obj) => {
                 const key = obj.class || "Unclassed";
                 if (!acc[key]) acc[key] = [];
@@ -232,62 +345,43 @@
                 return acc;
             }, {});
 
-            const container = document.getElementById('tablesContainer');
-            container.innerHTML = "";
-            const activeMapping = (tableName === 'sss_students') ? sss_codes : jss_codes;
-            let activeKeys = ['full_name', ...Object.keys(activeMapping)];
-
             for (const className in grouped) {
-                const classData = grouped[className];
-                let serial = 1;
-                let tableHtml = `<div class="class-section"><div class="class-title">${className}</div><table><thead><tr><th class="sn-col">S/N</th>`;
-                activeKeys.forEach(k => tableHtml += `<th>${activeMapping[k] || k.toUpperCase()}</th>`);
-                tableHtml += `<th class="calc-col">TOT</th><th class="calc-col">AVG</th><th class="calc-col">GRD</th></tr></thead><tbody>`;
+                let html = `<div class="class-section"><div class="class-title">${className}</div><table><thead><tr><th>S/N</th><th>NAME</th>`;
+                Object.values(mapping).forEach(v => html += `<th>${v}</th>`);
+                html += `<th>TOT</th><th>AVG</th><th>GRD</th></tr></thead><tbody>`;
 
-                classData.forEach(row => {
+                grouped[className].forEach((row, idx) => {
                     let total = 0, count = 0;
-                    tableHtml += `<tr><td class="sn-col">${serial++}</td>`;
-                    activeKeys.forEach(k => {
+                    html += `<tr><td>${idx+1}</td><td class="name-cell">${row.full_name}</td>`;
+                    Object.keys(mapping).forEach(k => {
                         let val = row[k] || "-";
-                        if (k.endsWith('_score') && !isNaN(parseFloat(val))) { total += parseFloat(val); count++; }
-                        tableHtml += `<td class="${k==='full_name'?'name-cell':''}">${val}</td>`;
+                        html += `<td>${val}</td>`;
+                        if(k.includes('score') && !isNaN(val)) { total += parseFloat(val); count++; }
                     });
-                    const avg = count > 0 ? (total / count).toFixed(1) : 0;
-                    tableHtml += `<td class="calc-col">${total}</td><td class="calc-col">${avg}%</td><td class="calc-col">${avg >= 75 ? "A1" : avg >= 70 ? "B2" : avg >= 65 ? "B3" : avg >= 60 ? "C4" : avg >= 50 ? "C6" : avg >= 45 ? "D7" : "F9"}</td></tr>`;
+                    const avg = count > 0 ? (total/count).toFixed(1) : 0;
+                    html += `<td class="calc-col">${total}</td><td class="calc-col">${avg}%</td><td class="calc-col">${calculateGrade(avg)}</td></tr>`;
                 });
-                container.innerHTML += tableHtml + `</tbody></table></div>`;
+                container.innerHTML += html + `</tbody></table></div>`;
             }
         }
 
-        async function prepareLedgerPDF() {
-            const originalArea = document.getElementById('captureArea');
-            const clone = originalArea.cloneNode(true);
-            clone.classList.add('canvas-clone');
-            document.body.appendChild(clone);
-
-            const canvasPDF = await html2canvas(clone, { scale: 2, useCORS: true, width: 1000 });
-            const imgData = canvasPDF.toDataURL('image/jpeg', 0.95);
-            const pdf = new jspdf.jsPDF('l', 'mm', 'a4');
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const ratio = (pdfWidth - 10) / canvasPDF.width;
-            pdf.addImage(imgData, 'JPEG', 5, 5, canvasPDF.width * ratio, canvasPDF.height * ratio);
-            preRenderedPDF = pdf.output('blob');
-            document.body.removeChild(clone);
+        function calculateGrade(avg) {
+            if(avg >= 75) return "A1"; if(avg >= 70) return "B2"; if(avg >= 65) return "B3";
+            if(avg >= 60) return "C4"; if(avg >= 50) return "C6"; if(avg >= 45) return "D7"; return "F9";
         }
 
         async function downloadWidePDF() {
             const btn = document.getElementById('mainDownloadBtn');
-            if (preRenderedPDF) {
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(preRenderedPDF);
-                link.download = `Ledger_${sessionYear}.pdf`;
-                link.click();
-                return;
-            }
-            btn.innerText = "⏳ GENERATING...";
-            await prepareLedgerPDF();
-            btn.innerText = "📥 DOWNLOAD PDF";
-            downloadWidePDF();
+            btn.innerText = "⏳ PROCESSING...";
+            const capture = document.getElementById('captureArea');
+            const canvas = await html2canvas(capture, { scale: 2 });
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            const pdf = new jspdf.jsPDF('l', 'mm', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const ratio = (pdfWidth - 20) / canvas.width;
+            pdf.addImage(imgData, 'JPEG', 10, 10, canvas.width * ratio, canvas.height * ratio);
+            pdf.save(`Ledger_${sessionYear}.pdf`);
+            btn.innerText = "📥 DOWNLOAD FULL LEDGER (PDF)";
         }
     </script>
 </body>
