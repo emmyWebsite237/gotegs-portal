@@ -13,96 +13,75 @@
         :root { 
             --vault-blue: #001f3f; 
             --gold: #d4af37; 
-            --bg: #ffffff; 
             --glass: rgba(0, 31, 63, 0.7);
         }
         
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background: #ffffff; 
-            margin: 0; 
-            padding: 0; 
-            overflow-x: hidden; 
+            background: #ffffff; margin: 0; padding: 0; overflow-x: hidden; 
         }
         
+        /* Background & Matrix Layers */
         #bgCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: #fff; }
         #matrixCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9998; background: #000; display: none; }
 
+        /* Auth Layer */
         #authOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             z-index: 10000; padding: 20px; box-sizing: border-box;
         }
 
-        /* Typewriter Warning */
-        #warningContainer { text-align: center; margin-bottom: 20px; max-width: 500px; }
+        #warningContainer { text-align: center; margin-bottom: 20px; }
         #warningText {
-            color: #ff4444; font-weight: bold;
-            font-size: 1.2rem; min-height: 1.2em;
-            text-shadow: 0 0 10px rgba(0,0,0,0.5);
-            display: inline-block;
-        }
-        .back-btn {
-            display: none; margin-top: 15px; background: #ff4444; color: white;
-            border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;
-            font-weight: bold; text-decoration: none; font-size: 14px;
+            color: #ff4444; font-weight: bold; font-size: 18px; min-height: 1.2em;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5); margin-bottom: 15px;
         }
 
-        /* Glassmorphism Auth Card */
+        .back-btn {
+            display: none; background: #ff4444; color: white; border: none; 
+            padding: 10px 20px; border-radius: 4px; cursor: pointer;
+            font-weight: bold; text-decoration: none; font-size: 13px; transition: 0.3s;
+        }
+        .back-btn:hover { background: #cc0000; }
+
         .auth-card {
-            background: var(--glass); 
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            padding: 30px;
-            border-radius: 12px; 
-            border: 1px solid rgba(212, 175, 55, 0.4); 
-            text-align: center; width: 100%; max-width: 360px;
+            background: var(--glass); backdrop-filter: blur(15px);
+            padding: 40px; border-radius: 12px; border: 1px solid rgba(212, 175, 55, 0.4); 
+            text-align: center; width: 100%; max-width: 360px; box-sizing: border-box;
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
             opacity: 0; display: none; transition: opacity 1s ease;
         }
 
-        .auth-card h2 { color: var(--gold); margin-bottom: 20px; letter-spacing: 2px; font-size: 1.5rem; }
         .auth-card input, .auth-card select { 
             width: 100%; height: 45px; padding: 0 15px; margin: 10px 0; 
             border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); 
-            outline: none; font-size: 14px; box-sizing: border-box;
-            background: rgba(255,255,255,0.1); color: white;
+            background: rgba(255,255,255,0.1); color: white; outline: none; box-sizing: border-box;
         }
-        .auth-card select option { background: var(--vault-blue); }
-
         .auth-btn { 
             background: var(--gold); color: var(--vault-blue); width: 100%; height: 50px; 
-            font-weight: bold; border: none; cursor: pointer; border-radius: 4px; 
-            text-transform: uppercase; margin-top: 15px;
+            font-weight: bold; border: none; cursor: pointer; border-radius: 4px; margin-top: 15px;
         }
 
-        #loadingScreen {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--vault-blue); color: white; z-index: 9999;
-            flex-direction: column; justify-content: center; align-items: center;
-        }
+        /* Fragments */
+        .fragment { position: fixed; background: white; z-index: 10001; pointer-events: none; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
 
-        /* Responsive Dashboard */
-        #mainDashboard { display: none; background: #fff; width: 100%; box-sizing: border-box; }
-        .nav-bar { display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid #ddd; align-items: center; }
+        /* Dashboard & Mobile Adjustments */
+        #mainDashboard { display: none; background: #fff; width: 100%; }
+        .nav-bar { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #ddd; align-items: center; }
         
-        #captureAreaWrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        #captureArea { background: white !important; padding: 20px; min-width: 1000px; }
+        /* The "Mobile Fix" Wrapper */
+        .table-responsive-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        #captureArea { background: white !important; padding: 15px; min-width: 1050px; }
 
-        .report-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid var(--vault-blue); padding-bottom: 10px; }
-        .header-text h1 { margin: 0; color: var(--vault-blue); font-family: 'Great Vibes', cursive; font-size: 38px; }
-        
-        table { width: 100%; border-collapse: collapse; font-size: 11.5px; border: 1px solid #000; margin-top: 10px; }
-        th { background: var(--vault-blue); color: white; padding: 8px 4px; border: 1px solid #000; font-size: 9px; }
-        td { padding: 6px 4px; border: 1px solid #000; text-align: center; }
-        .name-cell { text-align: left !important; font-weight: bold; width: 180px; }
-        
-        .footer-actions { padding: 20px; display: flex; justify-content: center; }
+        table { width: 100%; border-collapse: collapse; font-size: 11.5px; border: 1px solid #000; }
+        th { background: var(--vault-blue); color: white; padding: 5px; border: 1px solid #000; font-size: 8.5px; }
+        td { padding: 3px; border: 1px solid #000; text-align: center; color: #000; }
+        .name-cell { text-align: left !important; padding-left: 5px; font-weight: bold; width: 180px; }
 
-        @media (max-width: 600px) {
-            .header-text h1 { font-size: 28px; }
-            .auth-card { padding: 20px; }
-            .btn-nav { font-size: 10px; padding: 8px; }
+        @media screen and (max-width: 600px) {
+            .auth-card { padding: 25px; }
+            #warningText { font-size: 16px; }
         }
     </style>
 </head>
@@ -113,12 +92,12 @@
 
     <div id="authOverlay">
         <div id="warningContainer">
-            <div id="warningText"></div><br>
-            <a href="index.html" class="back-btn" id="portalBtn">Return to Portal</a>
+            <div id="warningText"></div>
+            <a href="index.html" class="back-btn" id="goBackBtn">← RETURN TO PORTAL</a>
         </div>
         
         <div class="auth-card" id="loginCard">
-            <h2>VAULT LOGIN</h2>
+            <h2 style="color:var(--gold); margin-top:0;">VAULT LOGIN</h2>
             <input type="text" id="adminName" placeholder="Admin Username">
             <select id="targetSection">
                 <option value="jss_students">JUNIOR SECTION (JSS)</option>
@@ -126,28 +105,22 @@
             </select>
             <input type="password" id="adminPin" placeholder="Security PIN">
             <button class="auth-btn" onclick="validateAuth()">OPEN VAULT</button>
-            <p id="authMsg" style="color: #ffbaba; font-size: 12px; margin-top: 10px;"></p>
         </div>
-    </div>
-
-    <div id="loadingScreen">
-        <div style="border:4px solid #f3f3f3; border-top:4px solid var(--gold); border-radius:50%; width:40px; height:40px; animation:spin 1s linear infinite;"></div>
-        <h3 id="loadMsg" style="margin-top:20px;">SECURE ACCESS INITIATED...</h3>
     </div>
 
     <div id="mainDashboard">
         <div class="nav-bar">
-            <a href="index.html" class="btn-nav" style="text-decoration:none; color:var(--vault-blue); border:1px solid; padding:5px 10px; border-radius:4px;">← EXIT</a>
+            <a href="index.html" style="text-decoration:none; color:var(--vault-blue); font-weight:bold; border:1px solid; padding:5px 10px; border-radius:4px; font-size:12px;">← EXIT</a>
             <button onclick="location.reload()" style="background:none; border:none; color:red; cursor:pointer; font-weight:bold;">LOGOUT</button>
         </div>
 
-        <div id="captureAreaWrapper">
+        <div class="table-responsive-wrapper">
             <div id="captureArea">
-                <div class="report-header">
+                <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:3px solid var(--vault-blue); padding-bottom:10px;">
                     <img src="assets/logo.webp" style="width:70px;" alt="Logo">
-                    <div class="header-text" style="text-align:center;">
-                        <h1>Go-Tegs International School</h1>
-                        <p id="dynamicSubtitle" style="font-weight:bold; text-transform:uppercase;">CONSOLIDATED MASTER LEDGER</p>
+                    <div style="text-align:center;">
+                        <h1 style="margin:0; color:var(--vault-blue); font-family:'Great Vibes', cursive; font-size:38px;">Go-Tegs International School</h1>
+                        <p style="margin:2px 0; font-weight:bold; text-transform:uppercase;">CONSOLIDATED MASTER LEDGER</p>
                     </div>
                     <img src="assets/signature.png" style="width:100px;" alt="Sig">
                 </div>
@@ -155,13 +128,13 @@
             </div>
         </div>
 
-        <div class="footer-actions">
-            <button id="mainDownloadBtn" class="btn-dl" onclick="downloadWidePDF()" style="background:var(--vault-blue); color:white; padding:15px 30px; border:none; border-radius:4px; font-weight:bold; cursor:pointer;">📥 DOWNLOAD LEDGER (PDF)</button>
+        <div style="text-align:center; padding:20px;">
+            <button id="mainDownloadBtn" onclick="downloadWidePDF()" style="background:var(--vault-blue); color:white; padding:15px 30px; border:none; border-radius:4px; font-weight:bold; cursor:pointer;">📥 DOWNLOAD FULL LEDGER (PDF)</button>
         </div>
     </div>
 
     <script>
-        // --- TYPEWRITER & SEQUENCING ---
+        // --- restored: TYPEWRITER & SEQUENCE ---
         const warnElement = document.getElementById("warningText");
         const warnMsg = "Warning: Access restricted. If you are not an administrator, please return immediately.";
         let charIndex = 0;
@@ -172,30 +145,29 @@
                 charIndex++;
                 setTimeout(typeWarning, 50);
             } else {
-                // Show Back Button
-                document.getElementById('portalBtn').style.display = "inline-block";
-                // Delay 2 seconds then show Login Card
+                // finished typing
+                document.getElementById('goBackBtn').style.display = 'inline-block';
+                // wait 2 seconds then show login
                 setTimeout(() => {
                     const card = document.getElementById('loginCard');
-                    card.style.display = "block";
-                    setTimeout(() => card.style.opacity = "1", 50);
+                    card.style.display = 'block';
+                    setTimeout(() => card.style.opacity = '1', 50);
                 }, 2000);
             }
         }
         window.onload = () => { initShapes(); animateShapes(); typeWarning(); };
 
-        // --- BACKGROUND SHAPES ---
+        // --- restored: BOUNCING SHAPES ---
         const canvas = document.getElementById('bgCanvas');
         const ctx = canvas.getContext('2d');
         let shapes = [];
         function initShapes() {
             canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-            shapes = [];
             for (let i = 0; i < 15; i++) {
                 shapes.push({
                     x: Math.random() * canvas.width, y: Math.random() * canvas.height,
                     size: Math.random() * 30 + 20, dx: (Math.random() - 0.5) * 2, dy: (Math.random() - 0.5) * 2,
-                    color: Math.random() > 0.5 ? 'rgba(0, 255, 255, 0.1)' : 'rgba(200, 200, 200, 0.15)',
+                    color: Math.random() > 0.5 ? 'rgba(0, 255, 255, 0.15)' : 'rgba(200, 200, 200, 0.2)',
                     type: Math.floor(Math.random() * 3)
                 });
             }
@@ -205,7 +177,7 @@
             shapes.forEach(s => {
                 ctx.fillStyle = s.color; ctx.beginPath();
                 if (s.type === 0) ctx.rect(s.x, s.y, s.size, s.size);
-                else if (s.type === 1) ctx.arc(s.x, s.y, s.size / 2, 0, Math.PI * 2);
+                else if (s.type === 1) ctx.arc(s.x, s.y, s.size/2, 0, Math.PI*2);
                 else { ctx.moveTo(s.x, s.y); ctx.lineTo(s.x + s.size, s.y); ctx.lineTo(s.x + s.size/2, s.y - s.size); }
                 ctx.fill(); s.x += s.dx; s.y += s.dy;
                 if (s.x < 0 || s.x > canvas.width) s.dx *= -1;
@@ -214,33 +186,13 @@
             requestAnimationFrame(animateShapes);
         }
 
-        // --- AUTH & MATRIX ---
-        const SB_URL = 'https://lsyegaciprnerysmyesy.supabase.co';
-        const SB_KEY = 'sb_publishable_sM0x3SdV4iy8GwYb5S5HUg_S9qLZLeJ';
-        const _client = supabase.createClient(SB_URL, SB_KEY);
-        let sessionYear, sessionTerm;
-
-        async function validateAuth() {
-            const name = document.getElementById('adminName').value;
-            const pin = document.getElementById('adminPin').value;
-            if(!name || !pin) return;
-
-            const { data } = await _client.from('admin_portal').select('*').eq('admin_name', name).eq('admin_pin', pin).single();
-            if(data) {
-                sessionYear = data.year; sessionTerm = data.term;
-                document.getElementById('authOverlay').style.display = 'none';
-                document.getElementById('loadingScreen').style.display = 'flex';
-                runMatrixEffect(document.getElementById('targetSection').value);
-            } else { alert("ACCESS DENIED"); }
-        }
-
-        function runMatrixEffect(table) {
+        // --- restored: MATRIX RAIN ---
+        function runMatrixEffect(callback) {
             const mCanvas = document.getElementById('matrixCanvas');
             const mCtx = mCanvas.getContext('2d');
             mCanvas.width = window.innerWidth; mCanvas.height = window.innerHeight;
             mCanvas.style.display = 'block';
-            let drops = Array(Math.floor(window.innerWidth/20)).fill(1);
-
+            let drops = Array(Math.floor(mCanvas.width/20)).fill(1);
             const matrixInterval = setInterval(() => {
                 mCtx.fillStyle = "rgba(0, 0, 0, 0.05)"; mCtx.fillRect(0, 0, mCanvas.width, mCanvas.height);
                 mCtx.fillStyle = "#0F0"; mCtx.font = "20px monospace";
@@ -250,16 +202,40 @@
                     drops[i]++;
                 });
             }, 50);
-
-            setTimeout(() => {
-                clearInterval(matrixInterval);
-                mCanvas.style.display = 'none';
-                document.getElementById('loadingScreen').style.display = 'none';
-                loadData(table);
-                document.getElementById('mainDashboard').style.display = 'block';
-            }, 3000);
+            setTimeout(() => { clearInterval(matrixInterval); mCanvas.style.display = 'none'; callback(); }, 3000);
         }
 
+        // --- AUTH & FRAGMENTS ---
+        const SB_URL = 'https://lsyegaciprnerysmyesy.supabase.co';
+        const SB_KEY = 'sb_publishable_sM0x3SdV4iy8GwYb5S5HUg_S9qLZLeJ';
+        const _client = supabase.createClient(SB_URL, SB_KEY);
+
+        async function validateAuth() {
+            const name = document.getElementById('adminName').value;
+            const pin = document.getElementById('adminPin').value;
+            const { data } = await _client.from('admin_portal').select('*').eq('admin_name', name).eq('admin_pin', pin).single();
+            if(data) {
+                document.getElementById('authOverlay').style.display = 'none';
+                runMatrixEffect(() => {
+                    createFragmentTransition();
+                    loadData(document.getElementById('targetSection').value);
+                    document.getElementById('mainDashboard').style.display = 'block';
+                });
+            } else { alert("ACCESS DENIED"); }
+        }
+
+        function createFragmentTransition() {
+            for(let i=0; i<30; i++){
+                let f = document.createElement('div'); f.className = 'fragment';
+                f.style.width = (Math.random()*80+20)+'px'; f.style.height = f.style.width;
+                f.style.left = (Math.random()*100)+'vw'; f.style.top = '-100px';
+                document.body.appendChild(f);
+                f.animate([{top:'-100px', opacity:1}, {top:'100vh', opacity:0, transform:'rotate(360deg)'}], 
+                {duration: 1000+Math.random()*1000, easing:'ease-in'}).onfinish = () => f.remove();
+            }
+        }
+
+        // --- DATA LOADING ---
         async function loadData(tableName) {
             const { data } = await _client.from(tableName).select('*').order('class').order('full_name');
             const container = document.getElementById('tablesContainer');
@@ -275,7 +251,7 @@
             }, {});
 
             for (const className in grouped) {
-                let html = `<div class="class-section"><div class="class-title" style="background:#f0f2f5; padding:10px; border-left:5px solid var(--vault-blue); font-weight:bold; margin-bottom:5px;">${className}</div><table><thead><tr><th>S/N</th><th>NAME</th>`;
+                let html = `<div style="margin-bottom:20px;"><div style="background:#f0f2f5; padding:8px; border-left:8px solid var(--vault-blue); font-weight:bold; margin:10px 0;">${className}</div><table><thead><tr><th>S/N</th><th>NAME</th>`;
                 Object.values(mapping).forEach(v => html += `<th>${v}</th>`);
                 html += `<th>TOT</th><th>AVG</th><th>GRD</th></tr></thead><tbody>`;
                 grouped[className].forEach((row, idx) => {
@@ -299,8 +275,7 @@
         }
 
         async function downloadWidePDF() {
-            const btn = document.getElementById('mainDownloadBtn');
-            btn.innerText = "⏳ PROCESSING...";
+            const btn = document.getElementById('mainDownloadBtn'); btn.innerText = "⏳ PROCESSING...";
             const capture = document.getElementById('captureArea');
             const canvas = await html2canvas(capture, { scale: 2 });
             const imgData = canvas.toDataURL('image/jpeg', 0.95);
@@ -308,7 +283,7 @@
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const ratio = (pdfWidth - 20) / canvas.width;
             pdf.addImage(imgData, 'JPEG', 10, 10, canvas.width * ratio, canvas.height * ratio);
-            pdf.save(`Ledger_${sessionYear}.pdf`);
+            pdf.save(`GoTegs_Ledger.pdf`);
             btn.innerText = "📥 DOWNLOAD FULL LEDGER (PDF)";
         }
     </script>
