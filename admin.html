@@ -10,18 +10,25 @@
     <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
 
     <style>
-        :root { --vault-blue: #001f3f; --gold: #d4af37; --bg: #ffffff; }
+        :root { --vault-blue: #001f3f; --gold: #d4af37; --bg: #ffffff; --cyan-light: #e0f7fa; }
         body { font-family: 'Arial Narrow', sans-serif; background: #ffffff; margin: 0; padding: 0; overflow-x: hidden; }
         
+        /* Bouncing Shapes Background */
+        #bgCanvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1; background: linear-gradient(135deg, #ffffff 0%, #f0faff 100%);
+        }
+
         #authOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #ffffff; display: flex; justify-content: center; align-items: center;
+            display: flex; justify-content: center; align-items: center;
             z-index: 10000;
         }
         .auth-card {
             background: var(--vault-blue); padding: 40px;
             border-radius: 12px; border: 2px solid var(--gold); text-align: center; width: 360px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            position: relative; z-index: 10001;
         }
         .auth-card h2 { color: var(--gold); margin-bottom: 20px; letter-spacing: 1px; }
         .auth-card input, .auth-card select { 
@@ -39,78 +46,53 @@
             background: var(--vault-blue); color: white; z-index: 9999;
             flex-direction: column; justify-content: center; align-items: center;
         }
-        .spinner { border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--gold); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        #mainDashboard { display: none; background: #fff; padding: 10px; width: 100%; box-sizing: border-box; }
-        .nav-bar { display: flex; justify-content: space-between; margin-bottom: 10px; padding: 5px; border-bottom: 1px solid #ddd; }
-        .btn-nav { text-decoration: none; color: var(--vault-blue); font-weight: bold; border: 1px solid var(--vault-blue); padding: 5px 12px; border-radius: 4px; font-size: 12px; }
+        #mainDashboard { display: none; background: #fff; padding: 10px; width: 100%; box-sizing: border-box; position: relative; z-index: 5; }
+        .nav-bar { display: flex; justify-content: space-between; margin-bottom: 10px; padding: 5px; border-bottom: 1px solid #ddd; background: white; }
 
         /* PDF AREA STYLING */
-        #captureArea { 
-            background: white !important; 
-            padding: 15px; 
-            min-width: 1000px; /* Reduced width to make table feel fuller */
-        }
+        #captureArea { background: white !important; padding: 15px; min-width: 980px; }
 
         .report-header { 
             display: flex; align-items: center; justify-content: space-between; 
-            margin-bottom: 12px; border-bottom: 3px solid var(--vault-blue); padding-bottom: 8px; 
+            margin-bottom: 10px; border-bottom: 3px solid var(--vault-blue); padding-bottom: 8px; 
         }
-        .header-logo { width: 70px; height: auto; }
-        .header-sig { width: 100px; height: auto; }
-        .header-text { text-align: center; flex-grow: 1; }
-        .header-text h1 { 
-            margin: 0; color: var(--vault-blue); 
-            font-family: 'Great Vibes', cursive; 
-            font-size: 38px; 
-            font-weight: 400;
-        }
-        .header-text p { margin: 2px 0 0; font-size: 14px; font-weight: bold; color: #333; text-transform: uppercase; }
+        .header-logo { width: 65px; height: auto; }
+        .header-sig { width: 90px; height: auto; }
+        .header-text h1 { margin: 0; color: var(--vault-blue); font-family: 'Great Vibes', cursive; font-size: 36px; }
+        .header-text p { margin: 2px 0 0; font-size: 13px; font-weight: bold; color: #333; text-transform: uppercase; }
 
-        .class-section { margin-bottom: 25px; page-break-inside: avoid; }
-        .class-title { background: #f0f2f5; color: var(--vault-blue); padding: 6px; font-size: 16px; font-weight: bold; border-left: 8px solid var(--vault-blue); margin-bottom: 5px; text-transform: uppercase; }
+        .class-section { margin-bottom: 20px; page-break-inside: avoid; }
+        .class-title { background: #f0f2f5; color: var(--vault-blue); padding: 5px; font-size: 15px; font-weight: bold; border-left: 6px solid var(--vault-blue); margin-bottom: 4px; }
 
-        table { width: 100%; border-collapse: collapse; font-size: 11.5px; table-layout: auto; border: 1px solid #000; }
-        th { background: var(--vault-blue); color: white; padding: 5px 1px; border: 1px solid #000; text-transform: uppercase; font-size: 8.5px; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; border: 1px solid #000; }
+        th { background: var(--vault-blue); color: white; padding: 4px 1px; border: 1px solid #000; font-size: 8px; }
         td { padding: 3px 2px; border: 1px solid #000; white-space: nowrap; text-align: center; color: #000; }
         
-        .sn-col { width: 25px; font-weight: bold; background: #f9f9f9; }
+        .sn-col { width: 20px; font-weight: bold; }
         
-        /* TIGHTENED NAME CELL */
+        /* STRICTLY REDUCED NAME COLUMN */
         .name-cell { 
             text-align: left !important; 
-            padding-left: 5px !important; 
+            padding-left: 4px !important; 
             font-weight: bold; 
-            min-width: 140px; /* Reduced from 180 */
-            max-width: 200px; /* Prevents cell from growing too much */
+            width: 130px !important; /* Fixed narrow width */
+            max-width: 130px !important;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        .calc-col { background: #fff9e6; font-weight: bold; border-left: 1.5px solid #000; }
-        
-        .footer-actions { margin: 20px 0; display: flex; justify-content: flex-end; }
-        .btn-dl { background: var(--vault-blue); color: white; padding: 12px 30px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .calc-col { background: #fff9e6; font-weight: bold; border-left: 1px solid #000; }
+        .btn-dl { background: var(--vault-blue); color: white; padding: 10px 25px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
 
-        /* CLONE STYLE FOR PDF RENDERING */
-        .canvas-clone {
-            position: absolute !important;
-            left: -9999px !important;
-            top: 0 !important;
-            width: 1000px !important; 
-            transform: none !important;
-            margin: 0 !important;
-            background: white !important;
-        }
+        .canvas-clone { position: absolute !important; left: -9999px !important; width: 1000px !important; background: white !important; }
 
-        @media screen and (max-width: 800px) {
-            #captureArea { overflow-x: auto; min-width: unset; }
-            .report-header { flex-direction: column; gap: 10px; }
-        }
+        @media screen and (max-width: 800px) { #captureArea { overflow-x: auto; min-width: unset; } }
     </style>
 </head>
 <body>
+
+    <canvas id="bgCanvas"></canvas>
 
     <div id="authOverlay">
         <div class="auth-card">
@@ -127,20 +109,19 @@
     </div>
 
     <div id="loadingScreen">
-        <div class="spinner"></div>
         <h3 id="loadMsg">SECURE ACCESS INITIATED...</h3>
     </div>
 
     <div id="mainDashboard">
         <div class="nav-bar">
-            <a href="index.html" class="btn-nav">← EXIT TO PORTAL</a>
+            <a href="index.html" style="text-decoration:none; color:var(--vault-blue); font-weight:bold;">← EXIT</a>
             <button onclick="location.reload()" style="background:none; border:none; color:red; cursor:pointer; font-weight:bold;">LOGOUT</button>
         </div>
 
         <div id="captureArea">
             <div class="report-header">
                 <img src="assets/logo.webp" class="header-logo" alt="Logo">
-                <div class="header-text">
+                <div class="header-text" style="text-align:center; flex-grow:1;">
                     <h1>Go-Tegs International School</h1>
                     <p id="dynamicSubtitle">CONSOLIDATED MASTER LEDGER</p>
                 </div>
@@ -149,76 +130,101 @@
             <div id="tablesContainer"></div>
         </div>
 
-        <div class="footer-actions">
-            <button id="mainDownloadBtn" class="btn-dl" onclick="downloadWidePDF()">📥 DOWNLOAD FULL LEDGER (PDF)</button>
+        <div style="margin: 20px 0; display: flex; justify-content: flex-end;">
+            <button id="mainDownloadBtn" class="btn-dl" onclick="downloadWidePDF()">📥 DOWNLOAD PDF</button>
         </div>
     </div>
 
     <script>
+        // --- BOUNCING SHAPES ANIMATION ---
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        let shapes = [];
+
+        function initCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            shapes = [];
+            for(let i = 0; i < 15; i++) {
+                shapes.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 40 + 20,
+                    dx: (Math.random() - 0.5) * 1.5,
+                    dy: (Math.random() - 0.5) * 1.5,
+                    rot: Math.random() * Math.PI * 2,
+                    rotV: (Math.random() - 0.5) * 0.02,
+                    type: Math.floor(Math.random() * 3) // 0: Square, 1: Circle, 2: Triangle
+                });
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = "rgba(0, 188, 212, 0.2)"; // Cyan
+            ctx.lineWidth = 2;
+
+            shapes.forEach(s => {
+                ctx.save();
+                ctx.translate(s.x, s.y);
+                ctx.rotate(s.rot);
+                ctx.beginPath();
+                if(s.type === 0) ctx.rect(-s.size/2, -s.size/2, s.size, s.size);
+                else if(s.type === 1) ctx.arc(0, 0, s.size/2, 0, Math.PI*2);
+                else {
+                    ctx.moveTo(0, -s.size/2);
+                    ctx.lineTo(s.size/2, s.size/2);
+                    ctx.lineTo(-s.size/2, s.size/2);
+                    ctx.closePath();
+                }
+                ctx.stroke();
+                ctx.restore();
+
+                s.x += s.dx; s.y += s.dy; s.rot += s.rotV;
+                if(s.x < 0 || s.x > canvas.width) s.dx *= -1;
+                if(s.y < 0 || s.y > canvas.height) s.dy *= -1;
+            });
+            requestAnimationFrame(draw);
+        }
+        initCanvas(); draw();
+        window.onresize = initCanvas;
+
+        // --- VAULT LOGIC ---
         const SB_URL = 'https://lsyegaciprnerysmyesy.supabase.co';
         const SB_KEY = 'sb_publishable_sM0x3SdV4iy8GwYb5S5HUg_S9qLZLeJ';
         const _client = supabase.createClient(SB_URL, SB_KEY);
+        let sessionYear = "", sessionTerm = "", preRenderedPDF = null;
 
-        let sessionYear = "";
-        let sessionTerm = "";
-        let preRenderedPDF = null;
-
-        const jss_codes = {
-            english_score: "ENG", maths_score: "MTH", basic_science_score: "BSC", basic_tech_score: "BTH",
-            bus_stud_score: "BST", agric_score: "AGS", social_stud_score: "SOS", home_econs_score: "HEC",
-            sec_edu_score: "SEC", french_score: "FRE", music_score: "MUS", diction_score: "DIC", 
-            history_score: "HIS", lit_score: "LIT", computer_score: "CMP", phe_score: "PHE", cca_score: "CCA"
-        };
-
-        const sss_codes = {
-            dept: "DEPT", maths_score: "MTH", english_score: "ENG", civic_score: "CIV", 
-            physics_score: "PHY", chem_score: "CHM", bio_score: "BIO", fmath_score: "FMT", 
-            dp_score: "D.P", econs_score: "ECO", agric_score: "AGS", crs_score: "CRS", 
-            catering_c_p_score: "CAT", dic_score: "DIC"
-        };
+        const jss_codes = { english_score:"ENG", maths_score:"MTH", basic_science_score:"BSC", basic_tech_score:"BTH", bus_stud_score:"BST", agric_score:"AGS", social_stud_score:"SOS", home_econs_score:"HEC", sec_edu_score:"SEC", french_score:"FRE", music_score:"MUS", diction_score:"DIC", history_score:"HIS", lit_score:"LIT", computer_score:"CMP", phe_score:"PHE", cca_score:"CCA" };
+        const sss_codes = { dept:"DEPT", maths_score:"MTH", english_score:"ENG", civic_score:"CIV", physics_score:"PHY", chem_score:"CHM", bio_score:"BIO", fmath_score:"FMT", dp_score:"D.P", econs_score:"ECO", agric_score:"AGS", crs_score:"CRS", catering_c_p_score:"CAT", dic_score:"DIC" };
 
         function startLoading() {
-            const name = document.getElementById('adminName').value;
-            const pin = document.getElementById('adminPin').value;
-            if(!name || !pin) { document.getElementById('authMsg').innerText = "CREDENTIALS REQUIRED"; return; }
-            
+            if(!document.getElementById('adminName').value || !document.getElementById('adminPin').value) return;
             document.getElementById('authOverlay').style.display = 'none';
             document.getElementById('loadingScreen').style.display = 'flex';
-
-            const messages = ["ESTABLISHING SECURE LINK...", "AUTHENTICATING ENCRYPTED VAULT...", "SYNCHRONIZING DATABASE LEDGER..."];
-            let i = 0;
-            const cycle = setInterval(() => {
-                if(i < messages.length) {
-                    document.getElementById('loadMsg').innerText = messages[i];
-                    i++;
-                } else {
-                    clearInterval(cycle);
-                    unlockVault();
-                }
-            }, 1000);
+            setTimeout(unlockVault, 2000);
         }
 
         async function unlockVault() {
             const name = document.getElementById('adminName').value;
             const pin = document.getElementById('adminPin').value;
             const table = document.getElementById('targetSection').value;
-
             const { data } = await _client.from('admin_portal').select('*').eq('admin_name', name).eq('admin_pin', pin).single();
 
             if(data) {
                 sessionYear = data.year || "2025-2026";
                 sessionTerm = data.term || "Term";
+                document.getElementById('bgCanvas').style.display = 'none';
                 document.getElementById('loadingScreen').style.display = 'none';
                 document.getElementById('mainDashboard').style.display = 'block';
                 document.getElementById('dynamicSubtitle').innerText = `${sessionYear} ${sessionTerm} Result Ledger`;
                 loadData(table);
-            } else { location.reload(); alert("ACCESS DENIED"); }
+            } else { location.reload(); }
         }
 
         async function loadData(tableName) {
-            const { data } = await _client.from(tableName).select('*').order('class', {ascending: true}).order('full_name', {ascending: true});
-            if(!data || !data.length) return;
-
+            const { data } = await _client.from(tableName).select('*').order('class').order('full_name');
+            if(!data) return;
             const grouped = data.reduce((acc, obj) => {
                 const key = obj.class || "Unclassed";
                 if (!acc[key]) acc[key] = [];
@@ -228,59 +234,29 @@
 
             const container = document.getElementById('tablesContainer');
             container.innerHTML = "";
-
             const activeMapping = (tableName === 'sss_students') ? sss_codes : jss_codes;
             let activeKeys = ['full_name', ...Object.keys(activeMapping)];
 
             for (const className in grouped) {
                 const classData = grouped[className];
                 let serial = 1;
-                const section = document.createElement('div');
-                section.className = 'class-section';
-                
-                let tableHtml = `<div class="class-title">${className}</div>`;
-                tableHtml += `<table><thead><tr><th class="sn-col">S/N</th>`;
-                
-                activeKeys.forEach(k => {
-                    tableHtml += `<th>${activeMapping[k] || k.toUpperCase()}</th>`;
-                });
+                let tableHtml = `<div class="class-section"><div class="class-title">${className}</div><table><thead><tr><th class="sn-col">S/N</th>`;
+                activeKeys.forEach(k => tableHtml += `<th>${activeMapping[k] || k.toUpperCase()}</th>`);
                 tableHtml += `<th class="calc-col">TOT</th><th class="calc-col">AVG</th><th class="calc-col">GRD</th></tr></thead><tbody>`;
 
                 classData.forEach(row => {
                     let total = 0, count = 0;
                     tableHtml += `<tr><td class="sn-col">${serial++}</td>`;
-                    
                     activeKeys.forEach(k => {
-                        let val = row[k];
-                        let displayVal = "-";
-                        if (val !== null && val !== "" && val !== undefined) {
-                            displayVal = val;
-                            if (k.endsWith('_score')) {
-                                let num = parseFloat(val);
-                                if (!isNaN(num)) { 
-                                    total += num; 
-                                    count++; 
-                                }
-                            }
-                        }
-                        let cellClass = k === 'full_name' ? 'name-cell' : '';
-                        tableHtml += `<td class="${cellClass}">${displayVal}</td>`;
+                        let val = row[k] || "-";
+                        if (k.endsWith('_score') && !isNaN(parseFloat(val))) { total += parseFloat(val); count++; }
+                        tableHtml += `<td class="${k==='full_name'?'name-cell':''}">${val}</td>`;
                     });
-
                     const avg = count > 0 ? (total / count).toFixed(1) : 0;
-                    tableHtml += `<td class="calc-col">${total}</td><td class="calc-col">${avg}%</td><td class="calc-col">${calculateGrade(avg)}</td></tr>`;
+                    tableHtml += `<td class="calc-col">${total}</td><td class="calc-col">${avg}%</td><td class="calc-col">${avg >= 75 ? "A1" : avg >= 70 ? "B2" : avg >= 65 ? "B3" : avg >= 60 ? "C4" : avg >= 50 ? "C6" : avg >= 45 ? "D7" : "F9"}</td></tr>`;
                 });
-
-                tableHtml += `</tbody></table>`;
-                section.innerHTML = tableHtml;
-                container.appendChild(section);
+                container.innerHTML += tableHtml + `</tbody></table></div>`;
             }
-        }
-
-        function calculateGrade(avg) {
-            const n = parseFloat(avg);
-            if(n >= 75) return "A1"; if(n >= 70) return "B2"; if(n >= 65) return "B3";
-            if(n >= 60) return "C4"; if(n >= 50) return "C6"; if(n >= 45) return "D7"; return "F9";
         }
 
         async function prepareLedgerPDF() {
@@ -289,52 +265,29 @@
             clone.classList.add('canvas-clone');
             document.body.appendChild(clone);
 
-            try {
-                const canvas = await html2canvas(clone, { 
-                    scale: 2, 
-                    useCORS: true, 
-                    backgroundColor: "#ffffff",
-                    logging: false,
-                    width: 1000 
-                });
-
-                const imgData = canvas.toDataURL('image/jpeg', 0.95);
-                const pdf = new jspdf.jsPDF('l', 'mm', 'a4'); 
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = pdf.internal.pageSize.getHeight();
-                
-                const ratio = Math.min((pdfWidth - 10) / canvas.width, (pdfHeight - 10) / canvas.height);
-                const finalWidth = canvas.width * ratio;
-                const finalHeight = canvas.height * ratio;
-
-                pdf.addImage(imgData, 'JPEG', (pdfWidth - finalWidth) / 2, 5, finalWidth, finalHeight);
-                preRenderedPDF = pdf.output('blob');
-            } catch (e) { 
-                console.error("PDF Prep Error", e); 
-            } finally { 
-                document.body.removeChild(clone);
-            }
+            const canvasPDF = await html2canvas(clone, { scale: 2, useCORS: true, width: 1000 });
+            const imgData = canvasPDF.toDataURL('image/jpeg', 0.95);
+            const pdf = new jspdf.jsPDF('l', 'mm', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const ratio = (pdfWidth - 10) / canvasPDF.width;
+            pdf.addImage(imgData, 'JPEG', 5, 5, canvasPDF.width * ratio, canvasPDF.height * ratio);
+            preRenderedPDF = pdf.output('blob');
+            document.body.removeChild(clone);
         }
 
         async function downloadWidePDF() {
             const btn = document.getElementById('mainDownloadBtn');
-            
             if (preRenderedPDF) {
-                const url = URL.createObjectURL(preRenderedPDF);
                 const link = document.createElement('a');
-                link.href = url;
-                link.download = `${sessionYear}_${sessionTerm}_Ledger.pdf`.replace(/\s+/g, '_');
+                link.href = URL.createObjectURL(preRenderedPDF);
+                link.download = `Ledger_${sessionYear}.pdf`;
                 link.click();
-                URL.revokeObjectURL(url);
                 return;
             }
-
-            btn.innerText = "⏳ GENERATING AUDIT PDF...";
-            btn.disabled = true;
-            await prepareLedgerPDF(); 
-            btn.disabled = false;
-            btn.innerText = "📥 DOWNLOAD FULL LEDGER (PDF)";
-            downloadWidePDF(); 
+            btn.innerText = "⏳ GENERATING...";
+            await prepareLedgerPDF();
+            btn.innerText = "📥 DOWNLOAD PDF";
+            downloadWidePDF();
         }
     </script>
 </body>
