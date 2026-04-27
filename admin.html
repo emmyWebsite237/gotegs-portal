@@ -46,6 +46,13 @@
         .nav-bar { display: flex; justify-content: space-between; margin-bottom: 10px; padding: 5px; border-bottom: 1px solid #ddd; }
         .btn-nav { text-decoration: none; color: var(--vault-blue); font-weight: bold; border: 1px solid var(--vault-blue); padding: 5px 12px; border-radius: 4px; font-size: 12px; }
 
+        /* PDF AREA STYLING */
+        #captureArea { 
+            background: white !important; 
+            padding: 20px; 
+            min-width: 1100px; /* Force wide layout for the PDF */
+        }
+
         .report-header { 
             display: flex; align-items: center; justify-content: space-between; 
             margin-bottom: 15px; border-bottom: 3px solid var(--vault-blue); padding-bottom: 10px; 
@@ -74,6 +81,22 @@
         
         .footer-actions { margin: 20px 0; display: flex; justify-content: flex-end; }
         .btn-dl { background: var(--vault-blue); color: white; padding: 12px 30px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+
+        /* CLONE STYLE FOR PDF RENDERING */
+        .canvas-clone {
+            position: absolute !important;
+            left: -9999px !important;
+            top: 0 !important;
+            width: 1200px !important; 
+            transform: none !important;
+            margin: 0 !important;
+            background: white !important;
+        }
+
+        @media screen and (max-width: 800px) {
+            #captureArea { overflow-x: auto; min-width: unset; }
+            .report-header { flex-direction: column; gap: 10px; }
+        }
     </style>
 </head>
 <body>
@@ -116,7 +139,7 @@
         </div>
 
         <div class="footer-actions">
-            <button class="btn-dl" onclick="downloadWidePDF()">📥 DOWNLOAD FULL LEDGER (PDF)</button>
+            <button id="mainDownloadBtn" class="btn-dl" onclick="downloadWidePDF()">📥 DOWNLOAD FULL LEDGER (PDF)</button>
         </div>
     </div>
 
@@ -127,9 +150,8 @@
 
         let sessionYear = "";
         let sessionTerm = "";
-        let currentSectionLabel = "";
+        let preRenderedPDF = null;
 
-        // JSS Mapping (Static)
         const jss_codes = {
             english_score: "ENG", maths_score: "MTH", basic_science_score: "BSC", basic_tech_score: "BTH",
             bus_stud_score: "BST", agric_score: "AGS", social_stud_score: "SOS", home_econs_score: "HEC",
@@ -137,22 +159,11 @@
             history_score: "HIS", lit_score: "LIT", computer_score: "CMP", phe_score: "PHE", cca_score: "CCA"
         };
 
-        // SSS Mapping based on your provided schema
         const sss_codes = {
-            dept: "DEPT", 
-            maths_score: "MTH", 
-            english_score: "ENG", 
-            civic_score: "CIV", 
-            physics_score: "PHY", 
-            chem_score: "CHM", 
-            bio_score: "BIO", 
-            fmath_score: "FMT", 
-            dp_score: "D.P", 
-            econs_score: "ECO", 
-            agric_score: "AGS", 
-            crs_score: "CRS", 
-            catering_c_p_score: "CAT", 
-            dic_score: "DIC"
+            dept: "DEPT", maths_score: "MTH", english_score: "ENG", civic_score: "CIV", 
+            physics_score: "PHY", chem_score: "CHM", bio_score: "BIO", fmath_score: "FMT", 
+            dp_score: "D.P", econs_score: "ECO", agric_score: "AGS", crs_score: "CRS", 
+            catering_c_p_score: "CAT", dic_score: "DIC"
         };
 
         function startLoading() {
@@ -207,7 +218,6 @@
             const container = document.getElementById('tablesContainer');
             container.innerHTML = "";
 
-            // Identify which mapping to use
             const activeMapping = (tableName === 'sss_students') ? sss_codes : jss_codes;
             let activeKeys = ['full_name', ...Object.keys(activeMapping)];
 
@@ -232,8 +242,6 @@
                     activeKeys.forEach(k => {
                         let val = row[k];
                         let displayVal = "-";
-                        
-                        // Strict check for null or empty strings vs zero
                         if (val !== null && val !== "" && val !== undefined) {
                             displayVal = val;
                             if (k.endsWith('_score')) {
@@ -264,21 +272,59 @@
             if(n >= 60) return "C4"; if(n >= 50) return "C6"; if(n >= 45) return "D7"; return "F9";
         }
 
-        async function downloadWidePDF() {
-            const element = document.getElementById('captureArea');
-            const btn = document.querySelector('.btn-dl');
-            btn.innerText = "⏳ GENERATING AUDIT PDF...";
+        // IMPROVED DOWNLOAD LOGIC (Using Clone Method)
+        async function prepareLedgerPDF() {
+            const originalArea = document.getElementById('captureArea');
+            const clone = originalArea.cloneNode(true);
+            clone.classList.add('canvas-clone');
+            document.body.appendChild(clone);
+
             try {
-                const canvas = await html2canvas(element, { scale: 2, useCORS: true });
-                const imgData = canvas.toDataURL('image/png');
-                const pdf = new jspdf.jsPDF('l', 'mm', 'a4'); 
-                const pageWidth = pdf.internal.pageSize.getWidth();
-                const pageHeight = pdf.internal.pageSize.getHeight();
-                const ratio = Math.min((pageWidth - 10) / canvas.width, (pageHeight - 10) / canvas.height);
-                pdf.addImage(imgData, 'PNG', 5, 5, canvas.width * ratio, canvas.height * ratio);
-                pdf.save(`${sessionYear}_${sessionTerm}_Ledger.pdf`.replace(/\s+/g, '_'));
-            } catch (e) { alert("Error: " + e.message); }
-            finally { btn.innerText = "📥 DOWNLOAD FULL LEDGER (PDF)"; }
+                const canvas = await html2canvas(clone, { 
+                    scale: 2, 
+                    useCORS: true, 
+                    backgroundColor: "#ffffff",
+                    logging: false,
+                    width: 1200 // Force wide container width
+                });
+
+                const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                const pdf = new jspdf.jsPDF('l', 'mm', 'a4'); // 'l' for Landscape
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                
+                const ratio = Math.min(pdfWidth / canvas.width, pdfHeight / canvas.height);
+                const finalWidth = canvas.width * ratio;
+                const finalHeight = canvas.height * ratio;
+
+                pdf.addImage(imgData, 'JPEG', (pdfWidth - finalWidth) / 2, 5, finalWidth, finalHeight);
+                preRenderedPDF = pdf.output('blob');
+            } catch (e) { 
+                console.error("PDF Prep Error", e); 
+            } finally { 
+                document.body.removeChild(clone);
+            }
+        }
+
+        async function downloadWidePDF() {
+            const btn = document.getElementById('mainDownloadBtn');
+            
+            if (preRenderedPDF) {
+                const url = URL.createObjectURL(preRenderedPDF);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `${sessionYear}_${sessionTerm}_Ledger.pdf`.replace(/\s+/g, '_');
+                link.click();
+                URL.revokeObjectURL(url);
+                return;
+            }
+
+            btn.innerText = "⏳ GENERATING AUDIT PDF...";
+            btn.disabled = true;
+            await prepareLedgerPDF(); 
+            btn.disabled = false;
+            btn.innerText = "📥 DOWNLOAD FULL LEDGER (PDF)";
+            downloadWidePDF(); // Trigger download once ready
         }
     </script>
 </body>
